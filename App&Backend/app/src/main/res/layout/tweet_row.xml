@@ -1,0 +1,50 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/card_view"
+    android:padding="6dp">
+
+    <ImageView
+        android:id="@+id/userImage"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="6dp"
+        android:src="@drawable/placeholder" />
+
+    <TextView
+        android:id="@+id/tweetUser"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:layout_toRightOf="@id/userImage"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:gravity="center_vertical" />
+
+    <TextView
+        android:id="@+id/tweetText"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/userImage"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="2dp"
+        android:layout_below="@id/tweetUser"
+        android:scrollHorizontally="false"
+        android:ellipsize="marquee"
+        android:autoLink="web"/>
+
+    <TextView
+        android:id="@+id/tweetDate"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/userImage"
+        android:layout_marginTop="2dp"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_below="@id/tweetText"
+        android:gravity="end"
+        android:layout_alignParentBottom="true" />
+
+
+</RelativeLayout>

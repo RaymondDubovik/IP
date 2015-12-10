@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/card_view">
+
+    <TextView
+        android:id="@+id/summaryDate"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:scrollHorizontally="false"
+        android:ellipsize="marquee"
+        android:textStyle="bold"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="10dp"/>
+
+    <TextView
+        android:id="@+id/summaryText"
+        android:autoLink="web"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:scrollHorizontally="false"
+        android:ellipsize="marquee"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp"/>
+
+</LinearLayout>

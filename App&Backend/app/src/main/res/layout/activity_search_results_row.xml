@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.fergus.esa.SquaredImageView
+        android:id="@+id/searchImageView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_centerInParent="true"
+        android:scaleType="centerCrop" />
+
+    <TextView
+        android:id="@+id/searchEventTextView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:background="#AA000000"
+        android:padding="12dip"
+        android:textColor="#ffffffff"
+        android:layout_alignBottom="@+id/searchImageView"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"/>
+    <TextView
+        android:id="@+id/searchScoreTextView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:background="#ffffffff"
+        android:padding="12dip"
+        android:layout_below="@+id/searchImageView"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"/>
+
+</RelativeLayout>
