@@ -38,8 +38,7 @@ public class ESATweetServlet extends HttpServlet {
     HashSet<String> events = new HashSet<>();
 
 
-    public void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         // Create a ConfigurationBuilder which links the program to a twitter account using the various keys below
         ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -59,12 +58,10 @@ public class ESATweetServlet extends HttpServlet {
         } catch (TwitterException | ConflictException e) {
             e.printStackTrace();
         }
-
     }
 
 
     public void getEvents() throws IOException {
-
         Document doc = Jsoup.connect("https://news.google.co.uk/").get();
 
         Elements topics = doc.select("div.topic");

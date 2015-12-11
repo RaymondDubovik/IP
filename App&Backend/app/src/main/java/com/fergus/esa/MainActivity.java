@@ -27,7 +27,7 @@ import com.fergus.esa.adapters.CategoryAdapter;
 import com.fergus.esa.adapters.GridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.EsaEventEndpoint;
 import com.fergus.esa.backend.esaEventEndpoint.model.ESAEvent;
-import com.fergus.esa.backend.dataObjects.CategoryObject;
+import com.fergus.esa.dataObjects.CategoryObject;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;

@@ -1,10 +1,17 @@
-package com.fergus.esa.backend.dataObjects;
+package com.fergus.esa.dataObjects;
+
+import java.io.Serializable;
 
 /**
  * Author: svchosta (https://github.com/svchosta)
  * Date: 2015.08.11.
  */
-public class CategoryObject {
+public class CategoryObject implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    public static String ALL_CATEGORIES_NAME = "All Categories";
+    public static int ALL_CATEGORIES_ID = -1;
+
     private int id = 0;
     private String name = "";
 

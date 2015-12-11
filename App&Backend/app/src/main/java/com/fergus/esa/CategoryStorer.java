@@ -2,7 +2,7 @@ package com.fergus.esa;
 
 import android.content.Context;
 
-import com.fergus.esa.backend.dataObjects.CategoryObject;
+import com.fergus.esa.dataObjects.CategoryObject;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -54,6 +54,7 @@ public class CategoryStorer {
         } catch (IOException|ClassNotFoundException e) {
             // TODO: fix
             e.printStackTrace();
+            return new HashSet<>();
         }
 
         return categories;
