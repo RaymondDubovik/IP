@@ -39,6 +39,7 @@ import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
+
     private SlidingUpPanelLayout slidingPanel;
     private View viewListCover;
     private TextView textViewCategory;
@@ -46,6 +47,7 @@ public class MainActivity extends ActionBarActivity {
     private SwipeRefreshLayout swipeContainer;
 
     private CategoryStorer categoryStorer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -203,8 +205,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected List<ESAEvent> doInBackground(Void... params) {
             if (myApiService == null) {  // Only do this once
-                EsaEventEndpoint.Builder builder = new EsaEventEndpoint.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null)
-                        .setRootUrl(ServerUrls.ROOT_URL);
+                EsaEventEndpoint.Builder builder = new EsaEventEndpoint.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).setRootUrl(ServerUrls.ROOT_URL);
 
                 myApiService = builder.build();
             }
@@ -212,6 +213,7 @@ public class MainActivity extends ActionBarActivity {
             try {
                 return myApiService.listEvents().execute().getItems();
             } catch (IOException e) {
+                e.printStackTrace();
                 return Collections.EMPTY_LIST;
             }
         }

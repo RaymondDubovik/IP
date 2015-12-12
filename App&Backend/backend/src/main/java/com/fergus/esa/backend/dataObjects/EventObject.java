@@ -1,5 +1,7 @@
 package com.fergus.esa.backend.dataObjects;
 
+import com.googlecode.objectify.annotation.Entity;
+
 import java.util.Date;
 import java.util.List;
 
@@ -7,6 +9,7 @@ import java.util.List;
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 03.12.2015
  */
+@Entity
 public class EventObject {
     private int id;
     private String heading;
@@ -16,6 +19,9 @@ public class EventObject {
     private List<NewsObject> news;
     private List<TweetObject> tweets;
     private List<SummaryObject> summaries;
+
+
+    public EventObject() {}
 
 
     public int getId() {

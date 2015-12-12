@@ -1,17 +1,23 @@
 package com.fergus.esa.backend.dataObjects;
 
+import com.googlecode.objectify.annotation.Entity;
+
 import java.util.Date;
 
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 03.12.2015
  */
+@Entity
 public class NewsObject {
     private int id;
     private String title;
     private String url;
     private String logoUrl;
     private Date timestamp;
+
+
+    public NewsObject() {}
 
 
     public int getId() {

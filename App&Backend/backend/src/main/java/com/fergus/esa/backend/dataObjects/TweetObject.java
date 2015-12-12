@@ -1,11 +1,14 @@
 package com.fergus.esa.backend.dataObjects;
 
+import com.googlecode.objectify.annotation.Entity;
+
 import java.util.Date;
 
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 03.12.2015
  */
+@Entity
 public class TweetObject {
     private int id;
     private String username;
@@ -15,6 +18,9 @@ public class TweetObject {
     private String text;
     private Date timestamp;
     // TODO: rank here!!!
+
+
+    public TweetObject() {}
 
 
     public int getId() {

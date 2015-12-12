@@ -1,15 +1,22 @@
 package com.fergus.esa.backend.dataObjects;
 
+import com.googlecode.objectify.annotation.Entity;
+
 import java.util.List;
+
 
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 03.12.2015
  */
+@Entity
 public class UserObject {
     private int id;
     private String gcmToken;
     private List<CategoryObject> selectedCategories;
+
+
+    public UserObject() {}
 
 
     public int getId() {

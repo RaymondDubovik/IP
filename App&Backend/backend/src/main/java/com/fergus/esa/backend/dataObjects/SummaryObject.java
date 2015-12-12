@@ -1,12 +1,18 @@
 package com.fergus.esa.backend.dataObjects;
 
+import com.googlecode.objectify.annotation.Entity;
+
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 03.12.2015
  */
+@Entity
 public class SummaryObject {
     private int length;
     private String text;
+
+
+    public SummaryObject() {}
 
 
     public int getLength() {

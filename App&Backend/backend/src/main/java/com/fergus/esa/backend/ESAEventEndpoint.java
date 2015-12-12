@@ -1,6 +1,10 @@
 package com.fergus.esa.backend;
 
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
+import com.fergus.esa.backend.OLD_DATAOBJECTS.ESANews;
+import com.fergus.esa.backend.OLD_DATAOBJECTS.ESATweet;
+import com.fergus.esa.backend.dataObjects.EventObject;
+import com.fergus.esa.backend.dataObjects.UserObject;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
@@ -34,10 +38,36 @@ public class ESAEventEndpoint {
      */
     @ApiMethod(name = "listEvents")
     public List<ESAEvent> listEvents() {
-        Long minusThreeHours = System.currentTimeMillis() - 10800000;
-        List<ESAEvent> events = ofy().load().type(ESAEvent.class).filter("timestamp >", minusThreeHours).order("timestamp").list();
+        // Long minusThreeHours = System.currentTimeMillis() - 10800000;
+        List<ESAEvent> events = ofy().load().type(ESAEvent.class).order("timestamp").list();
+
+        List<String> images = new ArrayList<>();
+        images.add("http://www.gannett-cdn.com/-mm-/d186fe2344ab4f71ba561d52d784138c332b6857/c=0-177-1873-1585&r=x404&c=534x401/local/-/media/2015/02/04/USATODAY/USATODAY/635586464035076487-AFP-527752260.jpg");
+        images.add("http://www.gannett-cdn.com/-mm-/d186fe2344ab4f71ba561d52d784138c332b6857/c=0-177-1873-1585&r=x404&c=534x401/local/-/media/2015/02/04/USATODAY/USATODAY/635586464035076487-AFP-527752260.jpg");
+
+        List<ESANews> news = new ArrayList<>();
+        news.add(new ESANews());
+        List<String> summaries = new ArrayList<>();
+        summaries.add("summ1");
+        summaries.add("summ2");
+        List<ESATweet> tweets = new ArrayList<>();
+        tweets.add(new ESATweet());
+
+        events.add(new ESAEvent().setEvent("TestEvent").setImageUrls(images).setNews(news).setSummaries(summaries).setTimestamp(111111111111L).setTweets(tweets));
 
         return events;
+    }
+
+
+    @ApiMethod(name = "getUserObject")
+    public List<UserObject> getUserObject() {
+        return null;
+    }
+
+
+    @ApiMethod(name = "getEventObject")
+    public List<EventObject> getEventObject() {
+        return null;
     }
 
 
@@ -134,5 +164,4 @@ public class ESAEventEndpoint {
                 return 1;
         }
     }
-
 }

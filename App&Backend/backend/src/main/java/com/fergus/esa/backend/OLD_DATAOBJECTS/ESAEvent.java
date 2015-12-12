@@ -17,54 +17,72 @@ public class ESAEvent {
     @Index
     private Long timestamp;
 
-    public ESAEvent() {
-    }
+
+    public ESAEvent() {}
+
 
     public String getEvent() {
         return event;
     }
 
-    public void setEvent(String event) {
+
+    public ESAEvent setEvent(String event) {
         this.event = event;
+        return this;
     }
 
-    public List<ESATweet> getTweets(){
+
+    public List<ESATweet> getTweets() {
         return tweets;
     }
 
-    public void setTweets(List<ESATweet> tweets){
+
+    public ESAEvent setTweets(List<ESATweet> tweets) {
         this.tweets = tweets;
+        return this;
     }
 
-    public List<ESANews> getNews(){
+
+    public List<ESANews> getNews() {
         return news;
     }
 
-    public void setNews(List<ESANews> news){
+
+    public ESAEvent setNews(List<ESANews> news) {
         this.news = news;
+        return this;
     }
 
-    public List<String> getImageUrls(){
+
+    public List<String> getImageUrls() {
         return imageUrls;
     }
 
-    public void setImageUrls(List<String> imageUrls){
+
+    public ESAEvent setImageUrls(List<String> imageUrls) {
         this.imageUrls = imageUrls;
+        return this;
     }
 
-    public List<String> getSummaries(){
+
+    public List<String> getSummaries() {
         return summaries;
     }
 
-    public void setSummaries(List<String> summaries){
+
+    public ESAEvent setSummaries(List<String> summaries) {
         this.summaries = summaries;
+        return this;
     }
 
-    public Long getTimestamp(){
+
+    public Long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Long timestamp){
+
+    public ESAEvent setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+        return this;
     }
 }
