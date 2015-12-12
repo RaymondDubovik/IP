@@ -29,5 +29,4 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile files('libs/Classifier4J-0.6.jar')
     compile 'com.google.code.gson:gson:2.4'
-    // compile project(':backend')
 }
