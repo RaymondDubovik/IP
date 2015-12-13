@@ -5,6 +5,7 @@ import com.fergus.esa.backend.OLD_DATAOBJECTS.ESANews;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESATweet;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
+import com.fergus.esa.backend.dataObjects.ImageObject;
 import com.fergus.esa.backend.dataObjects.UserObject;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
@@ -66,9 +67,23 @@ public class ESAEventEndpoint {
     }
 
 
-    @ApiMethod(name = "getEventObject")
-    public List<EventObject> getEventObject() {
-        return null;
+    @ApiMethod(name = "getEvents")
+    public List<EventObject> getEvents(@Named("from") int from, @Named("to") int to) {
+        ImageObject image = new ImageObject().setUrl("http://www.gannett-cdn.com/-mm-/d186fe2344ab4f71ba561d52d784138c332b6857/c=0-177-1873-1585&r=x404&c=534x401/local/-/media/2015/02/04/USATODAY/USATODAY/635586464035076487-AFP-527752260.jpg");
+        ImageObject image2 = new ImageObject().setUrl("http://vantage-uk.com/wp-content/uploads/2013/03/breakingnews1.jpg");
+        List<ImageObject> images = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            images.add(image);
+            images.add(image2);
+        }
+
+        EventObject event = new EventObject().setId(from + to).setImages(images).setHeading("Some title");
+        List<EventObject> events = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            events.add(event);
+        }
+
+        return events;
     }
 
 

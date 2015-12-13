@@ -19,6 +19,7 @@ public class EventObject {
     private List<NewsObject> news;
     private List<TweetObject> tweets;
     private List<SummaryObject> summaries;
+    private List<ImageObject> images;
 
 
     public EventObject() {}
@@ -97,6 +98,17 @@ public class EventObject {
 
     public EventObject setSummaries(List<SummaryObject> summaries) {
         this.summaries = summaries;
+        return this;
+    }
+
+
+    public List<ImageObject> getImages() {
+        return images;
+    }
+
+
+    public EventObject setImages(List<ImageObject> images) {
+        this.images = images;
         return this;
     }
 }

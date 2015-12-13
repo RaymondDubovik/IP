@@ -27,7 +27,7 @@ import com.fergus.esa.adapters.CategoryAdapter;
 import com.fergus.esa.adapters.GridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.EsaEventEndpoint;
 import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;
-import com.fergus.esa.backend.esaEventEndpoint.model.ESAEvent;
+import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
 import com.fergus.esa.dataObjects.CategoryObjectWrapper;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
@@ -64,6 +64,7 @@ public class MainActivity extends ActionBarActivity {
 
         categoryStorer = new CategoryStorer(this);
         new CategoryAsyncTask().execute();
+
         handleIntent(getIntent());
     }
 
@@ -102,19 +103,73 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private void handleIntent(Intent intent) {
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
+    private class EventAsyncTask extends AsyncTask<Void, Void, List<EventObject>> {
+        private EsaEventEndpoint endpoint = null;
+        private ProgressDialog pd;
+        private boolean displayDialog;
 
-            Intent searchIntent = new Intent(MainActivity.this, SearchResultsActivity.class);
-            searchIntent.putExtra("query", query);
-            startActivity(searchIntent);
+
+        EventAsyncTask(boolean displayDialog) {
+            this.displayDialog = displayDialog;
+        }
+
+
+        @Override
+        protected void onPreExecute() {
+            if (displayDialog) {
+                pd = new ProgressDialog(MainActivity.this);
+                pd.setTitle("Please Wait...");
+                pd.setMessage("Downloading Events...");
+                pd.show();
+            }
+        }
+
+
+        @Override
+        protected List<EventObject> doInBackground(Void... voids) {
+            if (endpoint == null) {  // Only do this once
+                endpoint = new EsaEventEndpoint.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).setRootUrl(ServerUrls.ROOT_URL).build();
+            }
+
+            try {
+                return endpoint.getEvents(0, 10).execute().getItems(); // TODO: change
+            } catch (IOException e) {
+                e.printStackTrace();
+                return Collections.EMPTY_LIST;
+            }
+        }
+
+
+        @Override
+        protected void onPostExecute(final List<EventObject> events) {
+            Collections.reverse(events);
+
+            gridViewEvent.setAdapter(new GridViewAdapter(MainActivity.this, MainActivity.this, events));
+            gridViewEvent.setOnScrollListener(new ScrollListener(MainActivity.this));
+            gridViewEvent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    int eventId = events.get(position).getId();
+                    Intent intent = new Intent(MainActivity.this, EventTabsActivity.class);
+                    Bundle extras = new Bundle();
+                    extras.putInt(EventTabsActivity.BUNDLE_PARAM_EVENT_ID , eventId);
+                    intent.putExtras(extras);
+                    startActivity(intent);
+                }
+            });
+
+            if (displayDialog) {
+                pd.hide();
+            }
+
+            if (swipeContainer != null && swipeContainer.isRefreshing()) {
+                swipeContainer.setRefreshing(false);
+            }
         }
     }
 
 
     private class CategoryAsyncTask extends AsyncTask<Void, Void, List<CategoryObject>> {
-
         @Override
         protected List<CategoryObject> doInBackground(Void... voids) {
 
@@ -187,74 +242,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private class EventAsyncTask extends AsyncTask<Void, Void, List<ESAEvent>> {
-        private EsaEventEndpoint myApiService = null;
-        private ProgressDialog pd;
-        private boolean displayDialog;
-
-
-        EventAsyncTask(boolean displayDialog) {
-            this.displayDialog = displayDialog;
-        }
-
-
-        @Override
-        protected void onPreExecute() {
-            if (displayDialog) {
-                pd = new ProgressDialog(MainActivity.this);
-                pd.setTitle("Please Wait...");
-                pd.setMessage("Downloading Events...");
-                pd.show();
-            }
-        }
-
-
-        @Override
-        protected List<ESAEvent> doInBackground(Void... params) {
-            if (myApiService == null) {  // Only do this once
-                EsaEventEndpoint.Builder builder = new EsaEventEndpoint.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).setRootUrl(ServerUrls.ROOT_URL);
-
-                myApiService = builder.build();
-            }
-
-            try {
-                return myApiService.listEvents().execute().getItems();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return Collections.EMPTY_LIST;
-            }
-        }
-
-
-        @Override
-        protected void onPostExecute(final List<ESAEvent> events) {
-            Collections.reverse(events);
-
-            gridViewEvent.setAdapter(new GridViewAdapter(MainActivity.this, MainActivity.this, events));
-            gridViewEvent.setOnScrollListener(new ScrollListener(MainActivity.this));
-            gridViewEvent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    String event = events.get(position).getEvent();
-                    Intent intent = new Intent(MainActivity.this, EventTabsActivity.class);
-                    Bundle extras = new Bundle();
-                    extras.putString("event", event);
-                    intent.putExtras(extras);
-                    startActivity(intent);
-                }
-            });
-
-            if (displayDialog) {
-                pd.hide();
-            }
-
-            if (swipeContainer != null && swipeContainer.isRefreshing()) {
-                swipeContainer.setRefreshing(false);
-            }
-        }
-    }
-
-
     private class SlidingPanelListener implements SlidingUpPanelLayout.PanelSlideListener {
         private boolean wasCollapsed = true;
 
@@ -292,6 +279,17 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onPanelHidden(View view) {}
+    }
+
+
+    private void handleIntent(Intent intent) {
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+
+            Intent searchIntent = new Intent(MainActivity.this, SearchResultsActivity.class);
+            searchIntent.putExtra("query", query);
+            startActivity(searchIntent);
+        }
     }
 }
 

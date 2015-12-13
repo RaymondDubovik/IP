@@ -10,8 +10,7 @@ import android.widget.TextView;
 
 import com.fergus.esa.R;
 import com.fergus.esa.SquaredImageView;
-import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
-import com.fergus.esa.backend.esaEventEndpoint.model.ImageObject;
+import com.fergus.esa.backend.esaEventEndpoint.model.ESAEvent;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -22,27 +21,25 @@ import java.util.Random;
     An adapter class to load images into a GridView
     Adapted from a code sample available at https://github.com/square/picasso/tree/master/picasso-sample/src/main/java/com/example/picasso
   */
-public final class GridViewAdapter extends BaseAdapter {
+public final class GridViewAdapterOLD extends BaseAdapter {
     private final Context context;
-    private final List<EventTextImage> eventTextImages = new ArrayList<>();
+    private final List<EventTextImage> eventTextImages = new ArrayList<EventTextImage>();
     private Activity activity;
 
 
-    public GridViewAdapter(Activity activity, Context context, List<EventObject> events) {
+    public GridViewAdapterOLD(Activity activity, Context context, List<ESAEvent> events) {
         this.activity = activity;
         this.context = context;
 
 
-        for (EventObject event : events) {
+        for (ESAEvent e : events) {
             String imgUrl = "https://pixabay.com/static/uploads/photo/2015/03/01/11/16/all-654566_640.jpg";
-
-            List<ImageObject> images = event.getImages();
-            // TODO: fix
-            if (images != null) {
+            if (e.getImageUrls() != null) {
+                List<String> imgUrls = e.getImageUrls();
                 Random randomizer = new Random();
-                imgUrl = images.get(randomizer.nextInt(images.size())).getUrl();
+                imgUrl = imgUrls.get(randomizer.nextInt(imgUrls.size()));
             }
-            String eventTitle = event.getHeading();
+            String eventTitle = e.getEvent();
             EventTextImage eti = new EventTextImage(imgUrl, eventTitle);
 
             eventTextImages.add(eti);

@@ -22,8 +22,10 @@ import java.io.IOException;
     An activity which displays an event to the user in a tabbed layout
  */
 public class EventTabsActivity extends AppCompatActivity {
+    public static final String BUNDLE_PARAM_EVENT_ID = "eventId";
     private String event;
     private ESAEvent esaEvent;
+    private int eventId;
 
 
     @Override
@@ -37,7 +39,8 @@ public class EventTabsActivity extends AppCompatActivity {
 
         Intent i = getIntent();
         Bundle extras = i.getExtras();
-        event = extras.getString("event");
+        eventId = extras.getInt(BUNDLE_PARAM_EVENT_ID); // TODO: remove hardcode
+        event = "TMP"; // TODO: change to the real thing
 
         EventDataAsyncTask eventDataTask = new EventDataAsyncTask();
         eventDataTask.execute();
