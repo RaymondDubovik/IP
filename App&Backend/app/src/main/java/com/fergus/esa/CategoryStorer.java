@@ -2,7 +2,7 @@ package com.fergus.esa;
 
 import android.content.Context;
 
-import com.fergus.esa.dataObjects.CategoryObject;
+import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -14,6 +14,7 @@ import java.util.HashSet;
  * Date: 05.11.2015
  */
 public class CategoryStorer {
+
     private static final String KEY = "categories";
     private static final String FILENAME = "categories";
     private static final String DIR = "data";
@@ -21,6 +22,9 @@ public class CategoryStorer {
 
 
     private Context context;
+
+
+    // TODO: category object is NOT SERIALIZABLE, cant work. either create a wrapper or store as JSON!
 
     // TODO:
     // TODO:

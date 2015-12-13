@@ -26,24 +26,24 @@ import android.widget.TextView;
 import com.fergus.esa.adapters.CategoryAdapter;
 import com.fergus.esa.adapters.GridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.EsaEventEndpoint;
+import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.ESAEvent;
-import com.fergus.esa.dataObjects.CategoryObject;
+import com.fergus.esa.dataObjects.CategoryObjectWrapper;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
-
     private SlidingUpPanelLayout slidingPanel;
     private View viewListCover;
     private TextView textViewCategory;
     private ListView listViewCategories;
+    private GridView gridViewEvent;
     private SwipeRefreshLayout swipeContainer;
 
     private CategoryStorer categoryStorer;
@@ -52,19 +52,18 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        categoryStorer = new CategoryStorer(this);
 
         setContentView(R.layout.activity_main);
-
         initToolbar();
-
-        EventAsyncTask eventTask = new EventAsyncTask(true);  //can pass other variables as needed
-        eventTask.execute();
 
         listViewCategories = (ListView) findViewById(R.id.listViewCategories);
         textViewCategory = (TextView) findViewById(R.id.textViewSelectedCategory);
+        gridViewEvent = (GridView) findViewById(R.id.gridView);
 
-        fetchCategories();
+        new EventAsyncTask(true).execute();
+
+        categoryStorer = new CategoryStorer(this);
+        new CategoryAsyncTask().execute();
         handleIntent(getIntent());
     }
 
@@ -93,72 +92,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private void fetchCategories() {
-        // List<CategoryObject> categories = CategoryParser.parse(jsonObject.getJSONArray(JsonParser.PARAM_DATA));
-        List<CategoryObject> categories = new ArrayList<>();
-        categories.add(new CategoryObject(1, "Category 1"));
-        categories.add(new CategoryObject(2, "Category 2"));
-        categories.add(new CategoryObject(3, "Category 3"));
-        categories.add(new CategoryObject(4, "Category 4"));
-        categories.add(new CategoryObject(5, "Category 5"));
-        categories.add(new CategoryObject(6, "Category 6"));
-        categories.add(new CategoryObject(7, "Category 7"));
-        categories.add(new CategoryObject(8, "Category 8"));
-        categories.add(new CategoryObject(9, "Category 9"));
-        categories.add(new CategoryObject(10, "Category 10"));
-        categories.add(0, new CategoryObject(CategoryObject.ALL_CATEGORIES_ID, CategoryObject.ALL_CATEGORIES_NAME));
-
-        CategoryAdapter categoryAdapter = new CategoryAdapter(MainActivity.this, categories);
-        listViewCategories.setAdapter(categoryAdapter);
-        listViewCategories.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (listViewCategories.isItemChecked(position)) {
-                    CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
-                    categoryStorer.addCategory(category);
-                    changeCategory(category);
-                } else {
-                    CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
-                    categoryStorer.removeCategory(category);
-                    // TODO: implement
-                }
-
-                Log.d("teswt", categoryStorer.getCount() + "");
-            }
-        });
-
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        int selectedCategory = preferences.getInt(SharedPreferencesKeys.CATEGORY_ID, CategoryObject.ALL_CATEGORIES_ID);
-
-        // listViewCategories.setItemChecked(position, true);
-
-        for (CategoryObject category : categories) {
-            if (category.getId() == selectedCategory) {
-                category.getName();
-                textViewCategory.setText(category.getName());
-                break;
-            }
-        }
-
-        slidingPanel = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
-        slidingPanel.setPanelSlideListener(new SlidingPanelListener());
-        viewListCover = findViewById(R.id.viewEventListCover);
-
-        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                EventAsyncTask eventTask = new EventAsyncTask(false);  //can pass other variables as needed
-                eventTask.execute();
-            }
-        });
-
-        TypedValue typedValue = new  TypedValue();
-        getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
-        swipeContainer.setColorSchemeColors(typedValue.data);
-    }
-
-
     private void changeCategory(CategoryObject category) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         preferences.edit().putInt(SharedPreferencesKeys.CATEGORY_ID, category.getId()).apply();
@@ -176,6 +109,80 @@ public class MainActivity extends ActionBarActivity {
             Intent searchIntent = new Intent(MainActivity.this, SearchResultsActivity.class);
             searchIntent.putExtra("query", query);
             startActivity(searchIntent);
+        }
+    }
+
+
+    private class CategoryAsyncTask extends AsyncTask<Void, Void, List<CategoryObject>> {
+
+        @Override
+        protected List<CategoryObject> doInBackground(Void... voids) {
+
+            EsaEventEndpoint endpoint = new EsaEventEndpoint.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).setRootUrl(ServerUrls.ROOT_URL).build();
+            List<CategoryObject> categories;
+            try {
+                categories = endpoint.getCategories().execute().getItems();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
+
+            categories.add(0, new CategoryObject().setId(CategoryObjectWrapper.ALL_CATEGORIES_ID).setName(CategoryObjectWrapper.ALL_CATEGORIES_NAME));
+
+            return categories;
+        }
+
+
+        @Override
+        protected void onPostExecute(List<CategoryObject> categories) {
+            CategoryAdapter categoryAdapter = new CategoryAdapter(MainActivity.this, categories);
+            listViewCategories.setAdapter(categoryAdapter);
+            listViewCategories.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    if (listViewCategories.isItemChecked(position)) {
+                        CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
+                        categoryStorer.addCategory(category);
+                        changeCategory(category);
+                    } else {
+                        CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
+                        categoryStorer.removeCategory(category);
+                        // TODO: implement
+                    }
+
+                    Log.d("teswt", categoryStorer.getCount() + "");
+                }
+            });
+
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+            int selectedCategory = preferences.getInt(SharedPreferencesKeys.CATEGORY_ID, CategoryObjectWrapper.ALL_CATEGORIES_ID);
+
+            // listViewCategories.setItemChecked(position, true);
+
+            for (CategoryObject category : categories) {
+                if (category.getId() == selectedCategory) {
+                    category.getName();
+                    textViewCategory.setText(category.getName());
+                    break;
+                }
+            }
+
+            slidingPanel = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+            slidingPanel.setPanelSlideListener(new SlidingPanelListener());
+            viewListCover = findViewById(R.id.viewEventListCover);
+
+            swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+            swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    EventAsyncTask eventTask = new EventAsyncTask(false);  //can pass other variables as needed
+                    eventTask.execute();
+                }
+            });
+
+            TypedValue typedValue = new TypedValue();
+            getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
+            swipeContainer.setColorSchemeColors(typedValue.data);
         }
     }
 
@@ -223,10 +230,9 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(final List<ESAEvent> events) {
             Collections.reverse(events);
 
-            GridView gv = (GridView) findViewById(R.id.gridView);
-            gv.setAdapter(new GridViewAdapter(MainActivity.this, MainActivity.this, events));
-            gv.setOnScrollListener(new ScrollListener(MainActivity.this));
-            gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            gridViewEvent.setAdapter(new GridViewAdapter(MainActivity.this, MainActivity.this, events));
+            gridViewEvent.setOnScrollListener(new ScrollListener(MainActivity.this));
+            gridViewEvent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     String event = events.get(position).getEvent();
@@ -237,11 +243,12 @@ public class MainActivity extends ActionBarActivity {
                     startActivity(intent);
                 }
             });
+
             if (displayDialog) {
                 pd.hide();
             }
 
-            if (swipeContainer.isRefreshing()) {
+            if (swipeContainer != null && swipeContainer.isRefreshing()) {
                 swipeContainer.setRefreshing(false);
             }
         }
@@ -280,13 +287,11 @@ public class MainActivity extends ActionBarActivity {
 
 
         @Override
-        public void onPanelAnchored(View view) {
-        }
+        public void onPanelAnchored(View view) {}
 
 
         @Override
-        public void onPanelHidden(View view) {
-        }
+        public void onPanelHidden(View view) {}
     }
 }
 

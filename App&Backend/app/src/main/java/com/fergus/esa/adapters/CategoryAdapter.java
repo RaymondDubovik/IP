@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.fergus.esa.R;
-import com.fergus.esa.dataObjects.CategoryObject;
+import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;
 
 import java.util.List;
 

@@ -3,6 +3,7 @@ package com.fergus.esa.backend;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESANews;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESATweet;
+import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.UserObject;
 import com.google.api.server.spi.config.Api;
@@ -68,6 +69,24 @@ public class ESAEventEndpoint {
     @ApiMethod(name = "getEventObject")
     public List<EventObject> getEventObject() {
         return null;
+    }
+
+
+    @ApiMethod(name = "getCategories")
+    public List<CategoryObject> getCategories() {
+        List<CategoryObject> categories = new ArrayList<>();
+        categories.add(new CategoryObject().setId(1).setName("Category 1"));
+        categories.add(new CategoryObject().setId(2).setName("Category 2"));
+        categories.add(new CategoryObject().setId(3).setName("Category 3"));
+        categories.add(new CategoryObject().setId(4).setName("Category 4"));
+        categories.add(new CategoryObject().setId(5).setName("Category 5"));
+        categories.add(new CategoryObject().setId(6).setName("Category 6"));
+        categories.add(new CategoryObject().setId(7).setName("Category 7"));
+        categories.add(new CategoryObject().setId(8).setName("Category 8"));
+        categories.add(new CategoryObject().setId(9).setName("Category 9"));
+        categories.add(new CategoryObject().setId(10).setName("Category 10"));
+
+        return categories;
     }
 
 
