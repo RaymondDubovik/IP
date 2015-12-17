@@ -1,11 +1,11 @@
 package com.fergus.esa.backend;
 
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
-import com.fergus.esa.backend.OLD_DATAOBJECTS.ESANews;
-import com.fergus.esa.backend.OLD_DATAOBJECTS.ESATweet;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.ImageObject;
+import com.fergus.esa.backend.dataObjects.NewsObject;
+import com.fergus.esa.backend.dataObjects.TweetObject;
 import com.fergus.esa.backend.dataObjects.UserObject;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
@@ -33,34 +33,6 @@ import static com.fergus.esa.backend.OLD_DATAOBJECTS.OfyService.ofy;
 
 @Api(name = "esaEventEndpoint", version = "v1", namespace = @ApiNamespace(ownerDomain = "backend.esa.fergus.com", ownerName = "backend.esa.fergus.com", packagePath = ""))
 public class ESAEventEndpoint {
-
-    /*
-        Method to list events for display on the app, only lists events from the last 6 hours.
-        Older events will be accessible through a search interface
-     */
-    @ApiMethod(name = "listEvents")
-    public List<ESAEvent> listEvents() {
-        // Long minusThreeHours = System.currentTimeMillis() - 10800000;
-        List<ESAEvent> events = ofy().load().type(ESAEvent.class).order("timestamp").list();
-
-        List<String> images = new ArrayList<>();
-        images.add("http://www.gannett-cdn.com/-mm-/d186fe2344ab4f71ba561d52d784138c332b6857/c=0-177-1873-1585&r=x404&c=534x401/local/-/media/2015/02/04/USATODAY/USATODAY/635586464035076487-AFP-527752260.jpg");
-        images.add("http://www.gannett-cdn.com/-mm-/d186fe2344ab4f71ba561d52d784138c332b6857/c=0-177-1873-1585&r=x404&c=534x401/local/-/media/2015/02/04/USATODAY/USATODAY/635586464035076487-AFP-527752260.jpg");
-
-        List<ESANews> news = new ArrayList<>();
-        news.add(new ESANews());
-        List<String> summaries = new ArrayList<>();
-        summaries.add("summ1");
-        summaries.add("summ2");
-        List<ESATweet> tweets = new ArrayList<>();
-        tweets.add(new ESATweet());
-
-        events.add(new ESAEvent().setEvent("TestEvent").setImageUrls(images).setNews(news).setSummaries(summaries).setTimestamp(111111111111L).setTweets(tweets));
-
-        return events;
-    }
-
-
     @ApiMethod(name = "getUserObject")
     public List<UserObject> getUserObject() {
         return null;
@@ -69,6 +41,7 @@ public class ESAEventEndpoint {
 
     @ApiMethod(name = "getEvents")
     public List<EventObject> getEvents(@Named("from") int from, @Named("to") int to) {
+        // TODO: supply random /first image here
         ImageObject image = new ImageObject().setUrl("http://www.gannett-cdn.com/-mm-/d186fe2344ab4f71ba561d52d784138c332b6857/c=0-177-1873-1585&r=x404&c=534x401/local/-/media/2015/02/04/USATODAY/USATODAY/635586464035076487-AFP-527752260.jpg");
         ImageObject image2 = new ImageObject().setUrl("http://vantage-uk.com/wp-content/uploads/2013/03/breakingnews1.jpg");
         List<ImageObject> images = new ArrayList<>();
@@ -105,6 +78,45 @@ public class ESAEventEndpoint {
     }
 
 
+    @ApiMethod(name="getTweets")
+    public List<TweetObject> getTweets(@Named("eventId") int id, @Named("from") int from, @Named("to") int to) {
+        List<TweetObject> tweets = new ArrayList<>();
+        tweets.add(new TweetObject().setId(1).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
+        tweets.add(new TweetObject().setId(2).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
+        tweets.add(new TweetObject().setId(3).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
+        tweets.add(new TweetObject().setId(4).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
+        tweets.add(new TweetObject().setId(5).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
+
+        return tweets;
+    }
+
+
+    @ApiMethod(name="getImages")
+    public List<ImageObject> getImages(@Named("eventId") int id) {
+        List<ImageObject> tweets = new ArrayList<>();
+        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+
+        return tweets;
+    }
+
+
+    @ApiMethod(name="getNews")
+    public List<NewsObject> getNews(@Named("eventId") int id) {
+        List<NewsObject> tweets = new ArrayList<>();
+        tweets.add(new NewsObject().setId(1).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(2).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(3).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(4).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(5).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+
+        return tweets;
+    }
+
+
     @ApiMethod(name = "listSearchedEvents")
     public List<ESAEvent> listSearchedEvents(@Named("query") String query) {
 
@@ -118,7 +130,6 @@ public class ESAEventEndpoint {
             matchingEvent.setEvent(se.getEvent() + "esaseparator" + se.getScore());
             events.add(matchingEvent);
         }
-
 
         return events;
     }
