@@ -48,3 +48,4 @@ local.properties
 
 
 App&Backend/backend/build/*
+*.log
