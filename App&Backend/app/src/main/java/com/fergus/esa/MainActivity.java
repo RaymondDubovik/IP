@@ -25,12 +25,9 @@ import android.widget.TextView;
 
 import com.fergus.esa.adapters.CategoryAdapter;
 import com.fergus.esa.adapters.GridViewAdapter;
-import com.fergus.esa.backend.esaEventEndpoint.EsaEventEndpoint;
 import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
 import com.fergus.esa.dataObjects.CategoryObjectWrapper;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.IOException;
@@ -104,7 +101,6 @@ public class MainActivity extends ActionBarActivity {
 
 
     private class EventAsyncTask extends AsyncTask<Void, Void, List<EventObject>> {
-        private EsaEventEndpoint endpoint = null;
         private ProgressDialog pd;
         private boolean displayDialog;
 
@@ -127,12 +123,8 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected List<EventObject> doInBackground(Void... voids) {
-            if (endpoint == null) {  // Only do this once
-                endpoint = new EsaEventEndpoint.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).setRootUrl(ServerUrls.ROOT_URL).build();
-            }
-
             try {
-                return endpoint.getEvents(0, 10).execute().getItems(); // TODO: change
+                return ServerUrls.endpoint.getEvents(0, 10).execute().getItems(); // TODO: change
             } catch (IOException e) {
                 e.printStackTrace();
                 return Collections.EMPTY_LIST;
@@ -150,9 +142,9 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     int eventId = events.get(position).getId();
-                    Intent intent = new Intent(MainActivity.this, EventTabsActivity.class);
+                    Intent intent = new Intent(MainActivity.this, EventActivity.class);
                     Bundle extras = new Bundle();
-                    extras.putInt(EventTabsActivity.BUNDLE_PARAM_EVENT_ID , eventId);
+                    extras.putInt(EventActivity.BUNDLE_PARAM_EVENT_ID , eventId);
                     intent.putExtras(extras);
                     startActivity(intent);
                 }
@@ -172,11 +164,9 @@ public class MainActivity extends ActionBarActivity {
     private class CategoryAsyncTask extends AsyncTask<Void, Void, List<CategoryObject>> {
         @Override
         protected List<CategoryObject> doInBackground(Void... voids) {
-
-            EsaEventEndpoint endpoint = new EsaEventEndpoint.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).setRootUrl(ServerUrls.ROOT_URL).build();
             List<CategoryObject> categories;
             try {
-                categories = endpoint.getCategories().execute().getItems();
+                categories = ServerUrls.endpoint.getCategories().execute().getItems();
             } catch (IOException e) {
                 e.printStackTrace();
                 return Collections.emptyList();

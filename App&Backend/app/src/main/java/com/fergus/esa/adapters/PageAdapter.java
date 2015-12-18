@@ -9,12 +9,12 @@ import com.fergus.esa.fragments.SummaryFragment;
 import com.fergus.esa.fragments.TweetFragment;
 
 public class PageAdapter extends FragmentStatePagerAdapter {
-    int mNumOfTabs;
+    int tabCount;
 
 
-    public PageAdapter(FragmentManager fm, int NumOfTabs) {
+    public PageAdapter(FragmentManager fm, int tabCount) {
         super(fm);
-        this.mNumOfTabs = NumOfTabs;
+        this.tabCount = tabCount;
     }
 
 
@@ -38,6 +38,6 @@ public class PageAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        return mNumOfTabs;
+        return tabCount;
     }
 }

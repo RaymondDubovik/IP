@@ -11,20 +11,22 @@ import android.widget.TextView;
 
 import com.fergus.esa.R;
 import com.fergus.esa.backend.esaEventEndpoint.model.ESATweet;
+import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
-public class TweetListAdapter extends ArrayAdapter<ESATweet> {
+public class TweetListAdapter extends ArrayAdapter<TweetObject> {
     private final Context context;
-    private List<ESATweet> tweets;
-    private List<ESATweet> allTweets;
+    private List<TweetObject> tweets;
+    private List<TweetObject> allTweets;
     private Filter searchFilter;
 
 
-    public TweetListAdapter(Context context, List<ESATweet> tweets) {
+    public TweetListAdapter(Context context, List<TweetObject> tweets) {
         super(context, R.layout.tweet_row, tweets);
         this.context = context;
         this.tweets = tweets;
@@ -37,7 +39,7 @@ public class TweetListAdapter extends ArrayAdapter<ESATweet> {
     }
 
 
-    public ESATweet getTweet(int position) {
+    public TweetObject getTweet(int position) {
         return tweets.get(position);
     }
 
@@ -69,7 +71,7 @@ public class TweetListAdapter extends ArrayAdapter<ESATweet> {
         }
 
         // update the item view
-        ESATweet item = getItem(position);
+        TweetObject item = getItem(position);
         Picasso.with(context) //
                 .load(item.getProfileImgUrl()) //
                 .placeholder(R.drawable.placeholder) //
@@ -77,10 +79,10 @@ public class TweetListAdapter extends ArrayAdapter<ESATweet> {
                 .tag(context)//
                 .into(viewHolder.userImage);
 
-        String user = (item.getUsername() + " · @" + item.getScreenname());
+        String user = (item.getUsername() + " · @" + item.getScreenName());
         viewHolder.tweetUser.setText(user);
         viewHolder.tweetText.setText(item.getText());
-        viewHolder.tweetDate.setText(item.getDate());
+        viewHolder.tweetDate.setText(new Date().toString()); // TODO: fix this one! item.getTimestamp().toString()
 
         return convertView;
     }
@@ -139,7 +141,7 @@ public class TweetListAdapter extends ArrayAdapter<ESATweet> {
             if (results.count == 0)
                 notifyDataSetInvalidated();
             else {
-                tweets = (List<ESATweet>) results.values;
+                tweets = (List<TweetObject>) results.values;
                 notifyDataSetChanged();
             }
         }

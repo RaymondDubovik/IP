@@ -1,7 +1,6 @@
 package com.fergus.esa.fragments;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -13,11 +12,10 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.fergus.esa.EventTabsActivity;
+import com.fergus.esa.EventActivity;
 import com.fergus.esa.R;
 import com.fergus.esa.adapters.TweetListAdapter;
-import com.fergus.esa.backend.esaEventEndpoint.model.ESAEvent;
-import com.fergus.esa.backend.esaEventEndpoint.model.ESATweet;
+import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,50 +26,48 @@ import java.util.List;
  */
 
 public class TweetFragment extends Fragment {
-    private Context context;
-    private List<ESATweet> tweets;
-    AlertDialog ad;
-    TweetListAdapter tla;
+    private EditText editTextSearch;
+    private List<TweetObject> tweets;
+    private AlertDialog alertDialog;
+    private TweetListAdapter adapter;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         retrieveTweets();
 
         View view = inflater.inflate(R.layout.tweet_fragment, container, false);
 
-
         ListView lv = (ListView) view.findViewById(R.id.tweetList);
 
-        tla = new TweetListAdapter(getActivity(), tweets);
+        adapter = new TweetListAdapter(getActivity(), tweets);
 
-        lv.setAdapter(tla);
+        lv.setAdapter(adapter);
         lv.setTextFilterEnabled(true);
 
-        final EditText searchText = (EditText) view.findViewById(R.id.searchText);
+        editTextSearch = (EditText) view.findViewById(R.id.searchText);
 
-        searchText.setOnTouchListener(new View.OnTouchListener() {
+        editTextSearch.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                searchText.setHint("");
+                editTextSearch.setHint("");
                 return false;
             }
 
         });
 
-        searchText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        editTextSearch.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    searchText.setHint(R.string.tweet_search_hint);
+                    editTextSearch.setHint(R.string.tweet_search_hint);
                 }
             }
         });
 
-        searchText.addTextChangedListener(new TextWatcher() {
+        editTextSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -82,10 +78,10 @@ public class TweetFragment extends Fragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (count < before) {
                     // We're deleting char so we need to reset the adapter data
-                    tla.resetTweets();
+                    adapter.resetTweets();
                 }
 
-                tla.getFilter().filter(s.toString());
+                adapter.getFilter().filter(s.toString());
             }
 
 
@@ -101,14 +97,9 @@ public class TweetFragment extends Fragment {
 
 
     public void retrieveTweets() {
-        EventTabsActivity eta = ((EventTabsActivity) getActivity());
+        EventActivity activity = ((EventActivity) getActivity());
 
-        context = eta.getBaseContext();
-
-        ESAEvent esaEvent = eta.getESAEvent();
-
-
-        tweets = esaEvent.getTweets();
+        tweets = activity.getTweets();
 
         if (tweets != null) {
             Collections.reverse(tweets);

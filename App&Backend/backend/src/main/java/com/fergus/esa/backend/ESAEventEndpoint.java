@@ -5,6 +5,7 @@ import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.ImageObject;
 import com.fergus.esa.backend.dataObjects.NewsObject;
+import com.fergus.esa.backend.dataObjects.SummaryObject;
 import com.fergus.esa.backend.dataObjects.TweetObject;
 import com.fergus.esa.backend.dataObjects.UserObject;
 import com.google.api.server.spi.config.Api;
@@ -42,7 +43,7 @@ public class ESAEventEndpoint {
     @ApiMethod(name = "getEvents")
     public List<EventObject> getEvents(@Named("from") int from, @Named("to") int to) {
         // TODO: supply random /first image here
-        ImageObject image = new ImageObject().setUrl("http://www.gannett-cdn.com/-mm-/d186fe2344ab4f71ba561d52d784138c332b6857/c=0-177-1873-1585&r=x404&c=534x401/local/-/media/2015/02/04/USATODAY/USATODAY/635586464035076487-AFP-527752260.jpg");
+        ImageObject image = new ImageObject().setUrl("http://staging.mediawales.co.uk/_files/images//jun_10/mw__1276511479_News_Image.jpg");
         ImageObject image2 = new ImageObject().setUrl("http://vantage-uk.com/wp-content/uploads/2013/03/breakingnews1.jpg");
         List<ImageObject> images = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
@@ -50,7 +51,7 @@ public class ESAEventEndpoint {
             images.add(image2);
         }
 
-        EventObject event = new EventObject().setId(from + to).setImages(images).setHeading("Some title");
+        EventObject event = new EventObject().setId(from + to).setImages(images).setHeading("Event title");
         List<EventObject> events = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             events.add(event);
@@ -107,13 +108,33 @@ public class ESAEventEndpoint {
     @ApiMethod(name="getNews")
     public List<NewsObject> getNews(@Named("eventId") int id) {
         List<NewsObject> tweets = new ArrayList<>();
-        tweets.add(new NewsObject().setId(1).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(2).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(3).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(4).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(5).setTitle("Breaking news").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(1).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(2).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(3).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(4).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(5).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(6).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(7).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(8).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
+        tweets.add(new NewsObject().setId(9).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
 
         return tweets;
+    }
+
+
+    @ApiMethod(name="getSummaries")
+    public List<SummaryObject> getSummaries(@Named("eventId") int id) {
+        List<SummaryObject> summaries = new ArrayList<>();
+        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
+        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
+        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
+        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
+        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
+        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
+        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
+        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
+
+        return summaries;
     }
 
 

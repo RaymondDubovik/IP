@@ -118,7 +118,7 @@ public class SearchResultsActivity extends ActionBarActivity {
                         String eventString = events.get(position).getEvent();
                         String[] eventWithScore = eventString.split("esaseparator");
                         String event = eventWithScore[0];
-                        Intent intent = new Intent(SearchResultsActivity.this, EventTabsActivity.class);
+                        Intent intent = new Intent(SearchResultsActivity.this, EventActivity.class);
                         Bundle extras = new Bundle();
                         extras.putString("event", event);
                         intent.putExtras(extras);

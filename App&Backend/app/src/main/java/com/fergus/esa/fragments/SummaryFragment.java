@@ -1,6 +1,5 @@
 package com.fergus.esa.fragments;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -9,14 +8,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListView;
 
-import com.fergus.esa.dataObjects.ESASummary;
-import com.fergus.esa.EventTabsActivity;
+import com.fergus.esa.EventActivity;
 import com.fergus.esa.R;
 import com.fergus.esa.adapters.SummaryListAdapter;
-import com.fergus.esa.backend.esaEventEndpoint.model.ESAEvent;
+import com.fergus.esa.backend.esaEventEndpoint.model.ImageObject;
+import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObject;
+import com.fergus.esa.dataObjects.ESASummary;
 import com.squareup.picasso.Picasso;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,20 +27,14 @@ import java.util.Random;
 import static android.widget.ImageView.ScaleType.CENTER_CROP;
 
 public class SummaryFragment extends Fragment {
-    private Context context;
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.summary_fragment, container, false);
 
+        EventActivity activity = ((EventActivity) getActivity());
 
-        EventTabsActivity eta = ((EventTabsActivity) getActivity());
-
-        ESAEvent esaEvent = eta.getESAEvent();
-
-        List<String> summaries = esaEvent.getSummaries();
+        List<SummaryObject> summaries = activity.getSummaries();
 
         List<ESASummary> summaryObjects = getSummaryObjects(summaries);
 
@@ -51,25 +44,24 @@ public class SummaryFragment extends Fragment {
         ImageView iv = (ImageView) view.findViewById(R.id.imageView);
 
         if (iv == null) {
-            iv = new ImageView(context);
+            iv = new ImageView(activity);
             iv.setScaleType(CENTER_CROP);
         }
 
+
         String imgUrl = "https://pixabay.com/static/uploads/photo/2015/03/01/11/16/all-654566_640.jpg";
-        if (esaEvent.getImageUrls() != null) {
-            List<String> imgUrls = esaEvent.getImageUrls();
-            Random randomizer = new Random();
-            imgUrl = imgUrls.get(randomizer.nextInt(imgUrls.size()));
+        List<ImageObject> images = activity.getImages();
+        if (images != null) {
+            imgUrl = images.get(new Random().nextInt(images.size())).getUrl();
         }
 
         // Trigger the download of the URL asynchronously into the image view.
-        Picasso.with(eta) //
-                .load(imgUrl) //
+        Picasso.with(activity)
+                .load(imgUrl)
                 .placeholder(R.drawable.placeholder)
-                .fit() //
-                .tag(eta)//
+                .fit()
+                .tag(activity)
                 .into(iv);
-
 
         ListView lv = (ListView) view.findViewById(R.id.summaries);
 
@@ -79,13 +71,25 @@ public class SummaryFragment extends Fragment {
     }
 
 
-    public List<ESASummary> getSummaryObjects(List<String> summaries) {
+    public List<ESASummary> getSummaryObjects(List<SummaryObject> summaries) {
+        if (summaries == null) {
+            return null;
+        }
+
         SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.UK);
         List<ESASummary> summaryObjects = new ArrayList<>();
 
-        for (String sum : summaries) {
+        for (SummaryObject summary : summaries) {
+
+            ESASummary sumObj = new ESASummary(summary.getText(), new Date()); // TODO: change date (also in DB design too) !!!!!!
+            summaryObjects.add(sumObj);
+
+
+            // TODO: this code needs to be run in different part of the project (before data enters the database)
+            /*
+            String sum = summary.getText();
             if (!sum.startsWith("esaseparator")) {
-                String sumText = "";
+                String sumText;
                 Date sumDate = new Date();
 
                 String[] sumArray = sum.split("esaseparator");
@@ -101,8 +105,8 @@ public class SummaryFragment extends Fragment {
 
                 ESASummary sumObj = new ESASummary(sumText, sumDate);
                 summaryObjects.add(sumObj);
-
             }
+            */
         }
 
         return summaryObjects;
