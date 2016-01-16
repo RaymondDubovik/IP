@@ -41,6 +41,7 @@ dependencies {
     compile 'com.sun.jersey:jersey-client:1.19'
     compile 'com.sun.jersey:jersey-core:1.19'
     compile files('libs/opennlp-tools-1.6.0.jar')
+    compile 'mysql:mysql-connector-java:5.1.38'
 }
 
 appengine {

@@ -1,4 +1,4 @@
-package com.fergus.esa.backend.SQLiteHelpers;
+package com.fergus.esa.backend.MySQLHelpers;
 
 import java.sql.Connection;
 

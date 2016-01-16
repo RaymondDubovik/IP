@@ -1,4 +1,4 @@
-package com.fergus.esa.backend.SQLiteHelpers;
+package com.fergus.esa.backend.MySQLHelpers;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -12,87 +12,87 @@ import java.sql.Statement;
 public class SchemaCreator {
     private static final String queryCategories =
         "CREATE TABLE IF NOT EXISTS `categories` (" +
-            "`id` INTEGER PRIMARY KEY," +
-            "`name` INTEGER" +
+            "`id` INT PRIMARY KEY," +
+            "`name` INT" +
         ")";
 
     private static final String queryEvents =
         "CREATE TABLE IF NOT EXISTS `events` (" +
-            "`id` INTEGER PRIMARY KEY," +
-            "`timestamp` INTEGER, " +
-            "`heading` TEXT" +
+            "`id` INT PRIMARY KEY," +
+            "`timestamp` INT, " +
+            "`heading` VARCHAR(255)" +
         ")";
 
     private static final String queryImages =
         "CREATE TABLE IF NOT EXISTS `images` (" +
-            "`url` TEXT," +
-            "`eventId` INTEGER" +
+            "`url` VARCHAR(400)," +
+            "`eventId` INT" +
         ")";
 
     private static final String queryNews =
         "CREATE TABLE IF NOT EXISTS `news` (" +
-            "`id` INTEGER PRIMARY KEY," +
-            "`title` TEXT," +
-            "`url` TEXT," +
-            "`logoUrl` TEXT," +
-            "`timestamp` INTEGER" +
+            "`id` INT PRIMARY KEY," +
+            "`title` VARCHAR(255)," +
+            "`url` VARCHAR(400)," +
+            "`logoUrl` VARCHAR(400)," +
+            "`timestamp` DATETIME" +
         ")";
 
     private static final String queryTweets =
         "CREATE TABLE IF NOT EXISTS `tweets` (" +
-            "`id` INTEGER PRIMARY KEY," +
-            "`username` TEXT," +
-            "`screenName` TEXT," +
-            "`profileImgUrl` TEXT," +
-            "`imageUrl` INTEGER," +
+            "`id` INT PRIMARY KEY," +
+            "`username` VARCHAR(15)," +
+            "`screenName` VARCHAR(40)," +
+            "`profileImgUrl` VARCHAR(400)," +
+            "`imageUrl` INT," +
             "`text` TEXT," +
-            "`timestamp` INTEGER" +
+            "`timestamp` DATETIME" +
         ")";
 
     private static final String queryUsers =
         "CREATE TABLE IF NOT EXISTS `users` (" +
-            "`id` INTEGER PRIMARY KEY," +
-            "`gcmToken` TEXT" +
+            "`id` INT PRIMARY KEY," +
+            "`gcmToken` VARCHAR(500)" +
         ")";
 
     private static final String querySummaries =
         "CREATE TABLE IF NOT EXISTS `summaries` (" +
-                "`length` INTEGER," +
-                "`text` INTEGER," +
+                "`length` INT," +
+                "`text` INT" +
             ")";
 
     private static final String queryEventsUsers =
         "CREATE TABLE IF NOT EXISTS `eventsUsers` (" +
-            "`userId` INTEGER REFERENCES `users`(`id`)" +
-            "`eventId` INTEGER REFERENCES `events`(`id`)," +
-            "`hits` INTEGER DEFAULT 0" +
-            "`time` INTEGER DEFAULT 0" +
+            "`userId` INT REFERENCES `users`(`id`)," +
+            "`eventId` INT REFERENCES `events`(`id`)," +
+            "`hits` INT DEFAULT 0," +
+            "`time` INT DEFAULT 0" +
         ")";
 
     private static final String queryEventsCategories =
         "CREATE TABLE IF NOT EXISTS `eventsCategories` (" +
-            "`categoryId` INTEGER REFERENCES `categories`(`id`)" +
-            "`eventId` INTEGER REFERENCES `events`(`id`)," +
+            "`categoryId` INT REFERENCES `categories`(`id`)," +
+            "`eventId` INT REFERENCES `events`(`id`)" +
         ")";
 
-    private static final String queryForeignKeyNews = "ALTER TABLE `news` ADD COLUMN `eventId` INTEGER REFERENCES `events`(`id`);";
+    private static final String queryForeignKeyNews = "ALTER TABLE `news` ADD COLUMN `eventId` INT REFERENCES `events`(`id`);";
 
-    private static final String queryForeignKeyTweets = "ALTER TABLE `tweets` ADD COLUMN `eventId` INTEGER REFERENCES `events`(`id`);";
+    private static final String queryForeignKeyTweets = "ALTER TABLE `tweets` ADD COLUMN `eventId` INT REFERENCES `events`(`id`);";
 
-    private static final String queryForeignKeySummaries = "ALTER TABLE `summaries` ADD COLUMN `eventId` INTEGER REFERENCES `events`(`id`);";
+    private static final String queryForeignKeySummaries = "ALTER TABLE `summaries` ADD COLUMN `eventId` INT REFERENCES `events`(`id`);";
 
-    private static final String queryForeignKeyCategories = "ALTER TABLE `events` ADD COLUMN `eventId` INTEGER REFERENCES `events`(`id`);";
+    private static final String queryForeignKeyCategories = "ALTER TABLE `events` ADD COLUMN `eventId` INT REFERENCES `events`(`id`);";
 
-    private static final String queryDropTableEvents = "DROP TABLE `events`";
-    private static final String queryDropTableCategories = "DROP TABLE `events`";
-    private static final String queryDropTableNews = "DROP TABLE `events`";
-    private static final String queryDropTableTweets = "DROP TABLE `events`";
-    private static final String queryDropTableUsers = "DROP TABLE `events`";
-    private static final String queryDropTableImages = "DROP TABLE `events`";
-    private static final String queryDropTableSummaries = "DROP TABLE `events`";
+    private static final String queryDropTableEvents = "DROP TABLE IF EXISTS `events`";
+    private static final String queryDropTableCategories = "DROP TABLE IF EXISTS `categories`";
+    private static final String queryDropTableNews = "DROP TABLE IF EXISTS `news`";
+    private static final String queryDropTableTweets = "DROP TABLE IF EXISTS `tweets`";
+    private static final String queryDropTableUsers = "DROP TABLE IF EXISTS `users`";
+    private static final String queryDropTableImages = "DROP TABLE IF EXISTS `images`";
+    private static final String queryDropTableSummaries = "DROP TABLE IF EXISTS `summaries`";
 
-    private static final String queryDropEventsUsers = "DROP TABLE `eventUsers`";
-    private static final String queryDropEventsCategories = "DROP TABLE `eventCategories`";
+    private static final String queryDropEventsUsers = "DROP TABLE IF EXISTS `eventsUsers`";
+    private static final String queryDropEventsCategories = "DROP TABLE IF EXISTS `eventsCategories`";
 
 
     public void create(Connection connection) throws SQLException {
