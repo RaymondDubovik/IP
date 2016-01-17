@@ -2,6 +2,7 @@ package com.fergus.esa.backend;
 
 import com.fergus.esa.backend.MySQLHelpers.CategoryHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
+import com.fergus.esa.backend.MySQLHelpers.SchemaCreator;
 import com.fergus.esa.backend.MySQLHelpers.UserHelper;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
@@ -26,6 +27,7 @@ import com.google.appengine.api.search.SearchServiceFactory;
 import com.google.appengine.api.search.SortOptions;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,18 +40,27 @@ import static com.fergus.esa.backend.OLD_DATAOBJECTS.OfyService.ofy;
 
 @Api(name = "esaEventEndpoint", version = "v1", namespace = @ApiNamespace(ownerDomain = "backend.esa.fergus.com", ownerName = "backend.esa.fergus.com", packagePath = ""))
 public class ESAEventEndpoint {
-    private Connection conn;
+    private Connection connection;
 
     public ESAEventEndpoint() {
-        conn = (new MySQLJDBC()).getConnection();
-        /*
+        connection = (new MySQLJDBC()).getConnection();
+
         try {
-            new SchemaCreator().drop(conn);
-            new SchemaCreator().create(conn);
+            SchemaCreator schemaCreator = new SchemaCreator();
+            schemaCreator.drop(connection);
+            schemaCreator.create(connection);
+            schemaCreator.populate(connection);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        */
+    }
+
+
+    @ApiMethod(name = "registerGcmToken")
+    public UserObject registerGcmToken(@Named("gcmToken") String gcmToken) {
+        // TODO: check, if token is not duplicate here
+
+        return new UserHelper(connection).createUser(gcmToken);
     }
 
 
@@ -60,7 +71,7 @@ public class ESAEventEndpoint {
 
 
     @ApiMethod(name = "getEvents")
-public List<EventObject> getEvents(@Named("from") int from, @Named("to") int to) {
+    public List<EventObject> getEvents(@Named("from") int from, @Named("to") int to) {
         // TODO: supply random /first image here
         ImageObject image = new ImageObject().setUrl("http://staging.mediawales.co.uk/_files/images//jun_10/mw__1276511479_News_Image.jpg");
         ImageObject image2 = new ImageObject().setUrl("http://vantage-uk.com/wp-content/uploads/2013/03/breakingnews1.jpg");
@@ -82,10 +93,7 @@ public List<EventObject> getEvents(@Named("from") int from, @Named("to") int to)
 
     @ApiMethod(name = "getCategories")
     public List<CategoryObject> getCategories() {
-        UserObject userObject = new UserHelper(conn).getUser(2);
-        System.out.println(userObject);
-
-        return new CategoryHelper(conn).getCategories();
+        return new CategoryHelper(connection).getCategories();
     }
 
 

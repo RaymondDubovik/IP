@@ -12,14 +12,14 @@ import java.sql.Statement;
 public class SchemaCreator {
     private static final String queryCategories =
         "CREATE TABLE IF NOT EXISTS `categories` (" +
-            "`id` INT PRIMARY KEY," +
+            "`id` INT PRIMARY KEY AUTO_INCREMENT," +
             "`name` VARCHAR(60)" +
         ")";
 
     private static final String queryEvents =
         "CREATE TABLE IF NOT EXISTS `events` (" +
-            "`id` INT PRIMARY KEY," +
-            "`timestamp` INT, " +
+            "`id` INT PRIMARY KEY AUTO_INCREMENT," +
+            "`timestamp` DATETIME, " +
             "`heading` VARCHAR(255)" +
         ")";
 
@@ -31,7 +31,7 @@ public class SchemaCreator {
 
     private static final String queryNews =
         "CREATE TABLE IF NOT EXISTS `news` (" +
-            "`id` INT PRIMARY KEY," +
+            "`id` INT PRIMARY KEY AUTO_INCREMENT," +
             "`title` VARCHAR(255)," +
             "`url` VARCHAR(400)," +
             "`logoUrl` VARCHAR(400)," +
@@ -40,7 +40,7 @@ public class SchemaCreator {
 
     private static final String queryTweets =
         "CREATE TABLE IF NOT EXISTS `tweets` (" +
-            "`id` INT PRIMARY KEY," +
+            "`id` INT PRIMARY KEY AUTO_INCREMENT," +
             "`username` VARCHAR(15)," +
             "`screenName` VARCHAR(40)," +
             "`profileImgUrl` VARCHAR(400)," +
@@ -51,7 +51,7 @@ public class SchemaCreator {
 
     private static final String queryUsers =
         "CREATE TABLE IF NOT EXISTS `users` (" +
-            "`id` INT PRIMARY KEY," +
+            "`id` INT PRIMARY KEY AUTO_INCREMENT," +
             "`gcmToken` VARCHAR(500)" +
         ")";
 
@@ -300,6 +300,18 @@ public class SchemaCreator {
     private void addForeignKeysCategories(Connection connection) throws SQLException {
         Statement statement = connection.createStatement();
         statement.executeUpdate(queryForeignKeyCategories);
+        statement.close();
+    }
+
+
+    public void populate(Connection connection) throws SQLException {
+        String query = "INSERT INTO `categories` (`name`) VALUES ('Category 1'),('Category 2'),('Category 3'),('Category 4'),('Category 5'),('Category 6'),('Category 7')";
+        executeUpdateQuery(connection, query);
+    }
+
+    private void executeUpdateQuery(Connection connection, String query) throws SQLException {
+        Statement statement = connection.createStatement();
+        statement.executeQuery(query);
         statement.close();
     }
 }
