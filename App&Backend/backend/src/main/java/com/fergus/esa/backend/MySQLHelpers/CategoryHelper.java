@@ -1,41 +1,49 @@
 package com.fergus.esa.backend.MySQLHelpers;
 
-import com.fergus.esa.backend.dataObjects.UserObject;
+import com.fergus.esa.backend.dataObjects.CategoryObject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Author: svchosta (https://github.com/svchosta)
- * Date: 15.01.2016
+ * Date: 16.01.2016
  */
-public class UserHelper {
+public class CategoryHelper {
     private Connection conn;
 
 
-    public UserHelper(Connection conn) {
+    public CategoryHelper(Connection conn) {
         this.conn = conn;
     }
 
 
-    public UserObject getUser(int id) {
+    public List<CategoryObject> getCategories() {
         PreparedStatement statement = null;
         ResultSet results = null;
 
         String query =
-                "SELECT `id`, `gcmToken`" +
-                    " FROM `users`" +
-                    " WHERE `id` = ?";
+                "SELECT `id`, `name`" +
+                        " FROM `categories`" +
+                        " ORDER BY `name`";
 
         try {
             statement = conn.prepareStatement(query);
-            statement.setInt(1, id);
+
+            ArrayList<CategoryObject> categories = new ArrayList<>();
             results = statement.executeQuery();
-            if (results.isBeforeFirst()) {
-                return new UserObject().setId(results.getInt("id")).setGcmToken(results.getString("gcmToken"));
+            while (results.next()) {
+                categories.add(new CategoryObject()
+                        .setId(results.getInt("id"))
+                        .setName(results.getString("name"))
+                );
             }
+
+            return categories;
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

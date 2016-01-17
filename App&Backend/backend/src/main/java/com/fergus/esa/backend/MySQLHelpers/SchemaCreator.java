@@ -13,7 +13,7 @@ public class SchemaCreator {
     private static final String queryCategories =
         "CREATE TABLE IF NOT EXISTS `categories` (" +
             "`id` INT PRIMARY KEY," +
-            "`name` INT" +
+            "`name` VARCHAR(60)" +
         ")";
 
     private static final String queryEvents =
