@@ -24,11 +24,16 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.fergus.esa.R;
+import com.fergus.esa.ServerUrls;
+import com.fergus.esa.SharedPreferencesKeys;
+import com.fergus.esa.backend.esaEventEndpoint.model.UserObject;
+import com.fergus.esa.dataObjects.UserObjectWrapper;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
+import java.io.IOException;
+
 public class RegistrationIntentService extends IntentService {
-    public static final String PUSH_TOKEN = "push_token";
     private static final String REGISTRATION_COMPLETE = "registrationComplete";
 
     private static final String TAG = "RegIntentService";
@@ -44,17 +49,35 @@ public class RegistrationIntentService extends IntentService {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         try {
-            // In the (unlikely) event that multiple refresh operations occur simultaneously,
-            // ensure that they are processed sequentially.
+            // In the (unlikely) event that multiple refresh operations occur simultaneously, ensure that they are processed sequentially.
             synchronized (TAG) {
                 InstanceID instanceID = InstanceID.getInstance(this);
                 String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId), GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
 
-                sharedPreferences.edit().putString(PUSH_TOKEN, token).apply();
-                Log.d(TAG, "Token:" + token);
+                if (!token.equals(sharedPreferences.getString(SharedPreferencesKeys.GCM_TOKEN, null))) {
+                    int userId = sharedPreferences.getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
+
+                    if (userId == UserObjectWrapper.NO_USER_ID) {
+                        try {
+                            UserObject user = ServerUrls.endpoint.registerGcmToken(token).execute();
+                            sharedPreferences.edit().putInt(SharedPreferencesKeys.USER_ID, user.getId());
+                            sharedPreferences.edit().putString(SharedPreferencesKeys.GCM_TOKEN, token).apply();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        try {
+                            ServerUrls.endpoint.updateGcmToken(userId, token).execute();
+                            // TODO: verify, that the server updated the token
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                Log.d(TAG, "GCM token:" + token);
             }
         } catch (Exception e) {
-            sharedPreferences.edit().putString(PUSH_TOKEN, null).apply();
+            sharedPreferences.edit().putString(SharedPreferencesKeys.GCM_TOKEN, null).apply();
             Log.d(TAG, "Failed to complete token refresh", e);
         }
 

@@ -28,6 +28,9 @@ import com.fergus.esa.adapters.GridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
 import com.fergus.esa.dataObjects.CategoryObjectWrapper;
+import com.fergus.esa.pushNotifications.RegistrationIntentService;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.IOException;
@@ -63,6 +66,7 @@ public class MainActivity extends ActionBarActivity {
         new CategoryAsyncTask().execute();
 
         handleIntent(getIntent());
+        gcmRegister();
     }
 
 
@@ -280,6 +284,26 @@ public class MainActivity extends ActionBarActivity {
             searchIntent.putExtra("query", query);
             startActivity(searchIntent);
         }
+    }
+
+
+    private void gcmRegister() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, 9000)
+                        .show();
+            } else {
+                Log.i("", "This device is not supported.");
+                finish();
+            }
+            return;
+        }
+
+        // Start IntentService to register this application with GCM.
+        Intent intent = new Intent(this, RegistrationIntentService.class);
+        startService(intent);
     }
 }
 
