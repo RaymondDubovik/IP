@@ -6,7 +6,4 @@
     <string name="tweet_search_hint">Filter tweets…</string>
     <string name="recent">Recent Events</string>
     <string name="search">Search</string>
-
-    <!-- GCM sender ID -->
-    <string name="gcm_defaultSenderId">401270454784</string>
 </resources>

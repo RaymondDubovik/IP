@@ -22,7 +22,7 @@ android {
 dependencies {
     // compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.google.android.gms:play-services-gcm:8.3.0'
+    compile 'com.google.android.gms:play-services-gcm:8.4.0'
     compile 'com.android.support:design:23.1.1'
     compile 'com.sothree.slidinguppanel:library:3.2.1'
     compile project(path: ':backend', configuration: 'android-endpoints')
@@ -30,3 +30,5 @@ dependencies {
     compile files('libs/Classifier4J-0.6.jar')
     compile 'com.google.code.gson:gson:2.4'
 }
+
+apply plugin: 'com.google.gms.google-services'
