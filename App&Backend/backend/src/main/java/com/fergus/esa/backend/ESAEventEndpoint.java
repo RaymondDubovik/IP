@@ -56,14 +56,14 @@ public class ESAEventEndpoint {
     }
 
 
-    @ApiMethod(name = "registerGcmToken")
+    @ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name = "registerGcmToken")
     public UserObject registerGcmToken(@Named("gcmToken") String gcmToken) {
         // TODO: check, if token is unique (in the database)
         return new UserHelper(connection).create(gcmToken);
     }
 
 
-    @ApiMethod(name = "updateGcmToken")
+    @ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name = "updateGcmToken")
     public void updateGcmToken(@Named("userId") int userId, @Named("gcmToken") String gcmToken) {
         // TODO: check, if user with given ID exists
         new UserHelper(connection).updateToken(userId, gcmToken);

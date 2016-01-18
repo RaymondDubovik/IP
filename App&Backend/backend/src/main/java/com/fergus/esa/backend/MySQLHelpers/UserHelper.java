@@ -33,7 +33,7 @@ public class UserHelper {
             statement = connection.prepareStatement(query);
             statement.setInt(1, id);
             results = statement.executeQuery();
-            if (results.isBeforeFirst()) {
+            if (results.next()) {
                 return new UserObject().setId(results.getInt("id")).setGcmToken(results.getString("gcmToken"));
             }
         } catch (SQLException e) {
