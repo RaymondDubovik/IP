@@ -60,7 +60,7 @@ public class UserHelper {
     }
 
 
-    public UserObject createUser(String gcmToken) {
+    public UserObject create(String gcmToken) {
         PreparedStatement statement = null;
         ResultSet results = null;
 
@@ -98,5 +98,34 @@ public class UserHelper {
         }
 
         return null;
+    }
+
+
+    public boolean updateToken(int userId, String gcmToken) {
+        PreparedStatement statement = null;
+
+        String query =
+                "UPDATE `users`" +
+                        " SET `gcmToken` = ?" +
+                        " WHERE `id` = ?";
+
+        try {
+            statement = connection.prepareStatement(query);
+            statement.setString(1, gcmToken);
+            statement.setInt(1, userId);
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException sqlEx) {} // ignore
+
+                statement = null;
+            }
+        }
+
+        return false;
     }
 }

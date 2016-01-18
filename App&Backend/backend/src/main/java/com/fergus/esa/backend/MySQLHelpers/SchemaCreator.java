@@ -311,7 +311,7 @@ public class SchemaCreator {
 
     private void executeUpdateQuery(Connection connection, String query) throws SQLException {
         Statement statement = connection.createStatement();
-        statement.executeQuery(query);
+        statement.executeUpdate(query);
         statement.close();
     }
 }

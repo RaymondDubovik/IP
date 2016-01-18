@@ -58,15 +58,16 @@ public class ESAEventEndpoint {
 
     @ApiMethod(name = "registerGcmToken")
     public UserObject registerGcmToken(@Named("gcmToken") String gcmToken) {
-        // TODO: check, if token is not duplicate here
-
-        return new UserHelper(connection).createUser(gcmToken);
+        // TODO: check, if token is unique (in the database)
+        return new UserHelper(connection).create(gcmToken);
     }
 
 
-    @ApiMethod(name = "getUserObject")
-    public List<UserObject> getUserObject() {
-        return null;
+    @ApiMethod(name = "updateGcmToken")
+    public void updateGcmToken(@Named("userId") int userId, @Named("gcmToken") String gcmToken) {
+        // TODO: check, if user with given ID exists
+        new UserHelper(connection).updateToken(userId, gcmToken);
+        // TODO: return true or false in a wrapper....
     }
 
 
