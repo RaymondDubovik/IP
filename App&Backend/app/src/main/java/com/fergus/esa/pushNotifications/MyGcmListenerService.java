@@ -38,12 +38,12 @@ import org.json.JSONObject;
 public class MyGcmListenerService extends GcmListenerService {
     public static final String DEFAULT_TITLE = "ESA";
 
-    public static final String BUNDLE_TITLE_KEY = "gcm.notification.push_title";
-    public static final String BUNDLE_MESSAGE_KEY = "gcm.notification.body";
-    public static final String BUNDLE_SOUND_KEY = "gcm.notification.sound";
-    public static final String BUNDLE_TIMESTAMP_KEY = "gcm.notification.timestamp";
-    public static final String BUNDLE_DATA = "gcm.notification.data";
+    public static final String BUNDLE_TITLE_KEY = "push_title";
+    public static final String BUNDLE_MESSAGE_KEY = "body";
+    public static final String BUNDLE_SOUND_KEY = "sound";
+    public static final String BUNDLE_DATA = "data";
     public static final String JSON_ID = "id";
+    private static final String BUNDLE_NOTIFICATION = "notification";
 
 
     /**
@@ -55,21 +55,25 @@ public class MyGcmListenerService extends GcmListenerService {
      */
     @Override
     public void onMessageReceived(String from, Bundle data) {
+        data = data.getBundle(BUNDLE_NOTIFICATION);
+
+        if (data == null) {
+            return;
+        }
+
         String title = data.getString(BUNDLE_TITLE_KEY, DEFAULT_TITLE);
         String message = data.getString(BUNDLE_MESSAGE_KEY);
         boolean playSound = (data.getString(BUNDLE_SOUND_KEY, null) != null);
-        String timestamp = data.getString(BUNDLE_TIMESTAMP_KEY, null);
 
         int id;
         JSONObject json;
         try {
-            json = new JSONObject(data.getString(BUNDLE_DATA, "0"));
+            json = new JSONObject(data.getString(BUNDLE_DATA, "{\"id\":0}"));
             id = json.getInt(JSON_ID);
         } catch (JSONException e) {
             e.printStackTrace();
             return;
         }
-
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -77,7 +81,6 @@ public class MyGcmListenerService extends GcmListenerService {
         // TODO: implement storage in shared preferences
 
         showNotification(title, message, playSound);
-
     }
 
 
