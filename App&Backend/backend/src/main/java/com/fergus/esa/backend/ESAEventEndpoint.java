@@ -77,7 +77,7 @@ public class ESAEventEndpoint {
 
 
     @ApiMethod(name = "getEvents")
-    public List<EventObject> getEvents(@Named("from") int from, @Named("to") int to) {
+    public List<EventObject> getEvents(@Named("from") int from, @Named("count") int count) {
         // TODO: supply random /first image here
         ImageObject image = new ImageObject().setUrl("http://staging.mediawales.co.uk/_files/images//jun_10/mw__1276511479_News_Image.jpg");
         ImageObject image2 = new ImageObject().setUrl("http://vantage-uk.com/wp-content/uploads/2013/03/breakingnews1.jpg");
@@ -87,9 +87,9 @@ public class ESAEventEndpoint {
             images.add(image2);
         }
 
-        EventObject event = new EventObject().setId(from + to).setImages(images).setHeading("Event title");
+        EventObject event = new EventObject().setId(from + count).setImages(images).setHeading("Event title");
         List<EventObject> events = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             events.add(event);
         }
 
@@ -104,7 +104,7 @@ public class ESAEventEndpoint {
 
 
     @ApiMethod(name="getTweets")
-    public List<TweetObject> getTweets(@Named("eventId") int id, @Named("from") int from, @Named("to") int to) {
+    public List<TweetObject> getTweets(@Named("eventId") int id, @Named("from") int from, @Named("count") int count) {
         List<TweetObject> tweets = new ArrayList<>();
         tweets.add(new TweetObject().setId(1).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
         tweets.add(new TweetObject().setId(2).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));

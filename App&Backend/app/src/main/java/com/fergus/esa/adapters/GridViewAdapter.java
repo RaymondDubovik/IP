@@ -33,7 +33,12 @@ public final class GridViewAdapter extends BaseAdapter {
         this.context = context;
 
 
-        for (EventObject event : events) {
+        addItems(events);
+    }
+
+
+    public void addItems(List<EventObject> items) {
+        for (EventObject event : items) {
             String imgUrl = "https://pixabay.com/static/uploads/photo/2015/03/01/11/16/all-654566_640.jpg";
 
             List<ImageObject> images = event.getImages();
@@ -48,6 +53,8 @@ public final class GridViewAdapter extends BaseAdapter {
             eventTextImages.add(eti);
         }
         //Collections.addAll(eventTextImages);
+
+        notifyDataSetChanged();
     }
 
 

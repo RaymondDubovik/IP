@@ -99,18 +99,6 @@ public class GcmObject {
     }
 
 
-    @Override
-    public String toString() {
-        return "{" +
-                ",\"" + PARAM_NOTIFICATION + "\":\"{" + "\"" +
-                "\"" + PARAM_SOUND + "\":\"" + sound + "\"" +
-                ",\"" + PARAM_TITLE + "\":\"" + title + "\"" +
-                ",\"" + PARAM_MESSAGE + "\":\"" + message + "\"" +
-                ",\"" + PARAM_DATA + "\":\"" + data + "\"" +
-                "}";
-    }
-
-
     public String toJson() {
         try {
             // Prepare JSON containing the GCM message content. What to send and where to send.

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayoutConnectionErrorPanel"
+    android:layout_width="match_parent"
+    android:layout_height="30dp"
+    android:background="#AA111111"
+    android:orientation="horizontal"
+    android:layout_gravity="top"
+    android:visibility="gone"
+    tools:showIn="@layout/activity_university">
+
+    <TextView
+        android:id="@+id/textViewConnectionErrorMessage"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:textColor="@color/white"
+        android:paddingLeft="10dp"
+        android:textSize="14sp"
+        />
+
+    <TextView
+        android:id="@+id/textViewButtonRetry"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:textSize="16sp"
+        android:text="Retry"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:textStyle="bold"
+        android:textColor="@color/blue"/>
+</LinearLayout>

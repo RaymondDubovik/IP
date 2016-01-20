@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.fergus.esa.adapters.SearchGridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.EsaEventEndpoint;
 import com.fergus.esa.backend.esaEventEndpoint.model.ESAEvent;
+import com.fergus.esa.listeners.ScrollListener;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 

@@ -18,6 +18,9 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ListView;
@@ -27,26 +30,46 @@ import com.fergus.esa.adapters.CategoryAdapter;
 import com.fergus.esa.adapters.GridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
+import com.fergus.esa.connection.ConnectionChecker;
+import com.fergus.esa.connection.ConnectionErrorView;
+import com.fergus.esa.connection.RetryListener;
 import com.fergus.esa.dataObjects.CategoryObjectWrapper;
+import com.fergus.esa.listeners.CompositeScrollListener;
+import com.fergus.esa.listeners.InfiniteScrollListener;
+import com.fergus.esa.listeners.PixelScrollDetector;
+import com.fergus.esa.listeners.ScrollListener;
 import com.fergus.esa.pushNotifications.RegistrationIntentService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.novoda.merlin.Merlin;
+import com.novoda.merlin.registerable.connection.Connectable;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
+    private boolean loadRequired;
+    private ConnectionErrorView connectionErrorView;
+
     private SlidingUpPanelLayout slidingPanel;
     private View viewListCover;
-    private TextView textViewCategory;
-    private ListView listViewCategories;
-    private GridView gridViewEvent;
-    private SwipeRefreshLayout swipeContainer;
-
     private CategoryStorer categoryStorer;
+
+    private ViewGroup categoryLayout;
+    private TextView textViewCategory;
+    private int textViewCategoryHeight;
+    private int textViewCategoryCurrentHeight;
+    private ListView listViewCategories;
+
+    private SwipeRefreshLayout swipeContainer;
+    private GridView gridViewEvent;
+    private GridViewAdapter eventAdapter;
+    private List<EventObject> allEvents;
+    private Merlin merlin;
 
 
     @Override
@@ -56,17 +79,83 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         initToolbar();
 
+        merlin = new Merlin.Builder().withConnectableCallbacks().build(this);
+        merlin.registerConnectable(new Connectable() {
+            @Override
+            public void onConnect() {
+                onInternetConnected();
+            }
+        });
+
         listViewCategories = (ListView) findViewById(R.id.listViewCategories);
         textViewCategory = (TextView) findViewById(R.id.textViewSelectedCategory);
+        textViewCategory.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                textViewCategoryHeight = textViewCategory.getHeight();
+            }
+        });
+        categoryLayout = (ViewGroup) findViewById(R.id.categoryPanel);
+        categoryStorer = new CategoryStorer(this);
+
         gridViewEvent = (GridView) findViewById(R.id.gridView);
 
-        new EventAsyncTask(true).execute();
+        connectionErrorView = new ConnectionErrorView(this, findViewById(R.id.linearLayoutConnectionErrorPanel), new RetryListener() {
+            @Override
+            public void onRetry() {
+                getData();
+            }
+        });
 
-        categoryStorer = new CategoryStorer(this);
-        new CategoryAsyncTask().execute();
+        getData();
 
         handleIntent(getIntent());
         gcmRegister();
+    }
+
+
+    private void getData() {
+        if (!ConnectionChecker.hasInternetConnection(this)) {
+            loadRequired = true;
+            connectionErrorView.show(R.string.no_internet);
+
+            return;
+        }
+
+        loadRequired = false;
+        new EventAsyncTask(true).execute();
+        new CategoryAsyncTask().execute();
+    }
+
+
+    @Override
+    protected void onResume() {
+        merlin.bind();
+        super.onResume();
+        if (loadRequired && ConnectionChecker.hasInternetConnection(this)) {
+            onInternetConnected();
+        }
+    }
+
+
+    @Override
+    protected void onPause() {
+        merlin.unbind();
+        super.onPause();
+        if (connectionErrorView!= null && connectionErrorView.isVisible()) {
+            connectionErrorView.hide();
+        }
+    }
+
+
+    public void onInternetConnected() {
+        if (loadRequired) {
+            if (connectionErrorView.isVisible()) {
+                connectionErrorView.hide();
+            }
+
+            getData();
+        }
     }
 
 
@@ -130,6 +219,14 @@ public class MainActivity extends ActionBarActivity {
             try {
                 return ServerUrls.endpoint.getEvents(0, 10).execute().getItems(); // TODO: change
             } catch (IOException e) {
+                if (connectionErrorView.isVisible()) {
+                    connectionErrorView.quickHide();
+                }
+
+                connectionErrorView.show("Could not get data"); // TODO: remove hardcode
+
+                loadRequired = true;
+
                 e.printStackTrace();
                 return Collections.EMPTY_LIST;
             }
@@ -137,22 +234,31 @@ public class MainActivity extends ActionBarActivity {
 
 
         @Override
-        protected void onPostExecute(final List<EventObject> events) {
+        protected void onPostExecute(List<EventObject> events) {
             Collections.reverse(events);
 
-            gridViewEvent.setAdapter(new GridViewAdapter(MainActivity.this, MainActivity.this, events));
-            gridViewEvent.setOnScrollListener(new ScrollListener(MainActivity.this));
+            if (allEvents == null) {
+                allEvents = new ArrayList<>(events);
+                eventAdapter = new GridViewAdapter(MainActivity.this, MainActivity.this, events);
+                gridViewEvent.setAdapter(eventAdapter);
+            } else {
+                eventAdapter.addItems(events);
+            }
+
+            allEvents.addAll(events);
+
             gridViewEvent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    int eventId = events.get(position).getId();
+                    int eventId = allEvents.get(position).getId(); // TODO: get rid of allEvents variable
                     Intent intent = new Intent(MainActivity.this, EventActivity.class);
                     Bundle extras = new Bundle();
-                    extras.putInt(EventActivity.BUNDLE_PARAM_EVENT_ID , eventId);
+                    extras.putInt(EventActivity.BUNDLE_PARAM_EVENT_ID, eventId);
                     intent.putExtras(extras);
                     startActivity(intent);
                 }
             });
+            gridViewEvent.setOnScrollListener(new GridViewScrollListener());
 
             if (displayDialog) {
                 pd.hide();
@@ -160,6 +266,32 @@ public class MainActivity extends ActionBarActivity {
 
             if (swipeContainer != null && swipeContainer.isRefreshing()) {
                 swipeContainer.setRefreshing(false);
+            }
+        }
+
+
+        private class GridViewScrollListener extends CompositeScrollListener {
+            public GridViewScrollListener() {
+                addOnScrollListener(new ScrollListener(MainActivity.this));
+                addOnScrollListener(new InfiniteScrollListener(6) {
+                    @Override
+                    public void loadMore(int page, int totalItemsCount) {
+                        new EventAsyncTask(true).execute();
+                    }
+                });
+                addOnScrollListener(new PixelScrollDetector(new PixelScrollDetector.PixelScrollListener() {
+                    @Override
+                    public void onScroll(AbsListView view, float deltaY) {
+                        textViewCategoryCurrentHeight -= deltaY;
+                        if (textViewCategoryCurrentHeight < 0) {
+                            textViewCategoryCurrentHeight = 0;
+                        } else if (textViewCategoryCurrentHeight > textViewCategoryHeight) {
+                            textViewCategoryCurrentHeight = textViewCategoryHeight;
+                        }
+
+                        categoryLayout.setTranslationY(textViewCategoryCurrentHeight);
+                    }
+                }));
             }
         }
     }
@@ -172,6 +304,14 @@ public class MainActivity extends ActionBarActivity {
             try {
                 categories = ServerUrls.endpoint.getCategories().execute().getItems();
             } catch (IOException e) {
+                if (connectionErrorView.isVisible()) {
+                    connectionErrorView.quickHide();
+                }
+
+                connectionErrorView.show("Could not get data"); // TODO: remove hardcode
+
+                loadRequired = true;
+
                 e.printStackTrace();
                 return Collections.emptyList();
             }
@@ -224,8 +364,7 @@ public class MainActivity extends ActionBarActivity {
             swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
-                    EventAsyncTask eventTask = new EventAsyncTask(false);  //can pass other variables as needed
-                    eventTask.execute();
+                    getData();
                 }
             });
 
@@ -242,6 +381,9 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onPanelSlide(View view, float v) {
+            textViewCategoryCurrentHeight = 0;
+            categoryLayout.setTranslationY(textViewCategoryCurrentHeight);
+
             if (wasCollapsed) {
                 wasCollapsed = false;
             }
@@ -250,7 +392,7 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onPanelCollapsed(View view) {
-            viewListCover.setVisibility(View.GONE);
+            viewListCover.setVisibility(View.INVISIBLE);
             wasCollapsed = true;
         }
 
@@ -273,6 +415,16 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onPanelHidden(View view) {}
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if (slidingPanel != null && (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED || slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.ANCHORED)) {
+            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        } else {
+            super.onBackPressed();
+        }
     }
 
 
