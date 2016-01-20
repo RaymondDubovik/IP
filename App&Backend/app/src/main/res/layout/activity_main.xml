@@ -12,8 +12,7 @@
         sothree:umanoDragView="@+id/textViewSelectedCategory"
         sothree:umanoOverlay="true"
         sothree:umanoPanelHeight="47dp"
-        sothree:umanoScrollableView="@+id/listViewCategories"
-        sothree:umanoShadowHeight="4dp">
+        sothree:umanoScrollableView="@+id/listViewCategories">
 
         <FrameLayout
             android:layout_width="match_parent"
