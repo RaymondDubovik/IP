@@ -41,9 +41,4 @@ public class CategoryObject {
         this.name = name;
         return this;
     }
-
-
-    public String toJson() {
-        return "{id:\"" + id + "\",name:\" " + name + " \"}";
-    }
 }

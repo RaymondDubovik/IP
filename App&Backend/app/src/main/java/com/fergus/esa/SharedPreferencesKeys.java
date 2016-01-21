@@ -8,5 +8,6 @@ public class SharedPreferencesKeys {
     public static final String CATEGORY_ID = "categoryId";
     public static final String USER_ID = "categoryId";
     public static final String GCM_TOKEN = "push_token";
-    public static final String KEY_TIMESTAMP = "timestamp";
+
+    public static final String SELECTED_CATEGORIES = "categories";
 }

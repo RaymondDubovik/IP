@@ -338,15 +338,19 @@ public class MainActivity extends ActionBarActivity {
                         categoryStorer.removeCategory(category);
                         // TODO: implement
                     }
-
-                    Log.d("teswt", categoryStorer.getCount() + "");
                 }
             });
+
+            for (int i = 0; i < categories.size(); i++) {
+                if (categoryStorer.hasCategory(categories.get(i))) {
+                    listViewCategories.setItemChecked(i, true);
+                }
+            }
 
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
             int selectedCategory = preferences.getInt(SharedPreferencesKeys.CATEGORY_ID, CategoryObjectWrapper.ALL_CATEGORIES_ID);
 
-            // listViewCategories.setItemChecked(position, true);
+
 
             for (CategoryObject category : categories) {
                 if (category.getId() == selectedCategory) {
