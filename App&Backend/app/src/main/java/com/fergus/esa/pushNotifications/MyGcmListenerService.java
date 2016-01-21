@@ -20,14 +20,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
-import com.fergus.esa.MainActivity;
+import com.fergus.esa.EventActivity;
 import com.fergus.esa.R;
 import com.google.android.gms.gcm.GcmListenerService;
 
@@ -75,12 +72,7 @@ public class MyGcmListenerService extends GcmListenerService {
             return;
         }
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        Log.d("", Integer.toString(id));
-        // TODO: implement storage in shared preferences
-
-        showNotification(title, message, playSound);
+        showNotification(id, title, message, playSound);
     }
 
 
@@ -91,8 +83,9 @@ public class MyGcmListenerService extends GcmListenerService {
      * @param message GCM message received.
      * @param playSound Plays sound, if not null
      */
-    private void showNotification(String title, String message, boolean playSound) {
-        Intent intent = new Intent(this, MainActivity.class);
+    private void showNotification(int id, String title, String message, boolean playSound) {
+        Intent intent = new Intent(this, EventActivity.class);
+        intent.putExtra(EventActivity.BUNDLE_PARAM_EVENT_ID, id);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent, PendingIntent.FLAG_ONE_SHOT);
 

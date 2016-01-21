@@ -37,6 +37,7 @@
         </activity>
         <activity
             android:name=".EventActivity"
+            android:exported="true"
             android:screenOrientation="portrait">
         </activity>
         <activity
