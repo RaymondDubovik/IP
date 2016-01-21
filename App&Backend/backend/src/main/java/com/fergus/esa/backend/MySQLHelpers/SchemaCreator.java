@@ -3,6 +3,7 @@ package com.fergus.esa.backend.MySQLHelpers;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Random;
 
 // TODO: think about
 /**
@@ -44,7 +45,7 @@ public class SchemaCreator {
             "`username` VARCHAR(15)," +
             "`screenName` VARCHAR(40)," +
             "`profileImgUrl` VARCHAR(400)," +
-            "`imageUrl` INT," +
+            "`imageUrl` VARCHAR(255)," +
             "`text` TEXT," +
             "`timestamp` DATETIME" +
         ")";
@@ -76,12 +77,8 @@ public class SchemaCreator {
         ")";
 
     private static final String queryForeignKeyNews = "ALTER TABLE `news` ADD COLUMN `eventId` INT REFERENCES `events`(`id`);";
-
     private static final String queryForeignKeyTweets = "ALTER TABLE `tweets` ADD COLUMN `eventId` INT REFERENCES `events`(`id`);";
-
     private static final String queryForeignKeySummaries = "ALTER TABLE `summaries` ADD COLUMN `eventId` INT REFERENCES `events`(`id`);";
-
-    private static final String queryForeignKeyCategories = "ALTER TABLE `events` ADD COLUMN `eventId` INT REFERENCES `events`(`id`);";
 
     private static final String queryDropTableEvents = "DROP TABLE IF EXISTS `events`";
     private static final String queryDropTableCategories = "DROP TABLE IF EXISTS `categories`";
@@ -192,7 +189,6 @@ public class SchemaCreator {
         addForeignKeysNews(connection);
         addForeignKeysTweets(connection);
         addForeignKeysSummaries(connection);
-        addForeignKeysCategories(connection);
     }
 
 
@@ -297,16 +293,38 @@ public class SchemaCreator {
     }
 
 
-    private void addForeignKeysCategories(Connection connection) throws SQLException {
-        Statement statement = connection.createStatement();
-        statement.executeUpdate(queryForeignKeyCategories);
-        statement.close();
-    }
-
-
-    public void populate(Connection connection) throws SQLException {
+    public void populateWithMockData(Connection connection) throws SQLException {
         String query = "INSERT INTO `categories` (`name`) VALUES ('Category 1'),('Category 2'),('Category 3'),('Category 4'),('Category 5'),('Category 6'),('Category 7')";
         executeUpdateQuery(connection, query);
+
+        for (int i = 1; i <= 34; i++) {
+            // events
+            query = "INSERT INTO `events` (`id`, `timestamp`, `heading`) VALUES (" + i + ", NOW(), 'Some awesome event title');";
+            executeUpdateQuery(connection, query);
+
+            // news
+            for (int j = 0; j < 34; j++) {
+                query = "INSERT INTO `news` (`title`, `url`, `logoUrl`, `timestamp`, `eventId`) VALUES ('Some awesome news title', 'http://www.bbc.co.uk/news/entertainment-arts-35366703', NULL, NOW(), " + i + ");";
+                executeUpdateQuery(connection, query);
+            }
+
+            // images
+            query = "INSERT INTO `images` (`eventId`, `url`) VALUES (" + i + ", 'http://staging.mediawales.co.uk/_files/images//jun_10/mw__1276511479_News_Image.jpg'), (" + i + ", 'http://vantage-uk.com/wp-content/uploads/2013/03/breakingnews1.jpg')";
+            executeUpdateQuery(connection, query);
+
+            // categories
+            for (int j = 0; j < 3; j++) {
+                int random = new Random().nextInt((6) + 1) + 1;
+                query = "INSERT INTO `eventsCategories` (`categoryId`, `eventId`) VALUES (" + random + ", " + i + ")";
+                executeUpdateQuery(connection, query);
+            }
+
+            // tweets
+            for (int j = 0; j < 30; j++) {
+                query = "INSERT INTO `tweets` (`username`, `screenName`, `profileImgUrl`, `imageUrl`, `text`, `timestamp`, `eventId`) VALUES ('someUsername', 'someScreenName', 'https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png', 'https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png', 'Some text in twitter here because I can', NOW(), " + i + ");";
+                executeUpdateQuery(connection, query);
+            }
+        }
     }
 
     private void executeUpdateQuery(Connection connection, String query) throws SQLException {

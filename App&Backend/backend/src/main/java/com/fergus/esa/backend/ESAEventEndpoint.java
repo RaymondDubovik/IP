@@ -50,7 +50,7 @@ public class ESAEventEndpoint {
             SchemaCreator schemaCreator = new SchemaCreator();
             schemaCreator.drop(connection);
             schemaCreator.create(connection);
-            schemaCreator.populate(connection);
+            schemaCreator.populateWithMockData(connection);
         } catch (SQLException e) {
             e.printStackTrace();
         }
