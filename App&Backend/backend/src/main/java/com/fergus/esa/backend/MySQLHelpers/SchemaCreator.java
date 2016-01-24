@@ -59,7 +59,7 @@ public class SchemaCreator {
     private static final String querySummaries =
         "CREATE TABLE IF NOT EXISTS `summaries` (" +
                 "`length` INT," +
-                "`text` INT" +
+                "`text` TEXT" +
             ")";
 
     private static final String queryEventsUsers =
@@ -322,6 +322,12 @@ public class SchemaCreator {
             // tweets
             for (int j = 0; j < 30; j++) {
                 query = "INSERT INTO `tweets` (`username`, `screenName`, `profileImgUrl`, `imageUrl`, `text`, `timestamp`, `eventId`) VALUES ('someUsername', 'someScreenName', 'https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png', 'https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png', 'Some text in twitter here because I can', NOW(), " + i + ");";
+                executeUpdateQuery(connection, query);
+            }
+
+            // summaries
+            for (int j = 0; j < 30; j++) {
+                query = "INSERT INTO `summaries` (`text`, `length`, `eventId`) VALUES ('Some long summary text here.', 5, " + i + ");";
                 executeUpdateQuery(connection, query);
             }
         }

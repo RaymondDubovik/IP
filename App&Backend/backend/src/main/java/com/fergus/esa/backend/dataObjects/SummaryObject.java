@@ -10,6 +10,7 @@ import com.googlecode.objectify.annotation.Entity;
 public class SummaryObject {
     private int length;
     private String text;
+    private int eventId;
 
 
     public SummaryObject() {}
@@ -33,6 +34,17 @@ public class SummaryObject {
 
     public SummaryObject setText(String text) {
         this.text = text;
+        return this;
+    }
+
+
+    public int getEventId() {
+        return eventId;
+    }
+
+
+    public SummaryObject setEventId(int eventId) {
+        this.eventId = eventId;
         return this;
     }
 }

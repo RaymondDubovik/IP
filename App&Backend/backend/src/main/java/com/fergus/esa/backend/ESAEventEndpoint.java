@@ -5,6 +5,7 @@ import com.fergus.esa.backend.MySQLHelpers.ImageHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
 import com.fergus.esa.backend.MySQLHelpers.SchemaCreator;
+import com.fergus.esa.backend.MySQLHelpers.SummaryHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.MySQLHelpers.UserHelper;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
@@ -107,7 +108,7 @@ public class ESAEventEndpoint {
 
 
     @ApiMethod(name="getTweets")
-    public List<TweetObject> getTweets(@Named("eventId") int id, @Named("from") int from, @Named("count") int count) {
+    public List<TweetObject> getTweets(@Named("eventId") int id) {
         // TODO: remove from and count parameters
         return new TweetHelper(connection).getEventTweets(id);
     }
@@ -127,18 +128,17 @@ public class ESAEventEndpoint {
 
     @ApiMethod(name="getSummaries")
     public List<SummaryObject> getSummaries(@Named("eventId") int id) {
-        List<SummaryObject> summaries = new ArrayList<>();
-        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
-        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
-        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
-        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
-        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
-        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
-        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
-        summaries.add(new SummaryObject().setText("Some summary here Some summary here Some summary here Some summary here Some summary here Some summary here").setLength(1));
-
-        return summaries;
+        return new SummaryHelper(connection).getEventSummaries(id);
     }
+
+
+
+
+
+
+
+    // SOMETHING THERE.....
+
 
 
     @ApiMethod(name = "listSearchedEvents")

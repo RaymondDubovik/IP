@@ -95,7 +95,7 @@ public class EventActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                tweets = ServerUrls.endpoint.getTweets(eventId, 0, 15).execute().getItems();
+                tweets = ServerUrls.endpoint.getTweets(eventId).execute().getItems();
             } catch (IOException e) {
                 // TODO: do something
             }
