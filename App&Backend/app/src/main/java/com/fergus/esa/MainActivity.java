@@ -276,7 +276,7 @@ public class MainActivity extends ActionBarActivity {
                 addOnScrollListener(new InfiniteScrollListener(6) {
                     @Override
                     public void loadMore(int page, int totalItemsCount) {
-                        new EventAsyncTask(true).execute();
+                        new EventAsyncTask(false).execute();
                     }
                 });
                 addOnScrollListener(new PixelScrollDetector(new PixelScrollDetector.PixelScrollListener() {

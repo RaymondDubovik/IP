@@ -1,8 +1,11 @@
 package com.fergus.esa.backend;
 
 import com.fergus.esa.backend.MySQLHelpers.CategoryHelper;
+import com.fergus.esa.backend.MySQLHelpers.ImageHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
+import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
 import com.fergus.esa.backend.MySQLHelpers.SchemaCreator;
+import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.MySQLHelpers.UserHelper;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
@@ -105,44 +108,20 @@ public class ESAEventEndpoint {
 
     @ApiMethod(name="getTweets")
     public List<TweetObject> getTweets(@Named("eventId") int id, @Named("from") int from, @Named("count") int count) {
-        List<TweetObject> tweets = new ArrayList<>();
-        tweets.add(new TweetObject().setId(1).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
-        tweets.add(new TweetObject().setId(2).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
-        tweets.add(new TweetObject().setId(3).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
-        tweets.add(new TweetObject().setId(4).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
-        tweets.add(new TweetObject().setId(5).setImageUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setProfileImgUrl("https://pbs.twimg.com/profile_images/666407537084796928/YBGgi9BO.png").setScreenName("someScreenName").setText("Some text in twitter here becaues I can").setUsername("SomeUsername").setText("Some text here"));
-
-        return tweets;
+        // TODO: remove from and count parameters
+        return new TweetHelper(connection).getEventTweets(id);
     }
 
 
     @ApiMethod(name="getImages")
     public List<ImageObject> getImages(@Named("eventId") int id) {
-        List<ImageObject> tweets = new ArrayList<>();
-        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new ImageObject().setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-
-        return tweets;
+        return new ImageHelper(connection).getEventImages(id);
     }
 
 
     @ApiMethod(name="getNews")
     public List<NewsObject> getNews(@Named("eventId") int id) {
-        List<NewsObject> tweets = new ArrayList<>();
-        tweets.add(new NewsObject().setId(1).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(2).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(3).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(4).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(5).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(6).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(7).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(8).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-        tweets.add(new NewsObject().setId(9).setTitle("Breaking news article here").setUrl("http://www.perfectsunsetschool.com/wp-content/uploads/2015/11/news.jpg"));
-
-        return tweets;
+        return new NewsHelper(connection).getEventNews(id);
     }
 
 

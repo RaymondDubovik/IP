@@ -15,6 +15,7 @@ public class NewsObject {
     private String url;
     private String logoUrl;
     private Date timestamp;
+    private int eventId;
 
 
     public NewsObject() {}
@@ -71,6 +72,17 @@ public class NewsObject {
 
     public NewsObject setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
+        return this;
+    }
+
+
+    public int getEventId() {
+        return eventId;
+    }
+
+
+    public NewsObject setEventId(int eventId) {
+        this.eventId = eventId;
         return this;
     }
 }

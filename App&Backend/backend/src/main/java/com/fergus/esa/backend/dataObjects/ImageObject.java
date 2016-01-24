@@ -9,6 +9,7 @@ import com.googlecode.objectify.annotation.Entity;
 @Entity
 public class ImageObject {
     private String url;
+    private int eventId;
 
 
     public ImageObject() {}
@@ -21,6 +22,17 @@ public class ImageObject {
 
     public ImageObject setUrl(String url) {
         this.url = url;
+        return this;
+    }
+
+
+    public int getEventId() {
+        return eventId;
+    }
+
+
+    public ImageObject setEventId(int eventId) {
+        this.eventId = eventId;
         return this;
     }
 }
