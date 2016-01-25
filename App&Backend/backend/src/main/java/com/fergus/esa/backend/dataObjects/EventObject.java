@@ -14,6 +14,7 @@ public class EventObject {
     private int id;
     private String heading;
     private Date timestamp;
+    private String mainImageUrl;
     // TODO: think where users need to be put
     private List<CategoryObject> categories;
     private List<NewsObject> news;
@@ -54,6 +55,17 @@ public class EventObject {
 
     public EventObject setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
+        return this;
+    }
+
+
+    public String getImageUrl() {
+        return mainImageUrl;
+    }
+
+
+    public EventObject setImageUrl(String mainImageUrl) {
+        this.mainImageUrl = mainImageUrl;
         return this;
     }
 

@@ -51,7 +51,7 @@ public class SummaryFragment extends Fragment {
 
         String imgUrl = "https://pixabay.com/static/uploads/photo/2015/03/01/11/16/all-654566_640.jpg";
         List<ImageObject> images = activity.getImages();
-        if (images != null) {
+        if (images != null && images.size() != 0) {
             imgUrl = images.get(new Random().nextInt(images.size())).getUrl();
         }
 

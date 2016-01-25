@@ -21,7 +21,8 @@ public class SchemaCreator {
         "CREATE TABLE IF NOT EXISTS `events` (" +
             "`id` INT PRIMARY KEY AUTO_INCREMENT," +
             "`timestamp` DATETIME, " +
-            "`heading` VARCHAR(255)" +
+            "`heading` VARCHAR(255)," +
+			"`mainImageUrl` VARCHAR(400)" +
         ")";
 
     private static final String queryImages =
@@ -297,9 +298,14 @@ public class SchemaCreator {
         String query = "INSERT INTO `categories` (`name`) VALUES ('Category 1'),('Category 2'),('Category 3'),('Category 4'),('Category 5'),('Category 6'),('Category 7')";
         executeUpdateQuery(connection, query);
 
-        for (int i = 1; i <= 34; i++) {
+        for (int i = 1; i <= 50; i++) {
+			String mainImgUrl = "http://staging.mediawales.co.uk/_files/images//jun_10/mw__1276511479_News_Image.jpg";
+			if (i % 2 == 0) {
+				mainImgUrl = "http://vantage-uk.com/wp-content/uploads/2013/03/breakingnews1.jpg";
+			}
+
             // events
-            query = "INSERT INTO `events` (`id`, `timestamp`, `heading`) VALUES (" + i + ", NOW(), 'Some awesome event title');";
+            query = "INSERT INTO `events` (`id`, `timestamp`, `heading`, `mainImageUrl`) VALUES (" + i + ", NOW(), 'Some awesome event title', '" + mainImgUrl + "');";
             executeUpdateQuery(connection, query);
 
             // news

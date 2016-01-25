@@ -16,6 +16,7 @@ import java.util.List;
 public class EventHelper {
     private Connection connection;
 
+    // NOTE: it is assumed, that in the database, record with smaller ID will have a smaller timestamp
 
     public EventHelper(Connection connection) {
         this.connection = connection;
@@ -26,8 +27,6 @@ public class EventHelper {
     public List<EventObject> getEvents(List<Integer> categories, int from, int count) {
         PreparedStatement statement = null;
         ResultSet results = null;
-
-        int minId;
 
         try {
             String categorySqlPart = "";
@@ -53,15 +52,16 @@ public class EventHelper {
                     " ORDER BY `e`.`id` DESC" +
                     " LIMIT ?) AS `eventAlias`";
 
-
-            System.out.println(query);
+			System.out.println(query);
 
             statement = connection.prepareStatement(query);
             int param = 1;
             statement.setInt(param++, from);
-            for (int categoryId : categories) {
-                statement.setInt(param++, categoryId);
-            }
+            if (categories != null) {
+				for (int categoryId : categories) {
+					statement.setInt(param++, categoryId);
+				}
+			}
             statement.setInt(param++, count);
             results = statement.executeQuery();
             if (!results.next()) {
@@ -69,9 +69,7 @@ public class EventHelper {
                 return null;
             }
 
-            minId = results.getInt("minId");
-            System.out.println(minId);
-
+            return getEventInterval(results.getInt("minId"), from);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -92,8 +90,60 @@ public class EventHelper {
             }
         }
 
+        return null;
+    }
 
-        List<EventObject> events = new ArrayList<>();
-        return events;
+
+    private List<EventObject> getEventInterval(int minId, int maxId) {
+		System.out.println(minId + ", " + maxId);
+		if (minId == 0) {
+			return null;
+		}
+
+		PreparedStatement statement = null;
+        ResultSet results = null;
+
+        String query =
+                "SELECT `id`, `timestamp`, `heading`, `mainImageUrl`" +
+                        " FROM `events`" +
+                        " WHERE `id` BETWEEN ? AND ?" +
+                        " ORDER BY `id` DESC";
+
+        try {
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, minId);
+            statement.setInt(2, maxId);
+            List<EventObject> events = new ArrayList<>();
+            results = statement.executeQuery();
+            while (results.next()) {
+                events.add(new EventObject()
+                        .setId(results.getInt("id"))
+                        .setTimestamp(results.getDate("timestamp"))
+                        .setHeading(results.getString("heading"))
+                );
+            }
+
+            return events;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (results != null) {
+                try {
+                    results.close();
+                } catch (SQLException sqlEx) {} // ignore
+
+                results = null;
+            }
+
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException sqlEx) {} // ignore
+
+                statement = null;
+            }
+        }
+
+        return null;
     }
 }

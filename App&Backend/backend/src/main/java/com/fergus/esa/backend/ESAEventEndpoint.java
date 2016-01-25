@@ -92,22 +92,13 @@ public class ESAEventEndpoint {
         categoriesJson = categoriesJson.trim();
         List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
 
-        List<EventObject> eventsTmp = new EventHelper(connection).getEvents(categoryIds, from, count);
+		for (int categoryId : categoryIds) {
+			if (categoryId == -1) { // TODO: REMOVE HARDCODE HERE -1 is all categories
+				categoryIds = null;
+			}
+		}
 
-        // TODO: supply random /first image here
-        ImageObject image = new ImageObject().setUrl("http://staging.mediawales.co.uk/_files/images//jun_10/mw__1276511479_News_Image.jpg");
-        List<ImageObject> images = new ArrayList<>();
-        images.add(image);
-
-        EventObject event = new EventObject().setId(from - count).setImages(images).setHeading("Event title");
-        List<EventObject> events = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            events.add(event);
-        }
-
-        // todo: check, if categories == null;
-
-        return events;
+        return new EventHelper(connection).getEvents(categoryIds, from, count);
     }
 
 

@@ -11,7 +11,6 @@ import android.widget.TextView;
 import com.fergus.esa.R;
 import com.fergus.esa.SquaredImageView;
 import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
-import com.fergus.esa.backend.esaEventEndpoint.model.ImageObject;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -22,6 +21,8 @@ import java.util.List;
     Adapted from a code sample available at https://github.com/square/picasso/tree/master/picasso-sample/src/main/java/com/example/picasso
   */
 public final class GridViewAdapter extends BaseAdapter {
+    private static final String PLACEHOLDER_IMAGE_URL = "https://pixabay.com/static/uploads/photo/2015/03/01/11/16/all-654566_640.jpg";
+
     private final Context context;
     private List<EventObject> events;
     private Activity activity;
@@ -62,11 +63,11 @@ public final class GridViewAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder view;
 
-        LayoutInflater inflator = activity.getLayoutInflater();
+        LayoutInflater inflater = activity.getLayoutInflater();
 
         if (convertView == null) {
             view = new ViewHolder();
-            convertView = inflator.inflate(R.layout.activity_main_row, null);
+            convertView = inflater.inflate(R.layout.activity_main_row, null);
 
             view.eventTitle = (TextView) convertView.findViewById(R.id.mainTextView);
             view.eventImgView = (SquaredImageView) convertView.findViewById(R.id.mainImageView);
@@ -79,10 +80,9 @@ public final class GridViewAdapter extends BaseAdapter {
         EventObject event = events.get(position);
         view.eventTitle.setText(event.getHeading());
 
-        String imgUrl = "https://pixabay.com/static/uploads/photo/2015/03/01/11/16/all-654566_640.jpg";
-        List<ImageObject> images = event.getImages();
-        if (images != null) {
-            imgUrl = images.get(0).getUrl();
+        String imgUrl = event.getImageUrl();
+        if (imgUrl == null) {
+            imgUrl = PLACEHOLDER_IMAGE_URL;
         }
 
         // Trigger the download of the URL asynchronously into the image view.

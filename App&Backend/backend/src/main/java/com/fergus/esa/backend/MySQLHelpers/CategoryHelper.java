@@ -14,11 +14,11 @@ import java.util.List;
  * Date: 16.01.2016
  */
 public class CategoryHelper {
-    private Connection conn;
+    private Connection connection;
 
 
     public CategoryHelper(Connection conn) {
-        this.conn = conn;
+        this.connection = conn;
     }
 
 
@@ -32,7 +32,7 @@ public class CategoryHelper {
                         " ORDER BY `name`";
 
         try {
-            statement = conn.prepareStatement(query);
+            statement = connection.prepareStatement(query);
 
             ArrayList<CategoryObject> categories = new ArrayList<>();
             results = statement.executeQuery();

@@ -30,6 +30,7 @@ import com.fergus.esa.adapters.CategoryAdapter;
 import com.fergus.esa.adapters.GridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
+import com.fergus.esa.backend.esaEventEndpoint.model.EventObjectCollection;
 import com.fergus.esa.connection.ConnectionChecker;
 import com.fergus.esa.connection.ConnectionErrorView;
 import com.fergus.esa.connection.RetryListener;
@@ -191,7 +192,7 @@ public class MainActivity extends ActionBarActivity {
 
 
     private class EventAsyncTask extends AsyncTask<Void, Void, List<EventObject>> {
-        private static final int EVENT_COUNT_PER_PAGE = 10;
+        private static final int EVENT_COUNT_PER_PAGE = 20;
         private ProgressDialog pd;
         private boolean displayDialog;
 
@@ -215,7 +216,11 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected List<EventObject> doInBackground(Void... voids) {
             try {
-                return ServerUrls.endpoint.getEvents(currentEventId, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute().getItems(); // TODO: change ,
+				EventObjectCollection collection = ServerUrls.endpoint.getEvents(currentEventId, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute();
+				if (collection == null) {
+					return null;
+				}
+				return collection.getItems(); // TODO: change ,
             } catch (IOException e) {
                 if (connectionErrorView.isVisible()) {
                     connectionErrorView.quickHide();
@@ -233,7 +238,12 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(List<EventObject> events) {
-            Collections.reverse(events);
+            if (events == null) {
+				hideUi();
+				return;
+			}
+
+			Collections.reverse(events);
 
             if (eventAdapter == null) {
                 eventAdapter = new GridViewAdapter(MainActivity.this, MainActivity.this);
@@ -264,23 +274,28 @@ public class MainActivity extends ActionBarActivity {
             });
             gridViewEvent.setOnScrollListener(new GridViewScrollListener());
 
-            if (displayDialog) {
-                pd.hide();
-            }
-
-            if (swipeContainer != null && swipeContainer.isRefreshing()) {
-                swipeContainer.setRefreshing(false);
-            }
+			hideUi();
         }
 
 
-        private class GridViewScrollListener extends CompositeScrollListener {
+		private void hideUi() {
+			if (displayDialog) {
+				pd.hide();
+			}
+
+			if (swipeContainer != null && swipeContainer.isRefreshing()) {
+				swipeContainer.setRefreshing(false);
+			}
+		}
+
+
+		private class GridViewScrollListener extends CompositeScrollListener {
             public GridViewScrollListener() {
                 addOnScrollListener(new ScrollListener(MainActivity.this));
                 addOnScrollListener(new InfiniteScrollListener(6) {
                     @Override
                     public void loadMore(int page, int totalItemsCount) {
-                        new EventAsyncTask(true).execute(); // TODO: change to false, when finished developing this feature
+                        new EventAsyncTask(false).execute();
                     }
                 });
                 addOnScrollListener(new PixelScrollDetector(new PixelScrollDetector.PixelScrollListener() {
@@ -336,12 +351,12 @@ public class MainActivity extends ActionBarActivity {
                     if (listViewCategories.isItemChecked(position)) {
                         CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
                         categoryStorer.addCategory(category);
-
                     } else {
                         CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
                         categoryStorer.removeCategory(category);
-                        // TODO: implement
                     }
+
+					// TODO: implement
 
                     changeActivieCategory();
                     eventAdapter = null;
