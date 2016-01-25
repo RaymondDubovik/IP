@@ -5,10 +5,8 @@ import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
@@ -184,10 +182,30 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private void changeActivieCategory() {
-        // textViewCategory.setText();
+    private void changeActiveCategory() {
+        int count = categoryStorer.getCount();
 
-        // TODO: change name here properly!
+		if (count == 0 ) {
+			textViewCategory.setText(CategoryObjectWrapper.ALL_CATEGORIES_NAME);
+			return;
+		}
+
+		if (count > 1) {
+			textViewCategory.setText(count + " categories");
+			return;
+		}
+
+
+		// count == 1
+
+		CategoryAdapter adapter = (CategoryAdapter) listViewCategories.getAdapter();
+		for (int i = 0; i < adapter.getCount(); i++) {
+			CategoryObject category = adapter.getItem(i);
+			if (categoryStorer.hasCategory(category)) {
+				textViewCategory.setText(category.getName());
+			}
+			Log.d("", i + "");
+		}
     }
 
 
@@ -358,7 +376,7 @@ public class MainActivity extends ActionBarActivity {
 
 					// TODO: implement
 
-                    changeActivieCategory();
+                    changeActiveCategory();
                     eventAdapter = null;
                     currentEventId = Integer.MAX_VALUE;
                     getData();
@@ -368,17 +386,6 @@ public class MainActivity extends ActionBarActivity {
             for (int i = 0; i < categories.size(); i++) {
                 if (categoryStorer.hasCategory(categories.get(i))) {
                     listViewCategories.setItemChecked(i, true);
-                }
-            }
-
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-            int selectedCategory = preferences.getInt(SharedPreferencesKeys.CATEGORY_ID, CategoryObjectWrapper.ALL_CATEGORIES_ID);
-
-            for (CategoryObject category : categories) {
-                if (category.getId() == selectedCategory) {
-                    category.getName();
-                    textViewCategory.setText(category.getName());
-                    break;
                 }
             }
 
