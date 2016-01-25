@@ -1,6 +1,7 @@
 package com.fergus.esa.backend;
 
 import com.fergus.esa.backend.MySQLHelpers.CategoryHelper;
+import com.fergus.esa.backend.MySQLHelpers.EventHelper;
 import com.fergus.esa.backend.MySQLHelpers.ImageHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
@@ -30,6 +31,8 @@ import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchServiceFactory;
 import com.google.appengine.api.search.SortOptions;
+import com.google.gson.Gson;
+import com.googlecode.objectify.repackaged.gentyref.TypeToken;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -80,22 +83,29 @@ public class ESAEventEndpoint {
     }
 
 
+
+
+    // TODO: implement real thing here
     @ApiMethod(name = "getEvents")
-    public List<EventObject> getEvents(@Named("from") int from, @Named("count") int count) {
+    public List<EventObject> getEvents(@Named("from") int from, @Named("count") int count, @Named("categories") String categoriesJson) {
+
+        categoriesJson = categoriesJson.trim();
+        List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
+
+        List<EventObject> eventsTmp = new EventHelper(connection).getEvents(categoryIds, from, count);
+
         // TODO: supply random /first image here
         ImageObject image = new ImageObject().setUrl("http://staging.mediawales.co.uk/_files/images//jun_10/mw__1276511479_News_Image.jpg");
-        ImageObject image2 = new ImageObject().setUrl("http://vantage-uk.com/wp-content/uploads/2013/03/breakingnews1.jpg");
         List<ImageObject> images = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            images.add(image);
-            images.add(image2);
-        }
+        images.add(image);
 
         EventObject event = new EventObject().setId(from + count).setImages(images).setHeading("Event title");
         List<EventObject> events = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < count; i++) {
             events.add(event);
         }
+
+        // todo: check, if categories == null;
 
         return events;
     }

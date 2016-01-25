@@ -46,7 +46,6 @@ import com.novoda.merlin.registerable.connection.Connectable;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -68,7 +67,6 @@ public class MainActivity extends ActionBarActivity {
     private SwipeRefreshLayout swipeContainer;
     private GridView gridViewEvent;
     private GridViewAdapter eventAdapter;
-    private List<EventObject> allEvents;
     private Merlin merlin;
 
 
@@ -217,7 +215,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected List<EventObject> doInBackground(Void... voids) {
             try {
-                return ServerUrls.endpoint.getEvents(0, 10).execute().getItems(); // TODO: change
+                return ServerUrls.endpoint.getEvents(0, 10, categoryStorer.getSelectedCategoryIds()).execute().getItems(); // TODO: change ,
             } catch (IOException e) {
                 if (connectionErrorView.isVisible()) {
                     connectionErrorView.quickHide();
@@ -237,20 +235,17 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(List<EventObject> events) {
             Collections.reverse(events);
 
-            if (allEvents == null) {
-                allEvents = new ArrayList<>(events);
-                eventAdapter = new GridViewAdapter(MainActivity.this, MainActivity.this, events);
+            if (eventAdapter == null) {
+                eventAdapter = new GridViewAdapter(MainActivity.this, MainActivity.this);
                 gridViewEvent.setAdapter(eventAdapter);
-            } else {
-                eventAdapter.addItems(events);
             }
 
-            allEvents.addAll(events);
+            eventAdapter.addItems(events);
 
             gridViewEvent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    int eventId = allEvents.get(position).getId(); // TODO: get rid of allEvents variable
+                    int eventId = eventAdapter.getItem(position).getId();
                     Intent intent = new Intent(MainActivity.this, EventActivity.class);
                     Bundle extras = new Bundle();
                     extras.putInt(EventActivity.BUNDLE_PARAM_EVENT_ID, eventId);
@@ -276,7 +271,7 @@ public class MainActivity extends ActionBarActivity {
                 addOnScrollListener(new InfiniteScrollListener(6) {
                     @Override
                     public void loadMore(int page, int totalItemsCount) {
-                        new EventAsyncTask(false).execute();
+                        new EventAsyncTask(true).execute(); // TODO: change to false, when finished developing this feature
                     }
                 });
                 addOnScrollListener(new PixelScrollDetector(new PixelScrollDetector.PixelScrollListener() {
@@ -349,8 +344,6 @@ public class MainActivity extends ActionBarActivity {
 
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
             int selectedCategory = preferences.getInt(SharedPreferencesKeys.CATEGORY_ID, CategoryObjectWrapper.ALL_CATEGORIES_ID);
-
-
 
             for (CategoryObject category : categories) {
                 if (category.getId() == selectedCategory) {

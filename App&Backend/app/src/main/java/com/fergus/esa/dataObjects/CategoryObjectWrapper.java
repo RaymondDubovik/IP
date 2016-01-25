@@ -6,6 +6,6 @@ package com.fergus.esa.dataObjects;
  */
 public class CategoryObjectWrapper {
     // TODO: think about
-    public static String ALL_CATEGORIES_NAME = "All Categories";
-    public static int ALL_CATEGORIES_ID = -1;
+    public static final String ALL_CATEGORIES_NAME = "All Categories";
+    public static final int ALL_CATEGORIES_ID = -1;
 }

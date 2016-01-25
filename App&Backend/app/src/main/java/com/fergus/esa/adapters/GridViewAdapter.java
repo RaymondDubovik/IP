@@ -16,7 +16,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /*
     An adapter class to load images into a GridView
@@ -24,49 +23,26 @@ import java.util.Random;
   */
 public final class GridViewAdapter extends BaseAdapter {
     private final Context context;
-    private final List<EventTextImage> eventTextImages = new ArrayList<>();
+    private List<EventObject> events;
     private Activity activity;
 
 
-    public GridViewAdapter(Activity activity, Context context, List<EventObject> events) {
+    public GridViewAdapter(Activity activity, Context context) {
         this.activity = activity;
         this.context = context;
-
-
-        addItems(events);
-    }
-
-
-    public void addItems(List<EventObject> items) {
-        for (EventObject event : items) {
-            String imgUrl = "https://pixabay.com/static/uploads/photo/2015/03/01/11/16/all-654566_640.jpg";
-
-            List<ImageObject> images = event.getImages();
-            // TODO: fix
-            if (images != null) {
-                Random randomizer = new Random();
-                imgUrl = images.get(randomizer.nextInt(images.size())).getUrl();
-            }
-            String eventTitle = event.getHeading();
-            EventTextImage eti = new EventTextImage(imgUrl, eventTitle);
-
-            eventTextImages.add(eti);
-        }
-        //Collections.addAll(eventTextImages);
-
-        notifyDataSetChanged();
+        events = new ArrayList<>();
     }
 
 
     @Override
     public int getCount() {
-        return eventTextImages.size();
+        return (events == null) ? 0 : events.size();
     }
 
 
     @Override
-    public EventTextImage getItem(int position) {
-        return eventTextImages.get(position);
+    public EventObject getItem(int position) {
+        return events.get(position);
     }
 
 
@@ -84,7 +60,6 @@ public final class GridViewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         ViewHolder view;
 
         LayoutInflater inflator = activity.getLayoutInflater();
@@ -100,39 +75,30 @@ public final class GridViewAdapter extends BaseAdapter {
         } else {
             view = (ViewHolder) convertView.getTag();
         }
-        view.eventTitle.setText(eventTextImages.get(position).getTitle());
+
+        EventObject event = events.get(position);
+        view.eventTitle.setText(event.getHeading());
+
+        String imgUrl = "https://pixabay.com/static/uploads/photo/2015/03/01/11/16/all-654566_640.jpg";
+        List<ImageObject> images = event.getImages();
+        if (images != null) {
+            imgUrl = images.get(0).getUrl();
+        }
 
         // Trigger the download of the URL asynchronously into the image view.
-        Picasso.with(context) //
-                .load(eventTextImages.get(position).getUrl()) //
-                .placeholder(R.drawable.placeholder) //
-                .fit() //
-                .tag(context)//
+        Picasso.with(context)
+                .load(imgUrl)
+                .placeholder(R.drawable.placeholder)
+                .fit()
+                .tag(context)
                 .into(view.eventImgView);
 
         return convertView;
     }
 
 
-    private class EventTextImage {
-        String url;
-        String title;
-
-
-        public EventTextImage(String url, String title) {
-            this.url = url;
-            this.title = title;
-        }
-
-
-        public String getUrl() {
-            return url;
-        }
-
-
-        public String getTitle() {
-            return title;
-        }
+    public void addItems(List<EventObject> events) {
+        this.events.addAll(events);
+        notifyDataSetChanged();
     }
-
 }

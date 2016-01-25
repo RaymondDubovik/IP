@@ -61,4 +61,9 @@ public class CategoryStorer {
     private void storeCategories(HashSet<Integer> categories) {
         sharedPreferences.edit().putString(SharedPreferencesKeys.SELECTED_CATEGORIES, gson.toJson(categories)).commit();
     }
+
+
+    public String getSelectedCategoryIds() {
+        return sharedPreferences.getString(SharedPreferencesKeys.SELECTED_CATEGORIES, " ");
+    }
 }
