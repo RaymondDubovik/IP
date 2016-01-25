@@ -64,6 +64,8 @@ public class MainActivity extends ActionBarActivity {
     private int textViewCategoryCurrentHeight;
     private ListView listViewCategories;
 
+    private int currentEventId = Integer.MAX_VALUE;
+
     private SwipeRefreshLayout swipeContainer;
     private GridView gridViewEvent;
     private GridViewAdapter eventAdapter;
@@ -181,17 +183,15 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private void changeCategory(CategoryObject category) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        preferences.edit().putInt(SharedPreferencesKeys.CATEGORY_ID, category.getId()).apply();
-        textViewCategory.setText(category.getName());
-        // slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+    private void changeActivieCategory() {
+        // textViewCategory.setText();
 
-        // TODO: finish;
+        // TODO: change name here properly!
     }
 
 
     private class EventAsyncTask extends AsyncTask<Void, Void, List<EventObject>> {
+        private static final int EVENT_COUNT_PER_PAGE = 10;
         private ProgressDialog pd;
         private boolean displayDialog;
 
@@ -215,7 +215,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected List<EventObject> doInBackground(Void... voids) {
             try {
-                return ServerUrls.endpoint.getEvents(0, 10, categoryStorer.getSelectedCategoryIds()).execute().getItems(); // TODO: change ,
+                return ServerUrls.endpoint.getEvents(currentEventId, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute().getItems(); // TODO: change ,
             } catch (IOException e) {
                 if (connectionErrorView.isVisible()) {
                     connectionErrorView.quickHide();
@@ -241,6 +241,15 @@ public class MainActivity extends ActionBarActivity {
             }
 
             eventAdapter.addItems(events);
+
+            int minEventId = Integer.MAX_VALUE;
+            for (EventObject event : events) {
+                int eventId = event.getId();
+                if (minEventId > eventId) {
+                    minEventId = eventId;
+                }
+            }
+            currentEventId = minEventId;
 
             gridViewEvent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -327,12 +336,17 @@ public class MainActivity extends ActionBarActivity {
                     if (listViewCategories.isItemChecked(position)) {
                         CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
                         categoryStorer.addCategory(category);
-                        changeCategory(category);
+
                     } else {
                         CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
                         categoryStorer.removeCategory(category);
                         // TODO: implement
                     }
+
+                    changeActivieCategory();
+                    eventAdapter = null;
+                    currentEventId = Integer.MAX_VALUE;
+                    getData();
                 }
             });
 

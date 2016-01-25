@@ -48,7 +48,7 @@ public class EventHelper {
                     " FROM `events` AS `e`" +
                     " JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
                     " JOIN `categories` AS `c` ON `c`.`id`=`ec`.`categoryId`" +
-                    " WHERE `e`.`id` < 10" + categorySqlPart +
+                    " WHERE `e`.`id` < ?" + categorySqlPart +
                     " GROUP BY `e`.`id`" +
                     " ORDER BY `e`.`id` DESC" +
                     " LIMIT ?) AS `eventAlias`";
@@ -58,10 +58,11 @@ public class EventHelper {
 
             statement = connection.prepareStatement(query);
             int param = 1;
+            statement.setInt(param++, from);
             for (int categoryId : categories) {
                 statement.setInt(param++, categoryId);
             }
-            statement.setInt(param++, from);
+            statement.setInt(param++, count);
             results = statement.executeQuery();
             if (!results.next()) {
                 System.out.println("No minId");

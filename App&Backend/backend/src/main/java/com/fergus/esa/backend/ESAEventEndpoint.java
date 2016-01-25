@@ -99,7 +99,7 @@ public class ESAEventEndpoint {
         List<ImageObject> images = new ArrayList<>();
         images.add(image);
 
-        EventObject event = new EventObject().setId(from + count).setImages(images).setHeading("Event title");
+        EventObject event = new EventObject().setId(from - count).setImages(images).setHeading("Event title");
         List<EventObject> events = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             events.add(event);
