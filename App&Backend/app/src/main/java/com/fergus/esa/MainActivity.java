@@ -13,6 +13,7 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,8 +21,8 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.fergus.esa.adapters.CategoryAdapter;
@@ -48,6 +49,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import in.srain.cube.views.GridViewWithHeaderAndFooter;
+
 
 public class MainActivity extends ActionBarActivity {
     private boolean loadRequired;
@@ -63,10 +66,12 @@ public class MainActivity extends ActionBarActivity {
     private int textViewCategoryCurrentHeight;
     private ListView listViewCategories;
 
+	private ProgressBar progressBarEvents;
+
     private int currentEventId = Integer.MAX_VALUE;
 
     private SwipeRefreshLayout swipeContainer;
-    private GridView gridViewEvent;
+    private GridViewWithHeaderAndFooter gridViewEvent;
     private GridViewAdapter eventAdapter;
     private Merlin merlin;
 
@@ -97,7 +102,10 @@ public class MainActivity extends ActionBarActivity {
         categoryLayout = (ViewGroup) findViewById(R.id.categoryPanel);
         categoryStorer = new CategoryStorer(this);
 
-        gridViewEvent = (GridView) findViewById(R.id.gridView);
+        gridViewEvent = (GridViewWithHeaderAndFooter) findViewById(R.id.gridView);
+		View footerView = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.layout_event_footer, null, false);
+		gridViewEvent.addFooterView(footerView);
+		progressBarEvents = (ProgressBar) footerView.findViewById(R.id.progressBarEvents);
 
         connectionErrorView = new ConnectionErrorView(this, findViewById(R.id.linearLayoutConnectionErrorPanel), new RetryListener() {
             @Override
@@ -183,34 +191,40 @@ public class MainActivity extends ActionBarActivity {
 
 
     private void changeActiveCategory() {
-        int count = categoryStorer.getCount();
+		int count = categoryStorer.getCount();
 
-		if (count == 0 ) {
+		Log.d("", count + " - count");
+
+		if (count <= 0) {
 			textViewCategory.setText(CategoryObjectWrapper.ALL_CATEGORIES_NAME);
 			return;
 		}
 
-		if (count > 1) {
-			textViewCategory.setText(count + " categories");
+		if (count == 1) {
+			String text = null;
+			CategoryAdapter adapter = (CategoryAdapter) listViewCategories.getAdapter();
+			for (int i = 0; i < adapter.getCount(); i++) {
+				CategoryObject category = adapter.getItem(i);
+				if (categoryStorer.hasCategory(category)) {
+					text = category.getName();
+					break;
+				}
+			}
+
+			if (text == null) {
+				textViewCategory.setText(CategoryObjectWrapper.ALL_CATEGORIES_NAME);
+			} else {
+				textViewCategory.setText(text);
+			}
 			return;
 		}
 
-
-		// count == 1
-
-		CategoryAdapter adapter = (CategoryAdapter) listViewCategories.getAdapter();
-		for (int i = 0; i < adapter.getCount(); i++) {
-			CategoryObject category = adapter.getItem(i);
-			if (categoryStorer.hasCategory(category)) {
-				textViewCategory.setText(category.getName());
-			}
-			Log.d("", i + "");
-		}
+		textViewCategory.setText(count + " categories");
     }
 
 
     private class EventAsyncTask extends AsyncTask<Void, Void, List<EventObject>> {
-        private static final int EVENT_COUNT_PER_PAGE = 20;
+        private static final int EVENT_COUNT_PER_PAGE = 7;
         private ProgressDialog pd;
         private boolean displayDialog;
 
@@ -257,6 +271,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(List<EventObject> events) {
             if (events == null) {
+				progressBarEvents.setVisibility(View.GONE);
 				hideUi();
 				return;
 			}
@@ -293,6 +308,7 @@ public class MainActivity extends ActionBarActivity {
             gridViewEvent.setOnScrollListener(new GridViewScrollListener());
 
 			hideUi();
+			progressBarEvents.setVisibility(View.VISIBLE);
         }
 
 
@@ -374,8 +390,6 @@ public class MainActivity extends ActionBarActivity {
                         categoryStorer.removeCategory(category);
                     }
 
-					// TODO: implement
-
                     changeActiveCategory();
                     eventAdapter = null;
                     currentEventId = Integer.MAX_VALUE;
@@ -404,6 +418,8 @@ public class MainActivity extends ActionBarActivity {
             TypedValue typedValue = new TypedValue();
             getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
             swipeContainer.setColorSchemeColors(typedValue.data);
+
+			changeActiveCategory();
         }
     }
 
