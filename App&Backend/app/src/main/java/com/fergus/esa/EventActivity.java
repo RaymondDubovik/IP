@@ -4,16 +4,20 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
 import com.fergus.esa.adapters.PageAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.ImageObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.NewsObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
+import com.fergus.esa.dataObjects.UserObjectWrapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,6 +40,10 @@ public class EventActivity extends AppCompatActivity {
     private List<SummaryObject> summaries;
 
 
+	private double startTime;
+	private double milliSeconds = 0;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,14 +59,46 @@ public class EventActivity extends AppCompatActivity {
         eventTitle = "Event Title"; // TODO: change to the real thing
 
         new ImageAsyncTask().execute();
-        new TweetAsyncTask().execute();
+		new SummaryAsyncTask().execute();
+		new TweetAsyncTask().execute();
         new NewsAsyncTask().execute();
-        new SummaryAsyncTask().execute();
     }
 
 
-    private void onDataLoaded() {
-        // TODO: title
+	@Override
+	protected void onResume() {
+		super.onResume();
+		startTime = SystemClock.elapsedRealtime();
+	}
+
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		milliSeconds += SystemClock.elapsedRealtime() - startTime;
+
+		if (isFinishing()) {
+			final int userId = PreferenceManager.getDefaultSharedPreferences(EventActivity.this).getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
+			if (userId != UserObjectWrapper.NO_USER_ID) {
+				Log.d("d", userId + "/" + eventId + "/" + milliSeconds);
+
+				Thread t = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						Log.d("test", "test");
+						// TODO: this runs
+					}
+				});
+
+				t.start();
+			}
+		}
+	}
+
+
+	private void onDataLoaded() {
+		startTime = SystemClock.elapsedRealtime();
+		// TODO: title
         setTitle(eventTitle);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);

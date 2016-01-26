@@ -128,4 +128,45 @@ public class UserHelper {
 
         return false;
     }
+
+
+	public void registerHit(int userId, int eventId, double milliseconds) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "SELECT EXISTS(SELECT 1 FROM `eventsUsers` WHERE `userid`=? AND `eventId`=?) AS `exists`";
+
+		try {
+			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+			statement.setInt(1, userId);
+			statement.setInt(2, eventId);
+			statement.executeUpdate();
+
+			results = statement.getGeneratedKeys();
+			if (results.next()) {
+				boolean exists = results.getBoolean("exists");
+				System.out.println("exists" + exists);
+			} else {
+				System.out.println("does not exist");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+	}
 }

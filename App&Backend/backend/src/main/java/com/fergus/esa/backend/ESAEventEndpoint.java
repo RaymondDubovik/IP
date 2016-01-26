@@ -83,12 +83,8 @@ public class ESAEventEndpoint {
     }
 
 
-
-
-    // TODO: implement real thing here
     @ApiMethod(name = "getEvents")
     public List<EventObject> getEvents(@Named("from") int from, @Named("count") int count, @Named("categories") String categoriesJson) {
-
         categoriesJson = categoriesJson.trim();
         List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
 
@@ -133,6 +129,11 @@ public class ESAEventEndpoint {
     }
 
 
+	@ApiMethod(name="registerHit")
+	public void registerHit(@Named("userId") int userId, @Named("eventId") int eventId, @Named("milliseconds") double milliseconds) {
+		// TODO: register a hit here
+		new UserHelper(connection).registerHit(userId, eventId, milliseconds);
+	}
 
 
 

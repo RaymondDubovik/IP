@@ -68,7 +68,7 @@ public class SchemaCreator {
             "`userId` INT REFERENCES `users`(`id`)," +
             "`eventId` INT REFERENCES `events`(`id`)," +
             "`hits` INT DEFAULT 0," +
-            "`time` INT DEFAULT 0" +
+            "`time` DOUBLE DEFAULT 0" +
         ")";
 
     private static final String queryEventsCategories =
