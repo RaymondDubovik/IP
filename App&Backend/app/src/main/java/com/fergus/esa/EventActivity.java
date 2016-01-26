@@ -80,17 +80,7 @@ public class EventActivity extends AppCompatActivity {
 		if (isFinishing()) {
 			final int userId = PreferenceManager.getDefaultSharedPreferences(EventActivity.this).getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
 			if (userId != UserObjectWrapper.NO_USER_ID) {
-				Log.d("d", userId + "/" + eventId + "/" + milliSeconds);
-
-				Thread t = new Thread(new Runnable() {
-					@Override
-					public void run() {
-						Log.d("test", "test");
-						// TODO: this runs
-					}
-				});
-
-				t.start();
+				new RegistrationAsyncTask(userId, eventId, milliSeconds).execute();
 			}
 		}
 	}
@@ -212,6 +202,33 @@ public class EventActivity extends AppCompatActivity {
             }
         }
     }
+
+
+	private class RegistrationAsyncTask extends AsyncTask<Void, Void, Void> {
+		private final int userId;
+		private final int eventId;
+		private final double milliseconds;
+
+
+		public RegistrationAsyncTask(int userId, int eventId, double milliseconds) {
+			this.userId = userId;
+			this.eventId = eventId;
+			this.milliseconds = milliseconds;
+		}
+
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			Log.d("test", "test");
+			Log.d("d", userId + "/" + eventId + "/" + milliSeconds);
+			try {
+				ServerUrls.endpoint.registerHit(this.userId, this.eventId, this.milliseconds).execute();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+	}
 
 
     public List<NewsObject> getNews() {

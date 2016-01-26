@@ -129,9 +129,8 @@ public class ESAEventEndpoint {
     }
 
 
-	@ApiMethod(name="registerHit")
+	@ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name="registerHit")
 	public void registerHit(@Named("userId") int userId, @Named("eventId") int eventId, @Named("milliseconds") double milliseconds) {
-		// TODO: register a hit here
 		new UserHelper(connection).registerHit(userId, eventId, milliseconds);
 	}
 

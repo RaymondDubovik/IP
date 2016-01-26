@@ -52,8 +52,6 @@ public class EventHelper {
                     " ORDER BY `e`.`id` DESC" +
                     " LIMIT ?) AS `eventAlias`";
 
-			System.out.println(query);
-
             statement = connection.prepareStatement(query);
             int param = 1;
             statement.setInt(param++, from);
@@ -95,7 +93,6 @@ public class EventHelper {
 
 
     private List<EventObject> getEventInterval(int minId, int maxId) {
-		System.out.println(minId + ", " + maxId);
 		if (minId == 0) {
 			return null;
 		}

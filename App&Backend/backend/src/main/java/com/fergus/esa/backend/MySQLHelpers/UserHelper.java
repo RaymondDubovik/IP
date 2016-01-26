@@ -137,17 +137,18 @@ public class UserHelper {
 		String query = "SELECT EXISTS(SELECT 1 FROM `eventsUsers` WHERE `userid`=? AND `eventId`=?) AS `exists`";
 
 		try {
-			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+			statement = connection.prepareStatement(query);
 			statement.setInt(1, userId);
 			statement.setInt(2, eventId);
-			statement.executeUpdate();
+			results = statement.executeQuery();
 
-			results = statement.getGeneratedKeys();
 			if (results.next()) {
 				boolean exists = results.getBoolean("exists");
-				System.out.println("exists" + exists);
-			} else {
-				System.out.println("does not exist");
+				if (exists) {
+					updateHit(userId, eventId, milliseconds);
+				} else {
+					createHit(userId, eventId, milliseconds);
+				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -168,5 +169,65 @@ public class UserHelper {
 				statement = null;
 			}
 		}
+	}
+
+
+	private boolean createHit(int userId, int eventId, double milliseconds) {
+		PreparedStatement statement = null;
+
+		String query = "INSERT INTO `eventsUsers`(`userId`, `eventId`, `hits`, `time`) VALUES (?, ?, 1, ?)";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setInt(1, userId);
+			statement.setInt(2, eventId);
+			statement.setDouble(3, milliseconds);
+
+			return statement.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return false;
+	}
+
+
+	private boolean updateHit(int userId, int eventId, double milliseconds) {
+		PreparedStatement statement = null;
+
+		String query =
+				"UPDATE `eventsUsers`" +
+						" SET `hits` = `hits` + 1," +
+						" `time` = `time` + ?" +
+						" WHERE `userId` = ?" +
+						" AND `eventId` = ?" ;
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setDouble(1, milliseconds);
+			statement.setInt(2, userId);
+			statement.setInt(3, eventId);
+			return statement.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return false;
 	}
 }
