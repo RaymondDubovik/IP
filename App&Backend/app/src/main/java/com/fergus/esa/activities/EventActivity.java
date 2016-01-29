@@ -1,4 +1,4 @@
-package com.fergus.esa;
+package com.fergus.esa.activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -11,6 +11,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
+import com.fergus.esa.R;
+import com.fergus.esa.ServerUrls;
+import com.fergus.esa.SharedPreferencesKeys;
 import com.fergus.esa.adapters.PageAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.ImageObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.NewsObject;

@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
-import com.fergus.esa.EventActivity;
+import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.R;
 import com.fergus.esa.adapters.ImageAdapter;
 

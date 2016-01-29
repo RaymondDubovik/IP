@@ -1,4 +1,4 @@
-package com.fergus.esa;
+package com.fergus.esa.activities;
 
 
 import android.app.ProgressDialog;
@@ -25,6 +25,9 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.fergus.esa.CategoryStorer;
+import com.fergus.esa.R;
+import com.fergus.esa.ServerUrls;
 import com.fergus.esa.adapters.CategoryAdapter;
 import com.fergus.esa.adapters.GridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;

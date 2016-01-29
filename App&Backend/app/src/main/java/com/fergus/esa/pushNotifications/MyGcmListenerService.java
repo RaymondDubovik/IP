@@ -24,7 +24,7 @@ import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
-import com.fergus.esa.EventActivity;
+import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.R;
 import com.google.android.gms.gcm.GcmListenerService;
 

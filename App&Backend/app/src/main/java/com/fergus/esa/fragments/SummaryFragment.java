@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.fergus.esa.EventActivity;
+import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.R;
 import com.fergus.esa.adapters.SummaryListAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObject;

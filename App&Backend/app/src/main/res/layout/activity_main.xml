@@ -28,7 +28,7 @@
 				android:descendantFocusability="beforeDescendants"
 				android:focusableInTouchMode="true"
 				android:orientation="vertical"
-				tools:context=".MainActivity">
+				tools:context=".activities.MainActivity">
 
 				<android.support.v7.widget.Toolbar
 					android:id="@+id/toolbar"

@@ -3,7 +3,7 @@ package com.fergus.esa.fragments;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 
-import com.fergus.esa.EventActivity;
+import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.adapters.LinksListAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.NewsObject;
 import com.fergus.esa.dataObjects.ESANewsLink;

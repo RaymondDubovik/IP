@@ -1,4 +1,4 @@
-package com.fergus.esa;
+package com.fergus.esa.activities;
 
 
 import android.app.AlertDialog;
@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.TextView;
 
+import com.fergus.esa.R;
 import com.fergus.esa.adapters.SearchGridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.EsaEventEndpoint;
 import com.fergus.esa.backend.esaEventEndpoint.model.ESAEvent;
