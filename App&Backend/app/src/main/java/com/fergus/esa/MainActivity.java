@@ -149,7 +149,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onPause() {
         merlin.unbind();
         super.onPause();
-        if (connectionErrorView!= null && connectionErrorView.isVisible()) {
+        if (connectionErrorView != null && connectionErrorView.isVisible()) {
             connectionErrorView.hide();
         }
     }

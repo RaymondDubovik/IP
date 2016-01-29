@@ -3,7 +3,6 @@ package com.fergus.esa.backend.dataObjects;
 import com.googlecode.objectify.annotation.Entity;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
@@ -15,12 +14,6 @@ public class EventObject {
     private String heading;
     private Date timestamp;
     private String mainImageUrl;
-    // TODO: think where users need to be put
-    private List<CategoryObject> categories;
-    private List<NewsObject> news;
-    private List<TweetObject> tweets;
-    private List<SummaryObject> summaries;
-    private List<ImageObject> images;
 
 
     public EventObject() {}
@@ -66,61 +59,6 @@ public class EventObject {
 
     public EventObject setImageUrl(String mainImageUrl) {
         this.mainImageUrl = mainImageUrl;
-        return this;
-    }
-
-
-    public List<CategoryObject> getCategories() {
-        return categories;
-    }
-
-
-    public EventObject setCategories(List<CategoryObject> categories) {
-        this.categories = categories;
-        return this;
-    }
-
-
-    public List<NewsObject> getNews() {
-        return news;
-    }
-
-
-    public EventObject setNews(List<NewsObject> news) {
-        this.news = news;
-        return this;
-    }
-
-
-    public List<TweetObject> getTweets() {
-        return tweets;
-    }
-
-
-    public EventObject setTweets(List<TweetObject> tweets) {
-        this.tweets = tweets;
-        return this;
-    }
-
-
-    public List<SummaryObject> getSummaries() {
-        return summaries;
-    }
-
-
-    public EventObject setSummaries(List<SummaryObject> summaries) {
-        this.summaries = summaries;
-        return this;
-    }
-
-
-    public List<ImageObject> getImages() {
-        return images;
-    }
-
-
-    public EventObject setImages(List<ImageObject> images) {
-        this.images = images;
         return this;
     }
 }

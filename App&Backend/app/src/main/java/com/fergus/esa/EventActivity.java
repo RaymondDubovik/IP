@@ -57,6 +57,7 @@ public class EventActivity extends AppCompatActivity {
         eventId = extras.getInt(BUNDLE_PARAM_EVENT_ID);
         eventTitle = "Event Title"; // TODO: change to the real thing
 
+		// in separate async tasks, so that it is easier to implement infinite scrolling for each of the fragments in the future
 		new SummaryAsyncTask().execute();
 		new ImageAsyncTask().execute();
 		new TweetAsyncTask().execute();
