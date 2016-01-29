@@ -29,8 +29,9 @@ import java.util.List;
  */
 public class EventActivity extends AppCompatActivity {
     public static final String BUNDLE_PARAM_EVENT_ID = "eventId";
+	public static final String BUNDLE_PARAM_EVENT_HEADING = "eventHeading";
 
-    private String eventTitle;
+	private String eventTitle;
     private int eventId;
 
     private ProgressDialog progressDialog;
@@ -40,7 +41,6 @@ public class EventActivity extends AppCompatActivity {
     private List<TweetObject> tweets;
     private List<NewsObject> news;
     private List<SummaryObject> summaries;
-
 
 	private double startTime;
 	private double milliSeconds = 0;
@@ -58,7 +58,7 @@ public class EventActivity extends AppCompatActivity {
         Intent i = getIntent();
         Bundle extras = i.getExtras();
         eventId = extras.getInt(BUNDLE_PARAM_EVENT_ID);
-        eventTitle = "Event Title"; // TODO: change to the real thing
+        eventTitle = extras.getString(BUNDLE_PARAM_EVENT_HEADING);
 
 		// in separate async tasks, so that it is easier to implement infinite scrolling for each of the fragments in the future
 		new SummaryAsyncTask().execute();

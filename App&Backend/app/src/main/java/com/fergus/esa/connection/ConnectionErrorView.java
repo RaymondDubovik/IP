@@ -24,18 +24,18 @@ public class ConnectionErrorView {
     private float originalY;
 
 
-    public ConnectionErrorView(Context context, View view, final RetryListener listener) {
-        container = view;
-        textViewErrorMessage = (TextView) container.findViewById(R.id.textViewConnectionErrorMessage);
-        view.findViewById(R.id.textViewButtonRetry).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                quickHide();
-                listener.onRetry();
-            }
-        });
 
-        height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, MOVE_IN_DP, context.getResources().getDisplayMetrics());
+	public ConnectionErrorView(Context context, View view) {
+		container = view;
+		textViewErrorMessage = (TextView) container.findViewById(R.id.textViewConnectionErrorMessage);
+
+		height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, MOVE_IN_DP, context.getResources().getDisplayMetrics());
+	}
+
+
+    public ConnectionErrorView(Context context, View view, RetryListener listener) {
+        this(context, view);
+		registerOnRetryListerner(listener);
     }
 
 
@@ -102,4 +102,15 @@ public class ConnectionErrorView {
     public boolean isVisible() {
         return isVisible;
     }
+
+
+	public void registerOnRetryListerner(final RetryListener listener) {
+		container.findViewById(R.id.textViewButtonRetry).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				quickHide();
+				listener.onRetry();
+			}
+		});
+	}
 }

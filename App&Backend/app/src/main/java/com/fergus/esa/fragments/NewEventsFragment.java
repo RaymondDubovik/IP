@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +31,7 @@ import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.EventObjectCollection;
 import com.fergus.esa.connection.ConnectionChecker;
 import com.fergus.esa.connection.ConnectionErrorView;
+import com.fergus.esa.connection.RetryListener;
 import com.fergus.esa.dataObjects.CategoryObjectWrapper;
 import com.fergus.esa.listeners.CompositeScrollListener;
 import com.fergus.esa.listeners.InfiniteScrollListener;
@@ -81,6 +81,13 @@ public class NewEventsFragment extends Fragment implements NetworkFragment {
 		activity = (MainActivity) getActivity();
 
 		connectionErrorView = activity.getConnectionErrorView();
+		connectionErrorView.registerOnRetryListerner(new RetryListener() {
+			@Override
+			public void onRetry() {
+				getData();
+				// TODO: interface. here
+			}
+		});
 
 		listViewCategories = (ListView) view.findViewById(R.id.listViewCategories);
 		textViewCategory = (TextView) view.findViewById(R.id.textViewSelectedCategory);
@@ -136,8 +143,6 @@ public class NewEventsFragment extends Fragment implements NetworkFragment {
 
 	private void changeActiveCategory() {
 		int count = categoryStorer.getCount();
-
-		Log.d("", count + " - count");
 
 		if (count <= 0) {
 			textViewCategory.setText(CategoryObjectWrapper.ALL_CATEGORIES_NAME);
@@ -253,10 +258,11 @@ public class NewEventsFragment extends Fragment implements NetworkFragment {
 			gridViewEvent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					int eventId = eventAdapter.getItem(position).getId();
+					EventObject event = eventAdapter.getItem(position);
 					Intent intent = new Intent(activity, EventActivity.class);
 					Bundle extras = new Bundle();
-					extras.putInt(EventActivity.BUNDLE_PARAM_EVENT_ID, eventId);
+					extras.putInt(EventActivity.BUNDLE_PARAM_EVENT_ID, event.getId());
+					extras.putString(EventActivity.BUNDLE_PARAM_EVENT_HEADING, event.getHeading());
 					intent.putExtras(extras);
 					startActivity(intent);
 				}

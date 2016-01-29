@@ -1,46 +1,22 @@
 package com.fergus.esa.activities;
 
 
-import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
-import com.fergus.esa.CategoryStorer;
 import com.fergus.esa.R;
-import com.fergus.esa.ServerUrls;
-import com.fergus.esa.adapters.CategoryAdapter;
-import com.fergus.esa.adapters.GridViewAdapter;
-import com.fergus.esa.backend.esaEventEndpoint.model.CategoryObject;
-import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
-import com.fergus.esa.backend.esaEventEndpoint.model.EventObjectCollection;
 import com.fergus.esa.connection.ConnectionChecker;
 import com.fergus.esa.connection.ConnectionErrorView;
 import com.fergus.esa.connection.RetryListener;
-import com.fergus.esa.dataObjects.CategoryObjectWrapper;
-import com.fergus.esa.listeners.CompositeScrollListener;
-import com.fergus.esa.listeners.InfiniteScrollListener;
-import com.fergus.esa.listeners.PixelScrollDetector;
-import com.fergus.esa.listeners.ScrollListener;
+import com.fergus.esa.fragments.NetworkFragment;
 import com.fergus.esa.pushNotifications.RegistrationIntentService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -48,15 +24,11 @@ import com.novoda.merlin.Merlin;
 import com.novoda.merlin.registerable.connection.Connectable;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import in.srain.cube.views.GridViewWithHeaderAndFooter;
-
 
 public class MainActivity extends ActionBarActivity {
 	private ConnectionErrorView connectionErrorView;
+
+	private NetworkFragment networkFragment;
 
     private Merlin merlin;
 
@@ -76,16 +48,7 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-
-        connectionErrorView = new ConnectionErrorView(this, findViewById(R.id.linearLayoutConnectionErrorPanel), new RetryListener() {
-            @Override
-            public void onRetry() {
-                getData();
-				// TODO: interface. here
-            }
-        });
-
-
+        connectionErrorView = new ConnectionErrorView(this, findViewById(R.id.linearLayoutConnectionErrorPanel));
 
 
 		/*
@@ -221,5 +184,7 @@ public class MainActivity extends ActionBarActivity {
 	public ConnectionErrorView getConnectionErrorView() {
 		return connectionErrorView;
 	}
+
+
 }
 
