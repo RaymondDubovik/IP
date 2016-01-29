@@ -94,14 +94,14 @@ public class EventActivity extends AppCompatActivity {
 		// TODO: title
         setTitle(eventTitle);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.eventDataTabLayout);
         tabLayout.addTab(tabLayout.newTab().setText("Event Summary"));
 		tabLayout.addTab(tabLayout.newTab().setText("Images"));
         tabLayout.addTab(tabLayout.newTab().setText("Related Tweets"));
         tabLayout.addTab(tabLayout.newTab().setText("News Articles"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
+        final ViewPager viewPager = (ViewPager) findViewById(R.id.eventDateViewPager);
         final PageAdapter adapter = new PageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
 
         viewPager.setAdapter(adapter);
