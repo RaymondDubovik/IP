@@ -287,7 +287,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 				return;
 			}
 
-			if (eventAdapter == null) {
+			if (eventAdapter == null || type == TYPE_EVENTS_RECOMMENDED) {
 				eventAdapter = new GridViewAdapter(activity);
 				gridViewEvent.setAdapter(eventAdapter);
 			}
