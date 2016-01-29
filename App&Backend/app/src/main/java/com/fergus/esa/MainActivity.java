@@ -279,7 +279,7 @@ public class MainActivity extends ActionBarActivity {
 			Collections.reverse(events);
 
             if (eventAdapter == null) {
-                eventAdapter = new GridViewAdapter(MainActivity.this, MainActivity.this);
+                eventAdapter = new GridViewAdapter(MainActivity.this);
                 gridViewEvent.setAdapter(eventAdapter);
             }
 

@@ -10,7 +10,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 
 import com.fergus.esa.adapters.PageAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.ImageObject;
@@ -58,8 +57,8 @@ public class EventActivity extends AppCompatActivity {
         eventId = extras.getInt(BUNDLE_PARAM_EVENT_ID);
         eventTitle = "Event Title"; // TODO: change to the real thing
 
-        new ImageAsyncTask().execute();
 		new SummaryAsyncTask().execute();
+		new ImageAsyncTask().execute();
 		new TweetAsyncTask().execute();
         new NewsAsyncTask().execute();
     }
@@ -93,6 +92,7 @@ public class EventActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Event Summary"));
+		tabLayout.addTab(tabLayout.newTab().setText("Images"));
         tabLayout.addTab(tabLayout.newTab().setText("Related Tweets"));
         tabLayout.addTab(tabLayout.newTab().setText("News Articles"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
@@ -219,8 +219,6 @@ public class EventActivity extends AppCompatActivity {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			Log.d("test", "test");
-			Log.d("d", userId + "/" + eventId + "/" + milliSeconds);
 			try {
 				ServerUrls.endpoint.registerHit(this.userId, this.eventId, this.milliseconds).execute();
 			} catch (IOException e) {

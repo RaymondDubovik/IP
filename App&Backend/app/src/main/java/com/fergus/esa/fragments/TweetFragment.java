@@ -36,7 +36,7 @@ public class TweetFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         retrieveTweets();
 
-        View view = inflater.inflate(R.layout.tweet_fragment, container, false);
+        View view = inflater.inflate(R.layout.fragment_tweet, container, false);
 
         ListView lv = (ListView) view.findViewById(R.id.tweetList);
 

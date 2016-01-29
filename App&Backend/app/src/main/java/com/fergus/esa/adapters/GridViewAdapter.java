@@ -1,7 +1,6 @@
 package com.fergus.esa.adapters;
 
 import android.app.Activity;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,14 +22,12 @@ import java.util.List;
 public final class GridViewAdapter extends BaseAdapter {
     private static final String PLACEHOLDER_IMAGE_URL = "https://pixabay.com/static/uploads/photo/2015/03/01/11/16/all-654566_640.jpg";
 
-    private final Context context;
     private List<EventObject> events;
     private Activity activity;
 
 
-    public GridViewAdapter(Activity activity, Context context) {
+    public GridViewAdapter(Activity activity) {
         this.activity = activity;
-        this.context = context;
         events = new ArrayList<>();
     }
 
@@ -53,7 +50,7 @@ public final class GridViewAdapter extends BaseAdapter {
     }
 
 
-    public static class ViewHolder {
+    private static class ViewHolder {
         public SquaredImageView eventImgView;
         public TextView eventTitle;
     }
@@ -86,11 +83,11 @@ public final class GridViewAdapter extends BaseAdapter {
         }
 
         // Trigger the download of the URL asynchronously into the image view.
-        Picasso.with(context)
+        Picasso.with(activity)
                 .load(imgUrl)
                 .placeholder(R.drawable.placeholder)
                 .fit()
-                .tag(context)
+                .tag(activity)
                 .into(view.eventImgView);
 
         return convertView;
