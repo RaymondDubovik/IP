@@ -127,7 +127,7 @@ public class MainActivity extends ActionBarActivity {
     private void initToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(R.string.recent);
+        getSupportActionBar().setTitle("Events");
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 

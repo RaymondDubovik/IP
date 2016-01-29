@@ -4,7 +4,6 @@
     <string name="search_title">Search</string>
     <string name="search_hint">Search for an event…</string>
     <string name="tweet_search_hint">Filter tweets…</string>
-    <string name="recent">Recent Events</string>
     <string name="search">Search</string>
     <string name="no_internet">Can\'t connect right now</string>
 </resources>

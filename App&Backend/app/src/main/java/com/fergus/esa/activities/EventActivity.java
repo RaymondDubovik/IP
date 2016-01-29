@@ -10,9 +10,8 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.widget.Toast;
 
+import com.fergus.esa.ErrorAsyncTask;
 import com.fergus.esa.R;
 import com.fergus.esa.ServerUrls;
 import com.fergus.esa.SharedPreferencesKeys;
@@ -30,7 +29,7 @@ import java.util.List;
     An activity which displays an event to the user in a tabbed layout
  */
 public class EventActivity extends AppCompatActivity {
-    public static final String BUNDLE_PARAM_EVENT_ID = "eventId";
+	public static final String BUNDLE_PARAM_EVENT_ID = "eventId";
 	public static final String BUNDLE_PARAM_EVENT_HEADING = "eventHeading";
 
 	private String eventTitle;
@@ -62,11 +61,6 @@ public class EventActivity extends AppCompatActivity {
         eventId = extras.getInt(BUNDLE_PARAM_EVENT_ID);
         eventTitle = extras.getString(BUNDLE_PARAM_EVENT_HEADING);
 
-		Log.d("", "eventId: " + eventId);
-
-		Toast.makeText(this, "eventId: " + eventId, Toast.LENGTH_SHORT).show();
-
-
 		// in separate async tasks, so that it is easier to implement infinite scrolling for each of the fragments in the future
 		new SummaryAsyncTask().execute();
 		new ImageAsyncTask().execute();
@@ -88,6 +82,7 @@ public class EventActivity extends AppCompatActivity {
 		milliSeconds += SystemClock.elapsedRealtime() - startTime;
 
 		if (isFinishing()) {
+
 			final int userId = PreferenceManager.getDefaultSharedPreferences(EventActivity.this).getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
 			if (userId != UserObjectWrapper.NO_USER_ID) {
 				new RegistrationAsyncTask(userId, eventId, milliSeconds).execute();
@@ -182,7 +177,7 @@ public class EventActivity extends AppCompatActivity {
     }
 
 
-    private abstract class CounterAsyncTask extends AsyncTask<Void, Void, Void> {
+    private abstract class CounterAsyncTask extends ErrorAsyncTask<Void, Void, Void> {
         @Override
         protected void onPreExecute() {
             if (progressDialog == null) {

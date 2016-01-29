@@ -5,12 +5,12 @@ import com.fergus.esa.backend.MySQLHelpers.EventHelper;
 import com.fergus.esa.backend.MySQLHelpers.ImageHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
-import com.fergus.esa.backend.MySQLHelpers.SchemaCreator;
 import com.fergus.esa.backend.MySQLHelpers.SummaryHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.MySQLHelpers.UserHelper;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
+import com.fergus.esa.backend.dataObjects.CategoryRatingObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.GcmObject;
 import com.fergus.esa.backend.dataObjects.ImageObject;
@@ -35,7 +35,6 @@ import com.google.gson.Gson;
 import com.googlecode.objectify.repackaged.gentyref.TypeToken;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +52,7 @@ public class ESAEventEndpoint {
     public ESAEventEndpoint() {
         connection = (new MySQLJDBC()).getConnection();
 
+		/*
         try {
             SchemaCreator schemaCreator = new SchemaCreator();
             schemaCreator.drop(connection);
@@ -61,13 +61,13 @@ public class ESAEventEndpoint {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        */
     }
 
 
     @ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name = "registerGcmToken")
     public UserObject registerGcmToken(@Named("gcmToken") String gcmToken) {
         // TODO: check, if token is unique (in the database)
-
         GcmObject gcmObject = new GcmObject(gcmToken, "SomeTextHere", "SomeTitleHere").setData("{\"id\":5}"); // TODO: change
         new GcmSender().sendNotification(gcmObject.toJson());
         return new UserHelper(connection).create(gcmToken);
@@ -83,8 +83,8 @@ public class ESAEventEndpoint {
     }
 
 
-    @ApiMethod(name = "getEvents")
-    public List<EventObject> getEvents(@Named("from") int from, @Named("count") int count, @Named("categories") String categoriesJson) {
+    @ApiMethod(name = "getNewEvents")
+    public List<EventObject> getNewEvents(@Named("from") int from, @Named("count") int count, @Named("categories") String categoriesJson) {
         categoriesJson = categoriesJson.trim();
         List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
 
@@ -97,8 +97,29 @@ public class ESAEventEndpoint {
 			}
 		}
 
-        return new EventHelper(connection).getEvents(categoryIds, from, count);
+        return new EventHelper(connection).getNewEvents(categoryIds, from, count);
     }
+
+
+	@ApiMethod(name = "getRecommendedEvents")
+	public List<EventObject> getRecommendedEvents(@Named("userId") int userId, @Named("from") int from, @Named("count") int count, @Named("categories") String categoriesJson) {
+		// TODO: fix this shit!!!!
+		categoriesJson = categoriesJson.trim();
+		List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
+
+		if (categoryIds != null) {
+			for (int categoryId : categoryIds) {
+				if (categoryId == -1) { // TODO: REMOVE HARDCODE HERE -1 is all categories
+					return null;
+				}
+			}
+		}
+
+		List<CategoryRatingObject> categories = new CategoryHelper(connection).getUserCategoryRating(userId, categoryIds);
+
+		return new EventHelper(connection).getRecommendedEvents(userId, categoryIds, from, count);
+	}
+
 
 
     @ApiMethod(name = "getCategories")

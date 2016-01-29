@@ -5,7 +5,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.fergus.esa.fragments.NewEventsFragment;
-import com.fergus.esa.fragments.RecommendedEventsFragment;
 
 public class EventPageAdapter extends FragmentStatePagerAdapter {
     int tabCount;
@@ -21,10 +20,10 @@ public class EventPageAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                NewEventsFragment tab0 = new NewEventsFragment();
+                NewEventsFragment tab0 = new NewEventsFragment().setType(NewEventsFragment.TYPE_EVENTS_NEW);
                 return tab0;
 			case 1:
-				RecommendedEventsFragment tab1 = new RecommendedEventsFragment();
+				NewEventsFragment tab1 = new NewEventsFragment().setType(NewEventsFragment.TYPE_EVENTS_RECOMMENDED);
 				return tab1;
             default:
                 return null;

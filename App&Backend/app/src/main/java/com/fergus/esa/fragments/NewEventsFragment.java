@@ -3,8 +3,8 @@ package com.fergus.esa.fragments;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.TypedValue;
@@ -19,8 +19,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.fergus.esa.CategoryStorer;
+import com.fergus.esa.ErrorAsyncTask;
 import com.fergus.esa.R;
 import com.fergus.esa.ServerUrls;
+import com.fergus.esa.SharedPreferencesKeys;
 import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.activities.MainActivity;
 import com.fergus.esa.adapters.CategoryAdapter;
@@ -32,6 +34,7 @@ import com.fergus.esa.connection.ConnectionChecker;
 import com.fergus.esa.connection.ConnectionErrorView;
 import com.fergus.esa.connection.RetryListener;
 import com.fergus.esa.dataObjects.CategoryObjectWrapper;
+import com.fergus.esa.dataObjects.UserObjectWrapper;
 import com.fergus.esa.listeners.CompositeScrollListener;
 import com.fergus.esa.listeners.InfiniteScrollListener;
 import com.fergus.esa.listeners.PixelScrollDetector;
@@ -49,6 +52,12 @@ import in.srain.cube.views.GridViewWithHeaderAndFooter;
  * Date: 29/01/2016
  */
 public class NewEventsFragment extends Fragment implements NetworkFragment, BackButtonFragment {
+	public static final int TYPE_EVENTS_NEW = 1;
+	public static final int TYPE_EVENTS_RECOMMENDED = 2;
+	public static final int TYPE_EVENTS_DEFAULT = TYPE_EVENTS_NEW;
+
+	private int type = TYPE_EVENTS_DEFAULT;
+
 	private boolean loadRequired;
 
 	private SlidingUpPanelLayout slidingPanel;
@@ -84,7 +93,7 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 		connectionErrorView.registerOnRetryListerner(new RetryListener() {
 			@Override
 			public void onRetry() {
-				getData();
+				getData(true);
 			}
 		});
 
@@ -127,7 +136,7 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 	}
 
 
-	private void getData() {
+	private void getData(boolean displayDialog) {
 		if (!ConnectionChecker.hasInternetConnection(activity)) {
 			loadRequired = true;
 			connectionErrorView.show(R.string.no_internet);
@@ -136,8 +145,13 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 		}
 
 		loadRequired = false;
-		new EventAsyncTask(true).execute();
+		new EventAsyncTask(displayDialog).execute();
 		new CategoryAsyncTask().execute();
+	}
+
+
+	private void getData() {
+		getData(true);
 	}
 
 
@@ -195,7 +209,7 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 	}
 
 
-	private class EventAsyncTask extends AsyncTask<Void, Void, List<EventObject>> {
+	private class EventAsyncTask extends ErrorAsyncTask<Void, Void, List<EventObject>> {
 		private static final int EVENT_COUNT_PER_PAGE = 7;
 		private ProgressDialog pd;
 		private boolean displayDialog;
@@ -220,20 +234,25 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 		@Override
 		protected List<EventObject> doInBackground(Void... voids) {
 			try {
-				EventObjectCollection collection = ServerUrls.endpoint.getEvents(currentEventId, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute();
+				EventObjectCollection collection = null;
+
+				switch (type) {
+					case TYPE_EVENTS_NEW:
+						collection = ServerUrls.endpoint.getNewEvents(currentEventId, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute();
+						break;
+					case TYPE_EVENTS_RECOMMENDED:
+						// TODO: get user Id here
+						int userId = PreferenceManager.getDefaultSharedPreferences(activity).getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
+						 collection = ServerUrls.endpoint.getRecommendedEvents(userId, currentEventId, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute();
+						break;
+				}
+
 				if (collection == null) {
 					return null;
 				}
-				return collection.getItems(); // TODO: change ,
+				return collection.getItems(); // TODO: change
 			} catch (IOException e) {
-				if (connectionErrorView.isVisible()) {
-					connectionErrorView.quickHide();
-				}
-
-				connectionErrorView.show("Could not get data"); // TODO: remove hardcode
-
-				loadRequired = true;
-
+				setError(true);
 				e.printStackTrace();
 				return Collections.EMPTY_LIST;
 			}
@@ -242,6 +261,18 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 
 		@Override
 		protected void onPostExecute(List<EventObject> events) {
+			if (hasError()) {
+				hideUi();
+				if (connectionErrorView.isVisible()) {
+					connectionErrorView.quickHide();
+				}
+
+				connectionErrorView.show("Could not get data"); // TODO: remove hardcode
+
+				loadRequired = true;
+				return;
+			}
+
 			if (events == null) {
 				progressBarEvents.setVisibility(View.GONE);
 				hideUi();
@@ -321,21 +352,14 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 	}
 
 
-	private class CategoryAsyncTask extends AsyncTask<Void, Void, List<CategoryObject>> {
+	private class CategoryAsyncTask extends ErrorAsyncTask<Void, Void, List<CategoryObject>> {
 		@Override
 		protected List<CategoryObject> doInBackground(Void... voids) {
 			List<CategoryObject> categories;
 			try {
 				categories = ServerUrls.endpoint.getCategories().execute().getItems();
 			} catch (IOException e) {
-				if (connectionErrorView.isVisible()) {
-					connectionErrorView.quickHide();
-				}
-
-				connectionErrorView.show("Could not get data"); // TODO: remove hardcode
-
-				loadRequired = true;
-
+				setError(true);
 				e.printStackTrace();
 				return Collections.emptyList();
 			}
@@ -348,6 +372,17 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 
 		@Override
 		protected void onPostExecute(List<CategoryObject> categories) {
+			if (hasError()) {
+				if (connectionErrorView.isVisible()) {
+					connectionErrorView.quickHide();
+				}
+
+				connectionErrorView.show("Could not get data"); // TODO: remove hardcode
+
+				loadRequired = true;
+				return;
+			}
+
 			CategoryAdapter categoryAdapter = new CategoryAdapter(activity, categories);
 			listViewCategories.setAdapter(categoryAdapter);
 			listViewCategories.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -419,5 +454,11 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 
 		@Override
 		public void onPanelHidden(View view) {}
+	}
+
+
+	public NewEventsFragment setType(int type) {
+		this.type = type;
+		return this;
 	}
 }

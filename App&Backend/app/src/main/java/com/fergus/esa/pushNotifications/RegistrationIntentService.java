@@ -54,14 +54,15 @@ public class RegistrationIntentService extends IntentService {
                 InstanceID instanceID = InstanceID.getInstance(this);
                 String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId), GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
 
-                if (!token.equals(sharedPreferences.getString(SharedPreferencesKeys.GCM_TOKEN, null))) {
+				String oldToken = sharedPreferences.getString(SharedPreferencesKeys.GCM_TOKEN, null);
+
+                if (!token.equals(oldToken)) {
                     int userId = sharedPreferences.getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
 
                     if (userId == UserObjectWrapper.NO_USER_ID) {
                         try {
                             UserObject user = ServerUrls.endpoint.registerGcmToken(token).execute();
-                            sharedPreferences.edit().putInt(SharedPreferencesKeys.USER_ID, user.getId());
-                            sharedPreferences.edit().putString(SharedPreferencesKeys.GCM_TOKEN, token).apply();
+                            sharedPreferences.edit().putInt(SharedPreferencesKeys.USER_ID, user.getId()).putString(SharedPreferencesKeys.GCM_TOKEN, token).apply();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -74,6 +75,7 @@ public class RegistrationIntentService extends IntentService {
                         }
                     }
                 }
+
                 Log.d(TAG, "GCM token:" + token);
             }
         } catch (Exception e) {
