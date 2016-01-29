@@ -51,7 +51,7 @@ import in.srain.cube.views.GridViewWithHeaderAndFooter;
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 29/01/2016
  */
-public class NewEventsFragment extends Fragment implements NetworkFragment, BackButtonFragment {
+public class EventsFragment extends Fragment implements NetworkFragment, BackButtonFragment {
 	public static final int TYPE_EVENTS_NEW = 1;
 	public static final int TYPE_EVENTS_RECOMMENDED = 2;
 	public static final int TYPE_EVENTS_DEFAULT = TYPE_EVENTS_NEW;
@@ -103,6 +103,9 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 		View footerView = ((LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.layout_event_footer, null, false);
 		gridViewEvent.addFooterView(footerView);
 		progressBarEvents = (ProgressBar) footerView.findViewById(R.id.progressBarEvents);
+		if (type == TYPE_EVENTS_RECOMMENDED) {
+			progressBarEvents.setVisibility(View.GONE);
+		}
 
 		slidingPanel = (SlidingUpPanelLayout) view.findViewById(R.id.sliding_layout);
 		slidingPanel.setPanelSlideListener(new SlidingPanelListener());
@@ -117,6 +120,11 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 			}
 		});
 		categoryLayout = (ViewGroup) view.findViewById(R.id.categoryPanel);
+
+		if (type == TYPE_EVENTS_RECOMMENDED) {
+			categoryLayout.setVisibility(View.GONE);
+		}
+
 
 		swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
 		swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -243,7 +251,7 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 					case TYPE_EVENTS_RECOMMENDED:
 						// TODO: get user Id here
 						int userId = PreferenceManager.getDefaultSharedPreferences(activity).getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
-						 collection = ServerUrls.endpoint.getRecommendedEvents(userId, currentEventId, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute();
+						 collection = ServerUrls.endpoint.getRecommendedEvents(userId, categoryStorer.getSelectedCategoryIds()).execute();
 						break;
 				}
 
@@ -310,7 +318,9 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 			gridViewEvent.setOnScrollListener(new GridViewScrollListener());
 
 			hideUi();
-			progressBarEvents.setVisibility(View.VISIBLE);
+			if (type != TYPE_EVENTS_RECOMMENDED) {
+				progressBarEvents.setVisibility(View.VISIBLE);
+			}
 		}
 
 
@@ -328,12 +338,14 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 		private class GridViewScrollListener extends CompositeScrollListener {
 			public GridViewScrollListener() {
 				addOnScrollListener(new ScrollListener(activity));
-				addOnScrollListener(new InfiniteScrollListener(6) {
-					@Override
-					public void loadMore(int page, int totalItemsCount) {
-						new EventAsyncTask(false).execute();
-					}
-				});
+				if (type != TYPE_EVENTS_RECOMMENDED) { // this disables infinite scrolling for recommended events
+					addOnScrollListener(new InfiniteScrollListener(6) {
+						@Override
+						public void loadMore(int page, int totalItemsCount) {
+							new EventAsyncTask(false).execute();
+						}
+					});
+				}
 				addOnScrollListener(new PixelScrollDetector(new PixelScrollDetector.PixelScrollListener() {
 					@Override
 					public void onScroll(AbsListView view, float deltaY) {
@@ -457,7 +469,7 @@ public class NewEventsFragment extends Fragment implements NetworkFragment, Back
 	}
 
 
-	public NewEventsFragment setType(int type) {
+	public EventsFragment setType(int type) {
 		this.type = type;
 		return this;
 	}

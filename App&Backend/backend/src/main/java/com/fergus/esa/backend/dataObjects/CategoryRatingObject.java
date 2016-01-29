@@ -6,7 +6,7 @@ package com.fergus.esa.backend.dataObjects;
  */
 public class CategoryRatingObject {
 	private int categoryId;
-	private int hits;
+	private int score;
 	private int time;
 
 
@@ -24,24 +24,13 @@ public class CategoryRatingObject {
 	}
 
 
-	public int getHits() {
-		return hits;
+	public int getScore() {
+		return score;
 	}
 
 
-	public CategoryRatingObject setHits(int hits) {
-		this.hits = hits;
-		return this;
-	}
-
-
-	public int getTime() {
-		return time;
-	}
-
-
-	public CategoryRatingObject setTime(int time) {
-		this.time = time;
+	public CategoryRatingObject setScore(int score) {
+		this.score = score;
 		return this;
 	}
 }

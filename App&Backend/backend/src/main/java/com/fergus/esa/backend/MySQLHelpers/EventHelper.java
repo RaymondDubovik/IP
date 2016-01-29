@@ -121,7 +121,6 @@ public class EventHelper {
 
             List<EventObject> events = new ArrayList<>();
             results = statement.executeQuery();
-            int i = 0;
 			while (results.next()) {
 				events.add(new EventObject()
                         .setId(results.getInt("id"))
@@ -156,16 +155,16 @@ public class EventHelper {
     }
 
 
-	public List<EventObject> getRecommendedEvents(int userId, List<Integer> categories, int from, int count) {
+	public List<EventObject> getRecommendedEvents(int userId, List<Integer> excludedCategories) {
 		PreparedStatement statement = null;
 		ResultSet results = null;
 
 		String categorySqlPart = "";
-		if (categories != null && categories.size() > 0) {
-			StringBuilder builder = new StringBuilder(" AND `c`.`id` IN (");
+		if (excludedCategories != null && excludedCategories.size() > 0) {
+			StringBuilder builder = new StringBuilder(" WHERE `c`.`id` IN (");
 
 			String prefix = "";
-			for (int categoryId : categories) {
+			for (int categoryId : excludedCategories) {
 				builder.append(prefix).append('?');
 				prefix = ",";
 			}
@@ -173,33 +172,57 @@ public class EventHelper {
 			categorySqlPart = builder.toString();
 		}
 
-		String query = "SELECT MIN(`mId`) AS `minId` FROM" +
-				" (SELECT `e`.`id` AS `mId`" +
+		String query = "SELECT `e`.`id`, `e`.`timestamp`, `e`.`heading`, `e`.`mainImageUrl`, SUM(`categoryScores`.`score`) AS `totalScore` " +
 				" FROM `events` AS `e`" +
 				" JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
 				" JOIN `categories` AS `c` ON `c`.`id`=`ec`.`categoryId`" +
-				" WHERE `e`.`id` < ?" + categorySqlPart +
-				" GROUP BY `e`.`id`" +
-				" ORDER BY `e`.`id` DESC" +
-				" LIMIT ?) AS `eventAlias`";
+				" JOIN" + // this join gets score for this particular user for each category
+				"		(SELECT `c`.`id` AS `categoryId`, SUM(`eu`.`hits` * 12000 + `eu`.`time`) AS `score`" +
+				"		FROM `users` AS `u`" +
+				"		JOIN `eventsUsers` AS `eu` ON `eu`.`userId` = `u`.`id`" +
+				"		JOIN `events` AS `e` ON `e`.`id`=`eu`.`eventId`" +
+				"		JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
+				"		JOIN `categories` AS `c` ON `c`.`id` = `ec`.`categoryId`" +
+				"		WHERE `u`.`id` = ?" +
+				"		GROUP BY `c`.`id` " +
+				"		ORDER BY `score` DESC) AS `categoryScores` ON `categoryScores`.`categoryId` = `c`.`id`" +
+				" WHERE `e`.`timestamp` > DATE_SUB(NOW(), INTERVAL 1 WEEK) " + // we are interested only in events not older than a week
+				" GROUP BY `e`.`id`, `e`.`timestamp`, `e`.`heading`, `e`.`mainImageUrl`" +
+				" HAVING `e`.`id` NOT IN " + // this subquery filters out all events that are in user selected categories
+				"		(SELECT `e`.`id` FROM `events` AS `e`" +
+				"		JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
+				"		JOIN `categories` AS `c` ON `c`.`id`=`ec`.`categoryId`" +
+				"		" + categorySqlPart + ")" +
+				" ORDER BY `totalScore` DESC";
 
+
+		System.out.println(query);
 		try {
 			statement = connection.prepareStatement(query);
 			int param = 1;
-			statement.setInt(param++, from);
-			if (categories != null) {
-				for (int categoryId : categories) {
-					statement.setInt(param++, categoryId);
+			statement.setInt(param++, userId);
+			if (excludedCategories != null) {
+				for (int excludedCategoryId : excludedCategories) {
+					statement.setInt(param++, excludedCategoryId);
 				}
 			}
-			statement.setInt(param++, count);
+
 			results = statement.executeQuery();
-			if (!results.next()) {
-				System.out.println("No minId");
-				return null;
+
+			List<EventObject> events = new ArrayList<>();
+			results = statement.executeQuery();
+			while (results.next()) {
+				events.add(new EventObject()
+						.setId(results.getInt("id"))
+						.setTimestamp(results.getDate("timestamp"))
+						.setHeading(results.getString("heading"))
+						.setImageUrl(results.getString("mainImageUrl"))
+				);
 			}
 
-			return getEventInterval(results.getInt("minId"), from, categories, categorySqlPart);
+			return events;
+
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {

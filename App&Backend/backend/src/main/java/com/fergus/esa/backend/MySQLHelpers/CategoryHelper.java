@@ -95,7 +95,8 @@ public class CategoryHelper {
 						" JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
 						" JOIN `categories` AS `c` ON `c`.`id` = `ec`.`categoryId`" +
 						" WHERE `u`.`id` = ?" + categorySqlPart +
-						" GROUP BY `c`.`id`";
+						" GROUP BY `c`.`id` " +
+						" ORDER BY `score` DESC";
 
 		try {
 			statement = connection.prepareStatement(query);
@@ -111,13 +112,13 @@ public class CategoryHelper {
 			List<CategoryRatingObject> categoryRatings = new ArrayList<>();
 			results = statement.executeQuery();
 			while (results.next()) {
-				// TODO: implement
 				categoryRatings.add(
 						new CategoryRatingObject()
 								.setCategoryId(results.getInt("id"))
-								.setHits(results.getInt("score"))
-								//.setTime(results.getInt("time"))
+								.setScore(results.getInt("score"))
 				);
+
+				System.out.println(results.getInt("id") + " " + results.getInt("score"));
 			}
 
 			return categoryRatings;

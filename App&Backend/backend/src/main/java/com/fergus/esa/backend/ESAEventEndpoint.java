@@ -10,7 +10,6 @@ import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.MySQLHelpers.UserHelper;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
-import com.fergus.esa.backend.dataObjects.CategoryRatingObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.GcmObject;
 import com.fergus.esa.backend.dataObjects.ImageObject;
@@ -102,7 +101,7 @@ public class ESAEventEndpoint {
 
 
 	@ApiMethod(name = "getRecommendedEvents")
-	public List<EventObject> getRecommendedEvents(@Named("userId") int userId, @Named("from") int from, @Named("count") int count, @Named("categories") String categoriesJson) {
+	public List<EventObject> getRecommendedEvents(@Named("userId") int userId, @Named("categories") String categoriesJson) {
 		// TODO: fix this shit!!!!
 		categoriesJson = categoriesJson.trim();
 		List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
@@ -115,9 +114,9 @@ public class ESAEventEndpoint {
 			}
 		}
 
-		List<CategoryRatingObject> categories = new CategoryHelper(connection).getUserCategoryRating(userId, categoryIds);
+		// List<CategoryRatingObject> categoryRatings = new CategoryHelper(connection).getUserCategoryRating(userId, categoryIds);
 
-		return new EventHelper(connection).getRecommendedEvents(userId, categoryIds, from, count);
+		return new EventHelper(connection).getRecommendedEvents(userId, categoryIds);
 	}
 
 
