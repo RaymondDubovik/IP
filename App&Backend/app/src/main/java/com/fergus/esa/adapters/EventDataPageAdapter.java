@@ -9,11 +9,11 @@ import com.fergus.esa.fragments.LinksFragment;
 import com.fergus.esa.fragments.SummaryFragment;
 import com.fergus.esa.fragments.TweetFragment;
 
-public class PageAdapter extends FragmentStatePagerAdapter {
+public class EventDataPageAdapter extends FragmentStatePagerAdapter {
     int tabCount;
 
 
-    public PageAdapter(FragmentManager fm, int tabCount) {
+    public EventDataPageAdapter(FragmentManager fm, int tabCount) {
         super(fm);
         this.tabCount = tabCount;
     }

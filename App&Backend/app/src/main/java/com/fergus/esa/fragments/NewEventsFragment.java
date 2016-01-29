@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.TypedValue;
@@ -49,7 +48,7 @@ import in.srain.cube.views.GridViewWithHeaderAndFooter;
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 29/01/2016
  */
-public class NewEventsFragment extends Fragment implements NetworkFragment {
+public class NewEventsFragment extends Fragment implements NetworkFragment, BackButtonFragment {
 	private boolean loadRequired;
 
 	private SlidingUpPanelLayout slidingPanel;
@@ -73,21 +72,32 @@ public class NewEventsFragment extends Fragment implements NetworkFragment {
 	private ConnectionErrorView connectionErrorView;
 
 
-	@Nullable
 	@Override
-	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_summary, container, false);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View view = inflater.inflate(R.layout.fragment_new_events, container, false);
 
 		activity = (MainActivity) getActivity();
+		activity.setNetworkFragment(this);
+		activity.setBackButtonFragment(this);
 
 		connectionErrorView = activity.getConnectionErrorView();
 		connectionErrorView.registerOnRetryListerner(new RetryListener() {
 			@Override
 			public void onRetry() {
 				getData();
-				// TODO: interface. here
 			}
 		});
+
+		categoryStorer = new CategoryStorer(activity);
+
+		gridViewEvent = (GridViewWithHeaderAndFooter) view.findViewById(R.id.gridView);
+		View footerView = ((LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.layout_event_footer, null, false);
+		gridViewEvent.addFooterView(footerView);
+		progressBarEvents = (ProgressBar) footerView.findViewById(R.id.progressBarEvents);
+
+		slidingPanel = (SlidingUpPanelLayout) view.findViewById(R.id.sliding_layout);
+		slidingPanel.setPanelSlideListener(new SlidingPanelListener());
+		viewListCover = view.findViewById(R.id.viewEventListCover);
 
 		listViewCategories = (ListView) view.findViewById(R.id.listViewCategories);
 		textViewCategory = (TextView) view.findViewById(R.id.textViewSelectedCategory);
@@ -98,18 +108,8 @@ public class NewEventsFragment extends Fragment implements NetworkFragment {
 			}
 		});
 		categoryLayout = (ViewGroup) view.findViewById(R.id.categoryPanel);
-		categoryStorer = new CategoryStorer(activity);
 
-		gridViewEvent = (GridViewWithHeaderAndFooter) view.findViewById(R.id.gridView);
-		View footerView = ((LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.layout_event_footer, null, false);
-		gridViewEvent.addFooterView(footerView);
-		progressBarEvents = (ProgressBar) footerView.findViewById(R.id.progressBarEvents);
-
-		slidingPanel = (SlidingUpPanelLayout) activity.findViewById(R.id.sliding_layout);
-		slidingPanel.setPanelSlideListener(new SlidingPanelListener());
-		viewListCover = activity.findViewById(R.id.viewEventListCover);
-
-		swipeContainer = (SwipeRefreshLayout) activity.findViewById(R.id.swipeContainer);
+		swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
 		swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 			@Override
 			public void onRefresh() {
@@ -174,13 +174,24 @@ public class NewEventsFragment extends Fragment implements NetworkFragment {
 
 	@Override
 	public void onInternetConnected() {
-		if (loadRequired) { // TODO think about;
+		if (loadRequired) {
 			if (connectionErrorView.isVisible()) {
 				connectionErrorView.hide();
 			}
 
 			getData();
 		}
+	}
+
+
+	@Override
+	public boolean onBackPressed() {
+		if (slidingPanel != null && (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED || slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.ANCHORED)) {
+			slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+			return true;
+		}
+
+		return false;
 	}
 
 
@@ -236,8 +247,6 @@ public class NewEventsFragment extends Fragment implements NetworkFragment {
 				hideUi();
 				return;
 			}
-
-			Collections.reverse(events);
 
 			if (eventAdapter == null) {
 				eventAdapter = new GridViewAdapter(activity);
@@ -411,6 +420,4 @@ public class NewEventsFragment extends Fragment implements NetworkFragment {
 		@Override
 		public void onPanelHidden(View view) {}
 	}
-
-
 }

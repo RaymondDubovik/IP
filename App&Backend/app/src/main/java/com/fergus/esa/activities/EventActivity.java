@@ -10,11 +10,13 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.fergus.esa.R;
 import com.fergus.esa.ServerUrls;
 import com.fergus.esa.SharedPreferencesKeys;
-import com.fergus.esa.adapters.PageAdapter;
+import com.fergus.esa.adapters.EventDataPageAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.ImageObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.NewsObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObject;
@@ -60,6 +62,11 @@ public class EventActivity extends AppCompatActivity {
         eventId = extras.getInt(BUNDLE_PARAM_EVENT_ID);
         eventTitle = extras.getString(BUNDLE_PARAM_EVENT_HEADING);
 
+		Log.d("", "eventId: " + eventId);
+
+		Toast.makeText(this, "eventId: " + eventId, Toast.LENGTH_SHORT).show();
+
+
 		// in separate async tasks, so that it is easier to implement infinite scrolling for each of the fragments in the future
 		new SummaryAsyncTask().execute();
 		new ImageAsyncTask().execute();
@@ -101,8 +108,8 @@ public class EventActivity extends AppCompatActivity {
         tabLayout.addTab(tabLayout.newTab().setText("News Articles"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.eventDateViewPager);
-        final PageAdapter adapter = new PageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
+        final ViewPager viewPager = (ViewPager) findViewById(R.id.eventDataViewPager);
+        final EventDataPageAdapter adapter = new EventDataPageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
 
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -111,16 +118,10 @@ public class EventActivity extends AppCompatActivity {
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
             }
-
-
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
-
+            public void onTabUnselected(TabLayout.Tab tab) {}
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
     }
 

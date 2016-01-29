@@ -30,7 +30,7 @@ public class EventHelper {
 
         try {
             String categorySqlPart = "";
-            if (categories != null) {
+            if (categories != null && categories.size() > 0) {
                 StringBuilder builder = new StringBuilder(" AND `c`.`id` IN (");
 
                 String prefix = "";
@@ -67,7 +67,7 @@ public class EventHelper {
                 return null;
             }
 
-            return getEventInterval(results.getInt("minId"), from);
+            return getEventInterval(results.getInt("minId"), from, categories, categorySqlPart);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -92,7 +92,7 @@ public class EventHelper {
     }
 
 
-    private List<EventObject> getEventInterval(int minId, int maxId) {
+    private List<EventObject> getEventInterval(int minId, int maxId, List<Integer> categories, String categorySqlPart) {
 		if (minId == 0) {
 			return null;
 		}
@@ -101,22 +101,33 @@ public class EventHelper {
         ResultSet results = null;
 
         String query =
-                "SELECT `id`, `timestamp`, `heading`, `mainImageUrl`" +
-                        " FROM `events`" +
-                        " WHERE `id` BETWEEN ? AND ?" +
-                        " ORDER BY `id` DESC";
+                "SELECT DISTINCT `e`.`id`, `e`.`timestamp`, `e`.`heading`, `e`.`mainImageUrl`" +
+                        " FROM `events` AS `e`" +
+						" JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
+						" JOIN `categories` AS `c` ON `c`.`id`=`ec`.`categoryId`" +
+						" WHERE `e`.`id` >= ? AND `e`.`id` < ?" + categorySqlPart +
+                        " ORDER BY `e`.`id` DESC";
 
         try {
             statement = connection.prepareStatement(query);
-            statement.setInt(1, minId);
-            statement.setInt(2, maxId);
+			int param = 1;
+			statement.setInt(param++, minId);
+            statement.setInt(param++, maxId);
+			if (categories != null) {
+				for (int categoryId : categories) {
+					statement.setInt(param++, categoryId);
+				}
+			}
+
             List<EventObject> events = new ArrayList<>();
             results = statement.executeQuery();
-            while (results.next()) {
-                events.add(new EventObject()
+            int i = 0;
+			while (results.next()) {
+				events.add(new EventObject()
                         .setId(results.getInt("id"))
                         .setTimestamp(results.getDate("timestamp"))
                         .setHeading(results.getString("heading"))
+						.setImageUrl(results.getString("mainImageUrl"))
                 );
             }
 

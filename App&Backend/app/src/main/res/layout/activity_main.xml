@@ -1,6 +1,5 @@
 <FrameLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:sothree="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
@@ -19,87 +18,20 @@
 			android:background="?attr/colorPrimary"
 			android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
-		<com.sothree.slidinguppanel.SlidingUpPanelLayout
-			android:id="@+id/sliding_layout"
+		<android.support.design.widget.TabLayout
+			android:id="@+id/eventTabLayout"
 			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:gravity="bottom"
-			sothree:umanoDragView="@+id/textViewSelectedCategory"
-			sothree:umanoOverlay="true"
-			sothree:umanoPanelHeight="47dp"
-			sothree:umanoScrollableView="@+id/listViewCategories"
-			sothree:umanoShadowHeight="0dp">
+			android:layout_height="wrap_content"
+			android:background="?attr/colorPrimary"
+			android:elevation="6dp"
+			android:minHeight="?attr/actionBarSize"
+			android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
-			<FrameLayout
-				android:layout_width="match_parent"
-				android:layout_height="match_parent">
+		<android.support.v4.view.ViewPager
+			android:id="@+id/eventViewPager"
+			android:layout_width="match_parent"
+			android:layout_height="fill_parent"/>
 
-
-				<LinearLayout
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:descendantFocusability="beforeDescendants"
-					android:focusableInTouchMode="true"
-					android:orientation="vertical"
-					tools:context=".activities.MainActivity">
-
-					<android.support.v4.widget.SwipeRefreshLayout
-						android:id="@+id/swipeContainer"
-						xmlns:android="http://schemas.android.com/apk/res/android"
-						android:layout_width="match_parent"
-						android:layout_height="match_parent">
-
-						<in.srain.cube.views.GridViewWithHeaderAndFooter
-							android:id="@+id/gridView"
-							android:layout_width="match_parent"
-							android:layout_height="match_parent"
-							android:columnWidth="90dp"
-							android:gravity="center"
-							android:numColumns="2"
-							android:paddingBottom="2dp"
-							android:paddingLeft="2dp"
-							android:paddingRight="2dp"
-							android:stretchMode="columnWidth"/>
-					</android.support.v4.widget.SwipeRefreshLayout>
-				</LinearLayout>
-
-				<View
-					android:id="@+id/viewEventListCover"
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:background="@android:color/transparent"
-					android:visibility="gone"/>
-			</FrameLayout>
-
-			<!-- SLIDING LAYOUT -->
-			<LinearLayout
-				android:id="@+id/categoryPanel"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:layout_marginTop="150dp"
-				android:orientation="vertical">
-
-				<TextView
-					android:id="@+id/textViewSelectedCategory"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:layout_gravity="center"
-					android:background="?attr/colorPrimary"
-					android:gravity="center"
-					android:paddingBottom="12dp"
-					android:paddingTop="8dp"
-					android:textColor="@color/white"
-					android:textSize="20sp"/>
-
-				<ListView
-					android:id="@+id/listViewCategories"
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:background="@color/lightBackground"
-					android:choiceMode="multipleChoice"/>
-
-			</LinearLayout>
-		</com.sothree.slidinguppanel.SlidingUpPanelLayout>
 	</LinearLayout>
 
 	<include layout="@layout/layout_connection_error_panel"/>

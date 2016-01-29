@@ -88,9 +88,12 @@ public class ESAEventEndpoint {
         categoriesJson = categoriesJson.trim();
         List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
 
-		for (int categoryId : categoryIds) {
-			if (categoryId == -1) { // TODO: REMOVE HARDCODE HERE -1 is all categories
-				categoryIds = null;
+		if (categoryIds != null) {
+			for (int categoryId : categoryIds) {
+				if (categoryId == -1) { // TODO: REMOVE HARDCODE HERE -1 is all categories
+					categoryIds = null;
+					break;
+				}
 			}
 		}
 

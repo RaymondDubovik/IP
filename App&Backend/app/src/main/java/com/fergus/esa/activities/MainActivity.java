@@ -5,6 +5,8 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -13,22 +15,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.fergus.esa.R;
+import com.fergus.esa.adapters.EventPageAdapter;
 import com.fergus.esa.connection.ConnectionChecker;
 import com.fergus.esa.connection.ConnectionErrorView;
-import com.fergus.esa.connection.RetryListener;
+import com.fergus.esa.fragments.BackButtonFragment;
 import com.fergus.esa.fragments.NetworkFragment;
 import com.fergus.esa.pushNotifications.RegistrationIntentService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.novoda.merlin.Merlin;
 import com.novoda.merlin.registerable.connection.Connectable;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 
 public class MainActivity extends ActionBarActivity {
 	private ConnectionErrorView connectionErrorView;
 
 	private NetworkFragment networkFragment;
+	private BackButtonFragment backButtonFragment;
 
     private Merlin merlin;
 
@@ -50,19 +53,13 @@ public class MainActivity extends ActionBarActivity {
 
         connectionErrorView = new ConnectionErrorView(this, findViewById(R.id.linearLayoutConnectionErrorPanel));
 
-
-		/*
-
-
-		 TabLayout tabLayout = (TabLayout) findViewById(R.id.eventDataTabLayout);
-        tabLayout.addTab(tabLayout.newTab().setText("Event Summary"));
-		tabLayout.addTab(tabLayout.newTab().setText("Images"));
-        tabLayout.addTab(tabLayout.newTab().setText("Related Tweets"));
-        tabLayout.addTab(tabLayout.newTab().setText("News Articles"));
+		TabLayout tabLayout = (TabLayout) findViewById(R.id.eventTabLayout);
+        tabLayout.addTab(tabLayout.newTab().setText("New Events"));
+        tabLayout.addTab(tabLayout.newTab().setText("Recommended"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.eventDateViewPager);
-        final PageAdapter adapter = new PageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
+        final ViewPager viewPager = (ViewPager) findViewById(R.id.eventViewPager);
+        final EventPageAdapter adapter = new EventPageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
 
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -71,19 +68,12 @@ public class MainActivity extends ActionBarActivity {
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
             }
-
-
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
-
+            public void onTabUnselected(TabLayout.Tab tab) {}
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
 
-		 */
 
 		handleIntent(getIntent());
         gcmRegister();
@@ -95,8 +85,8 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         merlin.bind();
         super.onResume();
-        if (loadRequired && ConnectionChecker.hasInternetConnection(this)) {
-            onInternetConnected();
+        if (networkFragment!= null && ConnectionChecker.hasInternetConnection(this)) {
+            networkFragment.onInternetConnected();
         }
     }
 
@@ -112,7 +102,9 @@ public class MainActivity extends ActionBarActivity {
 
 
     public void onInternetConnected() {
-        // TODO: on internet connected
+		if (networkFragment != null) {
+			networkFragment.onInternetConnected();
+		}
     }
 
 
@@ -142,11 +134,10 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public void onBackPressed() {
-        if (slidingPanel != null && (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED || slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.ANCHORED)) {
-            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-        } else {
-            super.onBackPressed();
-        }
+		if (backButtonFragment == null || !backButtonFragment.onBackPressed()) { // if there is no listener or listener didn't consume the event
+			super.onBackPressed();
+			return;
+		}
     }
 
 
@@ -186,5 +177,13 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 
+	public void setNetworkFragment(NetworkFragment networkFragment) {
+		this.networkFragment = networkFragment;
+	}
+
+
+	public void setBackButtonFragment(BackButtonFragment backButtonFragment) {
+		this.backButtonFragment = backButtonFragment;
+	}
 }
 

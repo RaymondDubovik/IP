@@ -298,7 +298,7 @@ public class SchemaCreator {
         String query = "INSERT INTO `categories` (`name`) VALUES ('Category 1'),('Category 2'),('Category 3'),('Category 4'),('Category 5'),('Category 6'),('Category 7')";
         executeUpdateQuery(connection, query);
 
-        for (int i = 1; i <= 50; i++) {
+        for (int i = 1; i <= 22; i++) {
 			String mainImgUrl = "http://staging.mediawales.co.uk/_files/images//jun_10/mw__1276511479_News_Image.jpg";
 			if (i % 2 == 0) {
 				mainImgUrl = "http://vantage-uk.com/wp-content/uploads/2013/03/breakingnews1.jpg";
@@ -309,7 +309,7 @@ public class SchemaCreator {
             executeUpdateQuery(connection, query);
 
             // news
-            for (int j = 0; j < 34; j++) {
+            for (int j = 0; j < 30; j++) {
                 query = "INSERT INTO `news` (`title`, `url`, `logoUrl`, `timestamp`, `eventId`) VALUES ('Some awesome news title', 'http://www.bbc.co.uk/news/entertainment-arts-35366703', NULL, NOW(), " + i + ");";
                 executeUpdateQuery(connection, query);
             }
@@ -319,7 +319,7 @@ public class SchemaCreator {
             executeUpdateQuery(connection, query);
 
             // categories
-            for (int j = 0; j < 3; j++) {
+            for (int j = 0; j < 2; j++) {
                 int random = new Random().nextInt((6) + 1) + 1;
                 query = "INSERT INTO `eventsCategories` (`categoryId`, `eventId`) VALUES (" + random + ", " + i + ")";
                 executeUpdateQuery(connection, query);
