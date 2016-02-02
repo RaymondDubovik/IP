@@ -42,9 +42,9 @@ public class SchemaCreator {
 
     private static final String queryTweets =
         "CREATE TABLE IF NOT EXISTS `tweets` (" +
-            "`id` INT PRIMARY KEY AUTO_INCREMENT," +
-            "`username` VARCHAR(15)," +
-            "`screenName` VARCHAR(40)," +
+            "`id` BIGINT PRIMARY KEY AUTO_INCREMENT," +
+            "`username` VARCHAR(60)," +
+            "`screenName` VARCHAR(60)," +
             "`profileImgUrl` VARCHAR(400)," +
             "`imageUrl` VARCHAR(255)," +
             "`text` TEXT," +

@@ -1,5 +1,6 @@
 package com.fergus.esa.backend;
 
+import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESANews;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESATweet;
@@ -14,6 +15,7 @@ import com.google.appengine.repackaged.com.google.common.collect.ArrayListMultim
 import com.google.appengine.repackaged.com.google.common.collect.Multimap;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,11 +36,14 @@ import static com.fergus.esa.backend.OLD_DATAOBJECTS.OfyService.ofy;
 
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
-    HashSet<String> events = new HashSet<>();
-    Long minusOneHour = System.currentTimeMillis() - 3600000;
+    private HashSet<String> events = new HashSet<>();
+    private Long minusOneHour = System.currentTimeMillis() - 3600000;
 
+	private Connection connection;
 
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		connection = (new MySQLJDBC()).getConnection();
+
         getEvents();
         try {
             addEvents();
@@ -50,49 +55,38 @@ public class ESAEventServlet extends HttpServlet {
 
     public void addEvents() throws NotFoundException, IOException {
         for (String e : events) {
-
             List<ESANews> eventNews = listEventNews(e);
-
             List<ESATweet> eventTweets = listEventTweets(e);
 
-            if (eventTweets.isEmpty() || eventNews.isEmpty()) {
-                /*  don't add the event as the empty list would cause the app to crash
-                    the event will be added the next time the servlet runs if there
-                    are tweets or news associated with it.
-                 */
-            } else {
-                List<String> eventSummaries = summarise(eventNews);
+			List<String> eventSummaries = summarise(eventNews);
 
-                Long timestamp = getMostRecentTweetTime(eventTweets);
+			Long timestamp = getMostRecentTweetTime(eventTweets);
 
+			ESAEvent esaEvent = new ESAEvent();
+			esaEvent.setEvent(e);
+			esaEvent.setNews(eventNews);
+			esaEvent.setTweets(eventTweets);
+			esaEvent.setImageUrls(getImageUrls(eventTweets));
+			esaEvent.setSummaries(eventSummaries);
+			esaEvent.setTimestamp(timestamp);
+			insertESAEvent(esaEvent);
 
-                ESAEvent esaEvent = new ESAEvent();
-                esaEvent.setEvent(e);
-                esaEvent.setNews(eventNews);
-                esaEvent.setTweets(eventTweets);
-                esaEvent.setImageUrls(getImageUrls(eventTweets));
-                esaEvent.setSummaries(eventSummaries);
-                esaEvent.setTimestamp(timestamp);
-                insertESAEvent(esaEvent);
+			String docID = e.replace(" ", "_");
 
-                String docID = e.replace(" ", "_");
+			String summaries = "";
+			String titles = "";
 
-                String summaries = "";
-                String titles = "";
+			for (String sum : eventSummaries) {
+				summaries += sum + " ";
+			}
+			for (ESANews en : eventNews) {
+				titles += en.getTitle() + " ";
+			}
 
-                for (String sum : eventSummaries) {
-                    summaries += sum + " ";
-                }
-                for (ESANews en : eventNews) {
-                    titles += en.getTitle() + " ";
-                }
+			String searchPool = e + " " + summaries + " " + titles;
 
-                String searchPool = e + " " + summaries + " " + titles;
-
-                Document eventDoc = createDocument(docID, searchPool);
-                IndexDocument("eventIndex", eventDoc);
-
-            }
+			Document eventDoc = createDocument(docID, searchPool);
+			IndexDocument("eventIndex", eventDoc);
         }
     }
 

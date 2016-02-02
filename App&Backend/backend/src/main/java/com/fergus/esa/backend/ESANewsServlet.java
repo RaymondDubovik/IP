@@ -37,7 +37,6 @@ public class ESANewsServlet extends HttpServlet {
 
 
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        // TODO: open a connection
 		connection = (new MySQLJDBC()).getConnection();
 
 		getEvents();

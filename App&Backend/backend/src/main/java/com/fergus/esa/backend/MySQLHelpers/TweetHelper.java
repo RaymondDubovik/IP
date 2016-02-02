@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,4 +73,83 @@ public class TweetHelper {
 
         return null;
     }
+
+
+	public boolean exists(long id) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "SELECT EXISTS(SELECT 1 FROM `tweets` WHERE `id`=?) AS `exists`";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setLong(1, id);
+			results = statement.executeQuery();
+
+			if (results.next()) {
+				return results.getBoolean("exists");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return false;
+	}
+
+
+	public boolean create(TweetObject tweet) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "INSERT INTO `tweets` (`username`, `screenName`, `profileImgUrl`, `imageUrl`, `text`, `timestamp`, `eventId`) VALUES (?, ?, ?, ?, ?, ?, ?);";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, tweet.getUsername());
+			statement.setString(2, tweet.getScreenName());
+			statement.setString(3, tweet.getProfileImgUrl());
+			statement.setString(4, tweet.getImageUrl());
+			statement.setString(5, tweet.getText());
+			statement.setString(6, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(tweet.getTimestamp()));
+			statement.setInt(7, tweet.getEventId());
+
+			return statement.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return false;
+	}
 }

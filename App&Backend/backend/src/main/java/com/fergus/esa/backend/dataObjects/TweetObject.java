@@ -10,7 +10,7 @@ import java.util.Date;
  */
 @Entity
 public class TweetObject {
-    private int id;
+    private long id;
     private String username;
     private String screenName;
     private String profileImgUrl;
@@ -24,12 +24,12 @@ public class TweetObject {
     public TweetObject() {}
 
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
 
-    public TweetObject setId(int id) {
+    public TweetObject setId(long id) {
         this.id = id;
         return this;
     }
