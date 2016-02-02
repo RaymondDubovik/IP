@@ -17,12 +17,17 @@ import com.fergus.esa.ServerUrls;
 import com.fergus.esa.SharedPreferencesKeys;
 import com.fergus.esa.adapters.EventDataPageAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.ImageObject;
+import com.fergus.esa.backend.esaEventEndpoint.model.ImageObjectCollection;
 import com.fergus.esa.backend.esaEventEndpoint.model.NewsObject;
+import com.fergus.esa.backend.esaEventEndpoint.model.NewsObjectCollection;
 import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObject;
+import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObjectCollection;
 import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
+import com.fergus.esa.backend.esaEventEndpoint.model.TweetObjectCollection;
 import com.fergus.esa.dataObjects.UserObjectWrapper;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /*
@@ -82,7 +87,6 @@ public class EventActivity extends AppCompatActivity {
 		milliSeconds += SystemClock.elapsedRealtime() - startTime;
 
 		if (isFinishing()) {
-
 			final int userId = PreferenceManager.getDefaultSharedPreferences(EventActivity.this).getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
 			if (userId != UserObjectWrapper.NO_USER_ID) {
 				new RegistrationAsyncTask(userId, eventId, milliSeconds).execute();
@@ -93,7 +97,6 @@ public class EventActivity extends AppCompatActivity {
 
 	private void onDataLoaded() {
 		startTime = SystemClock.elapsedRealtime();
-		// TODO: title
         setTitle(eventTitle);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.eventDataTabLayout);
@@ -125,7 +128,8 @@ public class EventActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                tweets = ServerUrls.endpoint.getTweets(eventId).execute().getItems();
+				TweetObjectCollection collection = ServerUrls.endpoint.getTweets(eventId).execute();
+				tweets = (collection == null) ? Collections.<TweetObject>emptyList() : collection.getItems();
             } catch (IOException e) {
                 // TODO: do something
             }
@@ -139,7 +143,8 @@ public class EventActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                news = ServerUrls.endpoint.getNews(eventId).execute().getItems();
+				NewsObjectCollection collection = ServerUrls.endpoint.getNews(eventId).execute();
+				news = (collection == null) ? Collections.<NewsObject>emptyList() : collection.getItems();
             } catch (IOException e) {
                 // TODO: do something
             }
@@ -153,7 +158,8 @@ public class EventActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                images = ServerUrls.endpoint.getImages(eventId).execute().getItems();
+				ImageObjectCollection collection = ServerUrls.endpoint.getImages(eventId).execute();
+				images = (collection == null) ? Collections.<ImageObject>emptyList() : collection.getItems();
             } catch (IOException e) {
                 // TODO: do something
             }
@@ -167,7 +173,8 @@ public class EventActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                summaries = ServerUrls.endpoint.getSummaries(eventId).execute().getItems();
+				SummaryObjectCollection collection = ServerUrls.endpoint.getSummaries(eventId).execute();
+				summaries = (collection == null) ? Collections.<SummaryObject>emptyList() : collection.getItems();
             } catch (IOException e) {
                 // TODO: do something
             }
