@@ -201,7 +201,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 				connectionErrorView.hide();
 			}
 
-			getData();
+			getData(true);
 		}
 	}
 
@@ -249,16 +249,12 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 						collection = ServerUrls.endpoint.getNewEvents(currentEventId, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute();
 						break;
 					case TYPE_EVENTS_RECOMMENDED:
-						// TODO: get user Id here
 						int userId = PreferenceManager.getDefaultSharedPreferences(activity).getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
-						 collection = ServerUrls.endpoint.getRecommendedEvents(userId, categoryStorer.getSelectedCategoryIds()).execute();
+						collection = ServerUrls.endpoint.getRecommendedEvents(userId, categoryStorer.getSelectedCategoryIds()).execute();
 						break;
 				}
 
-				if (collection == null) {
-					return null;
-				}
-				return collection.getItems(); // TODO: change
+				return (collection == null) ? null : collection.getItems(); // TODO: change
 			} catch (IOException e) {
 				setError(true);
 				e.printStackTrace();
@@ -325,7 +321,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 
 		private void hideUi() {
-			if (displayDialog) {
+			if (pd != null) {
 				pd.hide();
 			}
 
@@ -411,7 +407,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 					changeActiveCategory();
 					eventAdapter = null;
 					currentEventId = Integer.MAX_VALUE;
-					getData();
+					getData(false);
 				}
 			});
 

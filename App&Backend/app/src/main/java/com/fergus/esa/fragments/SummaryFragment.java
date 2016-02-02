@@ -31,7 +31,9 @@ public class SummaryFragment extends Fragment {
 
         List<ESASummary> summaryObjects = getSummaryObjects(summaries);
 
-        Collections.sort(summaryObjects);
+		if (summaryObjects != null) {
+			Collections.sort(summaryObjects);
+		}
 
         ListView listView = (ListView) view.findViewById(R.id.summaries);
 

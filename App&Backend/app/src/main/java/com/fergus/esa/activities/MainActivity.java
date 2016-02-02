@@ -26,11 +26,14 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.novoda.merlin.Merlin;
 import com.novoda.merlin.registerable.connection.Connectable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends ActionBarActivity {
 	private ConnectionErrorView connectionErrorView;
 
-	private NetworkFragment networkFragment;
+	private List<NetworkFragment> networkFragments = new ArrayList<>();
 	private BackButtonFragment backButtonFragment;
 
     private Merlin merlin;
@@ -80,13 +83,12 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-
     @Override
     protected void onResume() {
         merlin.bind();
         super.onResume();
-        if (networkFragment!= null && ConnectionChecker.hasInternetConnection(this)) {
-            networkFragment.onInternetConnected();
+        if (ConnectionChecker.hasInternetConnection(this)) {
+            onInternetConnected();
         }
     }
 
@@ -102,8 +104,8 @@ public class MainActivity extends ActionBarActivity {
 
 
     public void onInternetConnected() {
-		if (networkFragment != null) {
-			networkFragment.onInternetConnected();
+		for (NetworkFragment fragment : networkFragments) {
+			fragment.onInternetConnected();
 		}
     }
 
@@ -192,7 +194,7 @@ public class MainActivity extends ActionBarActivity {
 
 
 	public void setNetworkFragment(NetworkFragment networkFragment) {
-		this.networkFragment = networkFragment;
+		networkFragments.add(networkFragment);
 	}
 
 
