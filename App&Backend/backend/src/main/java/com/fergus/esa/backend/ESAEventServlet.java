@@ -92,10 +92,7 @@ public class ESAEventServlet extends HttpServlet {
 
 
     public void getEvents() throws IOException {
-
-		// TODO: // FIXME: 02/02/2016
 		List<ESANews> allNews = listNews();
-		// List<ESANews> allNews = new ArrayList<>();
 
         for (ESANews en : allNews) {
             String event;
@@ -175,7 +172,6 @@ public class ESAEventServlet extends HttpServlet {
 		// TODO: this piece of crap is giving me headache
 		/*
         try {
-
             Client client = Client.create();
 
             WebResource esaRESTSummariser = client.resource("http://ec2-52-17-235-186.eu-west-1.compute.amazonaws.com:8080/SummarisationRESTServer/SumServ/esarestsummariser/post");
@@ -186,7 +182,6 @@ public class ESAEventServlet extends HttpServlet {
             }
 
             summary = response.getEntity(String.class);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -277,12 +272,5 @@ public class ESAEventServlet extends HttpServlet {
     public List<ESATweet> listEventTweets(String event) {
         List<ESATweet> eventTweets = ofy().load().type(ESATweet.class).filter("event", event).list();
         return eventTweets;
-    }
-
-
-    public List<ESATweet> listTweets() {
-        List<ESATweet> tweets = ofy().load().type(ESATweet.class).list();
-
-        return tweets;
     }
 }

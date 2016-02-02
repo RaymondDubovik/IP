@@ -41,7 +41,7 @@ public class ESANewsServlet extends HttpServlet {
 
 		getEvents();
         try {
-            getNewsArticles(events);
+            getNewsArticles();
         } catch (IllegalArgumentException | FeedException | ConflictException e) {
             e.printStackTrace();
         }
@@ -63,7 +63,7 @@ public class ESANewsServlet extends HttpServlet {
     }
 
 
-    public void getNewsArticles(HashSet<String> events) throws IOException, IllegalArgumentException, FeedException, ConflictException {
+    public void getNewsArticles() throws IOException, IllegalArgumentException, FeedException, ConflictException {
         String feedUrl;
         String cleanEvent;
 
