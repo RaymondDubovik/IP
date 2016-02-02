@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +45,6 @@ public class NewsHelper {
                                 .setLogoUrl(results.getString("logoUrl"))
                                 .setTimestamp(results.getDate("timestamp"))
                                 .setEventId(id)
-
                 );
             }
             return news;
@@ -70,4 +70,81 @@ public class NewsHelper {
 
         return null;
     }
+
+
+	public boolean exists(String url) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "SELECT EXISTS(SELECT 1 FROM `news` WHERE `url`=?) AS `exists`";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, url);
+			results = statement.executeQuery();
+
+			if (results.next()) {
+				return results.getBoolean("exists");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return false;
+	}
+
+
+	public boolean create(NewsObject news) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "INSERT INTO `news` (`title`, `url`, `logoUrl`, `timestamp`, `eventId`) VALUES(?, ?, ?, ?, ?);";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, news.getTitle());
+			statement.setString(2, news.getUrl());
+			statement.setString(3, news.getLogoUrl());
+			statement.setString(4, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(news.getTimestamp()));
+			statement.setInt(5, news.getEventId());
+
+			return statement.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return false;
+	}
 }

@@ -39,7 +39,6 @@ public class ESATweetServlet extends HttpServlet {
 
 
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
         // Create a ConfigurationBuilder which links the program to a twitter account using the various keys below
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true);
@@ -79,7 +78,6 @@ public class ESATweetServlet extends HttpServlet {
 
         // For each trending event pull the top 10 most popular tweets
         for (String event : events) {
-
             event = removeSuffix(event);
             event = removeAccents(event);
             twitter4j.Query query = new twitter4j.Query(event);
@@ -88,17 +86,13 @@ public class ESATweetServlet extends HttpServlet {
             query.resultType(Query.ResultType.mixed);
 
             QueryResult result = twitter.search(query);
-
             for (Status status : result.getTweets()) {
-
                 if (!status.isRetweet() && !status.isPossiblySensitive()) {
 
                     Long timestamp = System.currentTimeMillis();
-
                     String imageUrl = "";
 
                     if (status.getMediaEntities().length > 0) {
-
                         imageUrl = status.getMediaEntities()[0].getMediaURL();
                     }
 
@@ -106,8 +100,22 @@ public class ESATweetServlet extends HttpServlet {
                     Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
                     String sDate = formatter.format(date);
 
-                    ESATweet esaTweet = new ESATweet();
-                    esaTweet.setId(status.getId());
+
+					// TODO: fix
+
+					System.out.println(status.getId());
+					System.out.println(event);
+					System.out.println(status.getUser().getName());
+					System.out.println(status.getUser().getScreenName());
+					System.out.println(status.getUser().getBiggerProfileImageURL());
+					System.out.println(imageUrl);
+					System.out.println(status.getText());
+					System.out.println(sDate);
+					System.out.println(timestamp);
+
+					/*
+					 ESATweet esaTweet = new ESATweet();
+					esaTweet.setId(status.getId());
                     esaTweet.setEvent(event);
                     esaTweet.setUsername(status.getUser().getName());
                     esaTweet.setScreenname(status.getUser().getScreenName());
@@ -120,6 +128,7 @@ public class ESATweetServlet extends HttpServlet {
                     if (findESATweet(status.getId()) == null) {
                         insertESATweet(esaTweet);
                     }
+                    */
                 }
             }
         }
@@ -158,8 +167,7 @@ public class ESATweetServlet extends HttpServlet {
     //http://drillio.com/en/software/java/remove-accent-diacritic/
     public String removeAccents(String text) {
         return text == null ? null :
-                Normalizer.normalize(text, Normalizer.Form.NFD)
-                        .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+                Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
 
 
@@ -171,6 +179,7 @@ public class ESATweetServlet extends HttpServlet {
                 throw new ConflictException("Object already exists");
             }
         }
+
         //Since our @Id field is a Long, Objectify will generate a unique value for us
         //when we use put
         ofy().save().entity(esaTweet).now();

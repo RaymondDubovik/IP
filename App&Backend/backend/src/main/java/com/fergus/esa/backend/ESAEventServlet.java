@@ -12,9 +12,6 @@ import com.google.appengine.api.search.PutException;
 import com.google.appengine.api.search.SearchServiceFactory;
 import com.google.appengine.repackaged.com.google.common.collect.ArrayListMultimap;
 import com.google.appengine.repackaged.com.google.common.collect.Multimap;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -31,28 +28,23 @@ import java.util.Set;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
 
 import static com.fergus.esa.backend.OLD_DATAOBJECTS.OfyService.ofy;
 
 
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
-
     HashSet<String> events = new HashSet<>();
     Long minusOneHour = System.currentTimeMillis() - 3600000;
 
 
-    public void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
-
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         getEvents();
         try {
             addEvents();
         } catch (NotFoundException e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -101,14 +93,15 @@ public class ESAEventServlet extends HttpServlet {
                 IndexDocument("eventIndex", eventDoc);
 
             }
-
         }
     }
 
 
     public void getEvents() throws IOException {
 
-        List<ESANews> allNews = listNews();
+		// TODO: // FIXME: 02/02/2016
+		List<ESANews> allNews = listNews();
+		// List<ESANews> allNews = new ArrayList<>();
 
         for (ESANews en : allNews) {
             String event;
@@ -117,7 +110,6 @@ public class ESAEventServlet extends HttpServlet {
                 events.add(event);
             }
         }
-
     }
 
 
@@ -176,19 +168,24 @@ public class ESAEventServlet extends HttpServlet {
             String summary = summaryText + "esaseparator" + newsDate;
             summaries.add(summary);
         }
+
         return summaries;
-
-
     }
 
 
     public String getSummary(String url) {
         String summary = "";
 
+
+		summary = "this is a summary placeholder here!!!!";
+		// TODO: this piece of crap is giving me headache
+		/*
         try {
 
             Client client = Client.create();
+
             WebResource esaRESTSummariser = client.resource("http://ec2-52-17-235-186.eu-west-1.compute.amazonaws.com:8080/SummarisationRESTServer/SumServ/esarestsummariser/post");
+
             ClientResponse response = esaRESTSummariser.accept(MediaType.TEXT_PLAIN).post(ClientResponse.class, url);
             if (response.getStatus() != 201) {
                 throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
@@ -199,6 +196,7 @@ public class ESAEventServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        */
         return summary;
     }
 
