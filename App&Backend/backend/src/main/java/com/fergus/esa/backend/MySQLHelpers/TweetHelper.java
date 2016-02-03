@@ -113,14 +113,14 @@ public class TweetHelper {
 	}
 
 
-	public boolean create(TweetObject tweet) {
+	public int create(TweetObject tweet) {
 		PreparedStatement statement = null;
 		ResultSet results = null;
 
 		String query = "INSERT INTO `tweets` (`username`, `screenName`, `profileImgUrl`, `imageUrl`, `text`, `timestamp`, `eventId`) VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 		try {
-			statement = connection.prepareStatement(query);
+			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
 			statement.setString(1, tweet.getUsername());
 			statement.setString(2, tweet.getScreenName());
 			statement.setString(3, tweet.getProfileImgUrl());
@@ -129,7 +129,10 @@ public class TweetHelper {
 			statement.setString(6, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(tweet.getTimestamp()));
 			statement.setInt(7, tweet.getEventId());
 
-			return statement.executeUpdate() > 0;
+			results = statement.getGeneratedKeys();
+			if (results.next()) {
+				return results.getInt(1);
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -150,6 +153,6 @@ public class TweetHelper {
 			}
 		}
 
-		return false;
+		return 0;
 	}
 }

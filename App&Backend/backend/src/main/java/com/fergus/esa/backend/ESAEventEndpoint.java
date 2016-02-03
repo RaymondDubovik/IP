@@ -38,8 +38,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.fergus.esa.backend.OLD_DATAOBJECTS.OfyService.ofy;
-
 /*
     Endpoint class that handles storing ESAEvent entities in the Cloud Datastore on Google App Engine
  */
@@ -171,13 +169,14 @@ public class ESAEventEndpoint {
         List<ScoredEvent> scoredEvents = getEventsByQuery(query);
         Collections.sort(scoredEvents);
         List<ESAEvent> events = new ArrayList<>();
-
+/*
         for (ScoredEvent se : scoredEvents) {
 
             ESAEvent matchingEvent = ofy().load().type(ESAEvent.class).id(se.getEvent()).safe();
             matchingEvent.setEvent(se.getEvent() + "esaseparator" + se.getScore());
             events.add(matchingEvent);
         }
+        */
 
         return events;
     }
@@ -185,8 +184,9 @@ public class ESAEventEndpoint {
 
     @ApiMethod(name = "returnESAEvent")
     public ESAEvent returnESAEvent(@Named("event") String event) {
-        ESAEvent esaEvent = ofy().load().type(ESAEvent.class).id(event).now();
-        return esaEvent;
+        //ESAEvent esaEvent = ofy().load().type(ESAEvent.class).id(event).now();
+        //return esaEvent;
+		return null;
     }
 
 

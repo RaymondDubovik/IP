@@ -110,21 +110,24 @@ public class NewsHelper {
 	}
 
 
-	public boolean create(NewsObject news) {
+	public int create(NewsObject news) {
 		PreparedStatement statement = null;
 		ResultSet results = null;
 
 		String query = "INSERT INTO `news` (`title`, `url`, `logoUrl`, `timestamp`, `eventId`) VALUES(?, ?, ?, ?, ?);";
 
 		try {
-			statement = connection.prepareStatement(query);
+			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
 			statement.setString(1, news.getTitle());
 			statement.setString(2, news.getUrl());
 			statement.setString(3, news.getLogoUrl());
 			statement.setString(4, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(news.getTimestamp()));
 			statement.setInt(5, news.getEventId());
 
-			return statement.executeUpdate() > 0;
+			results = statement.getGeneratedKeys();
+			if (results.next()) {
+				return results.getInt(1);
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -145,6 +148,6 @@ public class NewsHelper {
 			}
 		}
 
-		return false;
+		return 0;
 	}
 }

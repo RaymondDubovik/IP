@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -244,5 +245,121 @@ public class EventHelper {
 		}
 
 		return null;
+	}
+
+
+	public boolean exists(String heading) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "SELECT EXISTS(SELECT 1 FROM `events` WHERE `heading`=?) AS `exists`";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, heading);
+			results = statement.executeQuery();
+
+			if (results.next()) {
+				return results.getBoolean("exists");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return false;
+	}
+
+
+	public int create(EventObject event) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "INSERT INTO `events` (`timestamp`, `heading`, `mainImageUrl`) VALUES (?, ?, ?);";
+
+		try {
+			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+			statement.setString(1, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(event.getTimestamp()));
+			statement.setString(2, event.getHeading());
+			statement.setString(3, event.getImageUrl());
+
+			results = statement.getGeneratedKeys();
+			if (results.next()) {
+				return results.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return 0;
+	}
+
+
+	public int getIdByHeading(String heading) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "SELECT `id` FROM `events` WHERE `heading`=?";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, heading);
+			results = statement.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("id");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return 0;
 	}
 }

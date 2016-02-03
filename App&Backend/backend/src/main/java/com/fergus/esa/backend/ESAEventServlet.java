@@ -1,25 +1,29 @@
 package com.fergus.esa.backend;
 
+import com.fergus.esa.backend.MySQLHelpers.EventHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
-import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
-import com.fergus.esa.backend.OLD_DATAOBJECTS.ESANews;
-import com.fergus.esa.backend.OLD_DATAOBJECTS.ESATweet;
-import com.google.api.server.spi.response.NotFoundException;
-import com.google.appengine.api.search.Document;
-import com.google.appengine.api.search.Field;
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.PutException;
-import com.google.appengine.api.search.SearchServiceFactory;
-import com.google.appengine.repackaged.com.google.common.collect.ArrayListMultimap;
-import com.google.appengine.repackaged.com.google.common.collect.Multimap;
+import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
+import com.fergus.esa.backend.dataObjects.EventObject;
+import com.fergus.esa.backend.dataObjects.NewsObject;
+import com.google.api.server.spi.response.ConflictException;
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.io.FeedException;
+import com.rometools.rome.io.SyndFeedInput;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
 import java.sql.Connection;
 import java.text.DateFormat;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -31,26 +35,182 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.fergus.esa.backend.OLD_DATAOBJECTS.OfyService.ofy;
-
 
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
-    private HashSet<String> events = new HashSet<>();
+    // private  events = new HashSet<>();
     private Long minusOneHour = System.currentTimeMillis() - 3600000;
 
 	private Connection connection;
 
-    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		connection = (new MySQLJDBC()).getConnection();
 
-        getEvents();
-        try {
-            addEvents();
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-    }
+		// 1) get event URLs
+		// 2) get news from those urls
+		// 3) get tweets from those urls
+
+		// getting something
+		HashSet<String> eventHeadings = getEventHeadings();
+
+		try {
+			getData(eventHeadings);
+		} catch (FeedException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	public HashSet<String> getEventHeadings() throws IOException {
+		HashSet<String> eventHeadings = new HashSet<>();
+
+		org.jsoup.nodes.Document doc = Jsoup.connect("https://news.google.co.uk/").get();
+
+		Elements topics = doc.select("div.topic");
+
+		for (Element t : topics) {
+			eventHeadings.add(t.text());
+		}
+
+		return eventHeadings;
+	}
+
+
+	public void getData(HashSet<String> evebtHeadings) throws FeedException, IOException {
+		String feedUrl;
+
+		for (String heading : evebtHeadings) {
+			heading = removeSuffix(removeAccents(heading));
+
+			// TODO: add event here and retrieve event Id:
+			int eventId = addEvent(heading);
+
+			addNews(heading, eventId);
+
+			EventObject event = new EventObject()
+					.setId(eventId)
+					.setHeading(heading);
+
+			// TODO: after adding tweets, update the event with image urls
+			// esaEvent.setImageUrls(getImageUrls(eventTweets));
+			// TODO: Long timestamp = getMostRecentTweetTime(eventTweets);
+
+			// TODO: update the event here
+		}
+	}
+
+
+	private void addNews(String event, int eventId) throws IOException, FeedException {
+		URL url = new URL(getEventUrl(event));
+		Reader r = new InputStreamReader(url.openStream());
+		SyndFeed feed = new SyndFeedInput().build(r);
+
+		List<SyndEntry> entryList = feed.getEntries();
+
+		if (entryList.size() > 0) {
+			for (int i = 0; i < 2; i++) {
+				SyndEntry entry = entryList.get(i);
+				String entryUrl = entry.getUri().substring(33);
+				String title = entry.getTitle();
+				Date date = entry.getPublishedDate();
+
+				NewsObject news = new NewsObject()
+						.setEventId(eventId) // TODO: implement
+						.setEventId(1)
+						.setTitle(title)
+						.setUrl(entryUrl)
+						.setLogoUrl("")
+						.setTimestamp(date);
+
+				// System.out.println(title);
+
+				insertNews(news);
+			}
+		}
+	}
+
+
+	public NewsObject insertNews(NewsObject news) throws ConflictException {
+		NewsHelper helper = new NewsHelper(connection);
+
+		// If if is not null, then check if it exists. If yes, throw an Exception, that it is already present
+		if (news.getUrl() != null && helper.exists(news.getUrl())) {
+			throw new ConflictException("Object already exists");
+		}
+
+		helper.create(news);
+		return news;
+	}
+
+
+	private int addEvent(String eventHeading) {
+		EventObject event = new EventObject().setHeading(eventHeading);
+		return insertEvent(event);
+	}
+
+
+	private String getEventUrl(String event) {
+		String cleanEvent;
+		if (event.contains(" ")) {
+			cleanEvent = event.replace(" ", "+");
+		} else {
+			cleanEvent = event;
+		}
+
+		return "http://news.google.com/news?q=" + cleanEvent + "&output=rss";
+	}
+
+
+	//http://drillio.com/en/software/java/remove-accent-diacritic/
+	public String removeAccents(String text) {
+		return text == null ? null :
+				Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+	}
+
+
+	public String removeSuffix(String event) {
+		String suffixRemovedEvent;
+
+		if (event.contains("FC")) {
+			suffixRemovedEvent = event.replace("FC", "");
+		} else if (event.contains("F.C.")) {
+			suffixRemovedEvent = event.replace("F.C.", "");
+		} else if (event.contains("PLC")) {
+			suffixRemovedEvent = event.replace("PLC", "");
+		} else if (event.contains("LLC")) {
+			suffixRemovedEvent = event.replace("LLC", "");
+		} else if (event.contains("Corporation")) {
+			suffixRemovedEvent = event.replace("Corporation", "");
+		} else if (event.contains("Inc.")) {
+			suffixRemovedEvent = event.replace("Inc.", "");
+		} else if (event.contains("Ltd.")) {
+			suffixRemovedEvent = event.replace("Ltd.", "");
+		} else if (event.contains("AFC")) {
+			suffixRemovedEvent = event.replace("AFC", "");
+		} else if (event.contains("A.F.C.")) {
+			suffixRemovedEvent = event.replace("A.F.C.", "");
+		} else {
+			suffixRemovedEvent = event;
+		}
+
+		return suffixRemovedEvent;
+	}
+
+
+	public int insertEvent(EventObject event) {
+		EventHelper helper = new EventHelper(connection);
+
+		if (event.getHeading() == null) {
+			return 0;
+		}
+
+		// If if is not null, then check if it exists. If yes, throw an Exception, that it is already present
+		int id = helper.getIdByHeading(event.getHeading()); // TODO: return an ID here
+
+		return (id != 0) ? id :	helper.create(event);
+	}
+
 
 
     public void addEvents() throws NotFoundException, IOException {
@@ -186,31 +346,13 @@ public class ESAEventServlet extends HttpServlet {
             e.printStackTrace();
         }
         */
+
+
         return summary;
     }
 
 
-    public Document createDocument(String event, String searchPool) {
-        Document doc = Document.newBuilder()
-                .setId(event)
-                .addField(Field.newBuilder().setName("content").setText(searchPool))
-                .build();
-
-        return doc;
-    }
-
-
-    public void IndexDocument(String indexName, Document document) {
-        IndexSpec indexSpec = IndexSpec.newBuilder().setName(indexName).build();
-        Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
-
-        try {
-            index.put(document);
-        } catch (PutException e) {
-        }
-    }
-
-
+/*
     public long getMostRecentTweetTime(List<ESATweet> tweets) {
         long timestamp = 0;
 
@@ -222,21 +364,7 @@ public class ESAEventServlet extends HttpServlet {
         }
 
         return timestamp;
-    }
 
-
-    // Method to insert ESAEvent entities into the datastore
-    public ESAEvent insertESAEvent(ESAEvent esaEvent) throws NotFoundException, IOException {
-        // Return the events currently featured as topics on news.google.co.uk
-
-        if (findESAEvent(esaEvent.getEvent()) != null) {
-            updateESAEvent(esaEvent.getEvent(), esaEvent);
-        } else {
-            ofy().save().entity(esaEvent).now();
-        }
-        // Returns the newly created/updated esaEvent entity
-        return esaEvent;
-    }
 
 
     // Method to update a pre-existing ESAEvent entity
@@ -273,4 +401,6 @@ public class ESAEventServlet extends HttpServlet {
         List<ESATweet> eventTweets = ofy().load().type(ESATweet.class).filter("event", event).list();
         return eventTweets;
     }
+
+    */
 }

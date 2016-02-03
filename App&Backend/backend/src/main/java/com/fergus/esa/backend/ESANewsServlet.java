@@ -69,8 +69,7 @@ public class ESANewsServlet extends HttpServlet {
 
         for (String event : events) {
             cleanEvent = getCleanEvent(event);
-            event = removeAccents(event);
-            event = removeSuffix(event);
+            event = removeSuffix(removeAccents(event));
             feedUrl = "http://news.google.com/news?q=" + cleanEvent + "&output=rss";
 
             URL url = new URL(feedUrl);
@@ -85,7 +84,6 @@ public class ESANewsServlet extends HttpServlet {
                     String entryUrl = entry.getUri().substring(33);
                     String title = entry.getTitle();
                     Date date = entry.getPublishedDate();
-                    Long timestamp = System.currentTimeMillis();
 
 					NewsObject news = new NewsObject()
 							//.setEventId(event.get) // TODO: implement
