@@ -3,6 +3,7 @@ package com.fergus.esa.backend;
 import com.fergus.esa.backend.MySQLHelpers.EventHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
+import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.NewsObject;
 import com.fergus.esa.backend.dataObjects.TweetObject;
@@ -22,6 +23,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.sql.Connection;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -100,91 +102,45 @@ public class ESAEventServlet extends HttpServlet {
 			int eventId = addEvent(heading);
 
 			new NewsModel().addNews(heading, eventId);
+			TweetModel tweetModel = new TweetModel(getTwitterConfiguration());
+			List<TweetObject> tweets = tweetModel.getTweets(eventId, heading);
+			insertTweets(tweets);
 
-			// TODO: Tweets here
-
-			//----- ADDING IMAGES
-			List<TweetObject> tweets = getTweets(heading, getTwitterConfiguration());
-
-			Set<String> imageUrlsSet = new HashSet<>();
-			for (TweetObject tweet : tweets) {
-				if (!Objects.equals(tweet.getImageUrl(), "")) {
-					imageUrlsSet.add(tweet.getImageUrl());
-				}
-
+			for (TweetObject tweet: tweets) {
 				// TODO: store the tweet in the database
-				// insertTweet(tweetObject);
 			}
 
-			for (String imgUrl : imageUrlsSet) {
+			Set<String> imageUrls = getImagesFromTweets(tweets);
+			for (String image : imageUrls) {
 				// TODO insert images for the event here;
 			}
-			//--------------END ADDING IMAGES
-
 
 			EventObject event = new EventObject()
 					.setId(eventId)
-					.setHeading(heading);
+					.setHeading(heading)
+					.setTimestamp(getMostRecentTweetTime(tweets));
 
+			// TODO: store event summaries
+			// List<String> eventSummaries = summarise(eventNews);
 
 			/*
 			List<ESANews> eventNews = listEventNews(e);
             List<ESATweet> eventTweets = listEventTweets(e);
 
-			List<String> eventSummaries = summarise(eventNews);
+
 
 			Long timestamp = getMostRecentTweetTime(eventTweets);
 
 			ESAEvent esaEvent = new ESAEvent();
 			esaEvent.setEvent(e);
 			esaEvent.setNews(eventNews);
-			esaEvent.setTweets(eventTweets);
-			esaEvent.setImageUrls(getImageUrls(eventTweets));
-			esaEvent.setSummaries(eventSummaries);
-			esaEvent.setTimestamp(timestamp);
+
 			insertESAEvent(esaEvent);
 			 */
 
-			// TODO: after adding tweets, update the event with image urls
-			// esaEvent.setImageUrls(getImageUrls(eventTweets));
-			// TODO: Long timestamp = getMostRecentTweetTime(eventTweets);
+
 
 			// TODO: update the event here
-		}
-	}
-
-
-	private List<TweetObject> getTweets(String eventHeading, Configuration twitterConfiguration) throws TwitterException {
-		// Create a new instance of a TwitterFactory to pull data from twitter
-		TwitterFactory tf = new TwitterFactory(twitterConfiguration);
-		Twitter twitter = tf.getInstance();
-
-		// For each trending event pull the top 10 most popular tweets
-
-		twitter4j.Query query = new twitter4j.Query(eventHeading);
-		query.count(10);
-		query.lang("en");
-		query.resultType(Query.ResultType.mixed);
-
-		QueryResult result = twitter.search(query);
-		for (Status status : result.getTweets()) {
-			if (!status.isRetweet() && !status.isPossiblySensitive()) {
-				String imageUrl = "";
-
-				if (status.getMediaEntities().length > 0) {
-					imageUrl = status.getMediaEntities()[0].getMediaURL();
-				}
-
-				TweetObject tweetObject = new TweetObject()
-						.setEventId(1) // TODO fix;
-						.setId(status.getId())
-						.setUsername(status.getUser().getName())
-						.setScreenName(status.getUser().getScreenName())
-						.setProfileImgUrl(status.getUser().getBiggerProfileImageURL())
-						.setImageUrl(imageUrl)
-						.setText(status.getText())
-						.setTimestamp(status.getCreatedAt());
-			}
 		}
 	}
 
@@ -348,24 +304,11 @@ public class ESAEventServlet extends HttpServlet {
     }
 
 
-/*
-    public long getMostRecentTweetTime(List<ESATweet> tweets) {
-        long timestamp = 0;
-
-        for (ESATweet t : tweets) {
-            long tweetTimestamp = t.getTimestamp();
-            if (tweetTimestamp > timestamp) {
-                timestamp = tweetTimestamp;
-            }
-        }
-
-        return timestamp;
-*/
 
 
 
 
-
+	
 
 
 
@@ -423,6 +366,104 @@ public class ESAEventServlet extends HttpServlet {
 
 			helper.create(news);
 			return news;
+		}
+	}
+
+
+	// TODO: refactor this class
+	private class TweetModel {
+		private Configuration twitterConfiguration;
+
+
+		public TweetModel(Configuration twitterConfiguration) {
+			this.twitterConfiguration = twitterConfiguration;
+		}
+
+
+		private void insertTweets(List<TweetObject> tweets) {
+			TweetHelper helper = new TweetHelper(connection);
+			for (TweetObject tweet : tweets) {
+				try {
+					insertTweet(helper, tweet);
+				} catch (ConflictException e) {
+					e.printStackTrace();
+				}
+
+				helper.create(tweet);
+			}
+		}
+
+
+		private void insertTweet(TweetHelper helper, TweetObject tweet) throws ConflictException {
+			//If if is not null, then check if it exists. If yes, throw an Exception that it is already present
+			if (tweet.getId() != 0 && helper.exists(tweet.getId())) {
+				throw new ConflictException("Object already exists");
+			}
+		}
+
+
+		public Date getMostRecentTweetTime(List<TweetObject> tweets) {
+			Date timestamp = new Date(0);
+
+			for (TweetObject tweet : tweets) {
+				Date tweetTimestamp = tweet.getTimestamp();
+				if (tweetTimestamp.after(timestamp)) {
+					timestamp = tweetTimestamp;
+				}
+			}
+
+			return timestamp;
+		}
+
+
+		private Set<String> getImagesFromTweets(List<TweetObject> tweets) {
+			Set<String> images = new HashSet<>();
+			for (TweetObject tweet : tweets) {
+				if (!Objects.equals(tweet.getImageUrl(), "")) {
+					images.add(tweet.getImageUrl());
+				}
+			}
+
+			return images;
+		}
+
+
+		private List<TweetObject> getTweets(int eventId, String eventHeading) throws TwitterException {
+			// Create a new instance of a TwitterFactory to pull data from twitter
+			TwitterFactory tf = new TwitterFactory(twitterConfiguration);
+			Twitter twitter = tf.getInstance();
+
+			// For each trending event pull the top 10 most popular tweets
+
+			twitter4j.Query query = new twitter4j.Query(eventHeading);
+			query.count(10);
+			query.lang("en");
+			query.resultType(Query.ResultType.mixed);
+
+			List<TweetObject> tweets = new ArrayList<>();
+			QueryResult result = twitter.search(query);
+			for (Status status : result.getTweets()) {
+				if (!status.isRetweet() && !status.isPossiblySensitive()) {
+					String imageUrl = "";
+
+					if (status.getMediaEntities().length > 0) {
+						imageUrl = status.getMediaEntities()[0].getMediaURL();
+					}
+
+					tweets.add(new TweetObject()
+							.setEventId(eventId) // TODO fix;
+							.setId(status.getId())
+							.setUsername(status.getUser().getName())
+							.setScreenName(status.getUser().getScreenName())
+							.setProfileImgUrl(status.getUser().getBiggerProfileImageURL())
+							.setImageUrl(imageUrl)
+							.setText(status.getText())
+							.setTimestamp(status.getCreatedAt())
+					);
+				}
+			}
+
+			return tweets;
 		}
 	}
 }
