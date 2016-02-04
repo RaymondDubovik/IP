@@ -5,6 +5,7 @@ import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.NewsObject;
+import com.fergus.esa.backend.dataObjects.TweetObject;
 import com.google.api.server.spi.response.ConflictException;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -20,20 +21,25 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.sql.Connection;
-import java.text.DateFormat;
 import java.text.Normalizer;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import twitter4j.Query;
+import twitter4j.QueryResult;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.conf.Configuration;
+import twitter4j.conf.ConfigurationBuilder;
 
 
 @SuppressWarnings("serial")
@@ -44,19 +50,26 @@ public class ESAEventServlet extends HttpServlet {
 	private Connection connection;
 
 
+	private Configuration getTwitterConfiguration() {
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true);
+		cb.setOAuthConsumerKey("AAfSJDnui3xQTegXr2GOogBAp");
+		cb.setOAuthConsumerSecret("pVqlDf3ySpwRtz9ePr0mvYmx0ob9HwIF17IwpfsgfLRdo5VBKI");
+		cb.setOAuthAccessToken("3345365331-7amtdWHIU2U98JJyTLWwm2ewFpxJ61YIkRraEWh");
+		cb.setOAuthAccessTokenSecret("Mm9Efm05yZqALZ0bkSVVRwrK08j9NZ6YQryAZiUuPgY4a");
+
+		// Create a Configuration instance which can be reused
+		Configuration configuration = cb.build();
+		return configuration;
+	}
+
+
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		connection = (new MySQLJDBC()).getConnection();
 
-		// 1) get event URLs
-		// 2) get news from those urls
-		// 3) get tweets from those urls
-
-		// getting something
-		HashSet<String> eventHeadings = getEventHeadings();
-
 		try {
-			getData(eventHeadings);
-		} catch (FeedException e) {
+			storeData(getEventHeadings());
+		} catch (IOException | FeedException | TwitterException e) {
 			e.printStackTrace();
 		}
 	}
@@ -77,20 +90,60 @@ public class ESAEventServlet extends HttpServlet {
 	}
 
 
-	public void getData(HashSet<String> evebtHeadings) throws FeedException, IOException {
+	public void storeData(HashSet<String> eventHeading) throws FeedException, IOException, TwitterException {
 		String feedUrl;
 
-		for (String heading : evebtHeadings) {
+		for (String heading : eventHeading) {
 			heading = removeSuffix(removeAccents(heading));
 
 			// TODO: add event here and retrieve event Id:
 			int eventId = addEvent(heading);
 
-			addNews(heading, eventId);
+			new NewsModel().addNews(heading, eventId);
+
+			// TODO: Tweets here
+
+			//----- ADDING IMAGES
+			List<TweetObject> tweets = getTweets(heading, getTwitterConfiguration());
+
+			Set<String> imageUrlsSet = new HashSet<>();
+			for (TweetObject tweet : tweets) {
+				if (!Objects.equals(tweet.getImageUrl(), "")) {
+					imageUrlsSet.add(tweet.getImageUrl());
+				}
+
+				// TODO: store the tweet in the database
+				// insertTweet(tweetObject);
+			}
+
+			for (String imgUrl : imageUrlsSet) {
+				// TODO insert images for the event here;
+			}
+			//--------------END ADDING IMAGES
+
 
 			EventObject event = new EventObject()
 					.setId(eventId)
 					.setHeading(heading);
+
+
+			/*
+			List<ESANews> eventNews = listEventNews(e);
+            List<ESATweet> eventTweets = listEventTweets(e);
+
+			List<String> eventSummaries = summarise(eventNews);
+
+			Long timestamp = getMostRecentTweetTime(eventTweets);
+
+			ESAEvent esaEvent = new ESAEvent();
+			esaEvent.setEvent(e);
+			esaEvent.setNews(eventNews);
+			esaEvent.setTweets(eventTweets);
+			esaEvent.setImageUrls(getImageUrls(eventTweets));
+			esaEvent.setSummaries(eventSummaries);
+			esaEvent.setTimestamp(timestamp);
+			insertESAEvent(esaEvent);
+			 */
 
 			// TODO: after adding tweets, update the event with image urls
 			// esaEvent.setImageUrls(getImageUrls(eventTweets));
@@ -101,46 +154,38 @@ public class ESAEventServlet extends HttpServlet {
 	}
 
 
-	private void addNews(String event, int eventId) throws IOException, FeedException {
-		URL url = new URL(getEventUrl(event));
-		Reader r = new InputStreamReader(url.openStream());
-		SyndFeed feed = new SyndFeedInput().build(r);
+	private List<TweetObject> getTweets(String eventHeading, Configuration twitterConfiguration) throws TwitterException {
+		// Create a new instance of a TwitterFactory to pull data from twitter
+		TwitterFactory tf = new TwitterFactory(twitterConfiguration);
+		Twitter twitter = tf.getInstance();
 
-		List<SyndEntry> entryList = feed.getEntries();
+		// For each trending event pull the top 10 most popular tweets
 
-		if (entryList.size() > 0) {
-			for (int i = 0; i < 2; i++) {
-				SyndEntry entry = entryList.get(i);
-				String entryUrl = entry.getUri().substring(33);
-				String title = entry.getTitle();
-				Date date = entry.getPublishedDate();
+		twitter4j.Query query = new twitter4j.Query(eventHeading);
+		query.count(10);
+		query.lang("en");
+		query.resultType(Query.ResultType.mixed);
 
-				NewsObject news = new NewsObject()
-						.setEventId(eventId) // TODO: implement
-						.setEventId(1)
-						.setTitle(title)
-						.setUrl(entryUrl)
-						.setLogoUrl("")
-						.setTimestamp(date);
+		QueryResult result = twitter.search(query);
+		for (Status status : result.getTweets()) {
+			if (!status.isRetweet() && !status.isPossiblySensitive()) {
+				String imageUrl = "";
 
-				// System.out.println(title);
+				if (status.getMediaEntities().length > 0) {
+					imageUrl = status.getMediaEntities()[0].getMediaURL();
+				}
 
-				insertNews(news);
+				TweetObject tweetObject = new TweetObject()
+						.setEventId(1) // TODO fix;
+						.setId(status.getId())
+						.setUsername(status.getUser().getName())
+						.setScreenName(status.getUser().getScreenName())
+						.setProfileImgUrl(status.getUser().getBiggerProfileImageURL())
+						.setImageUrl(imageUrl)
+						.setText(status.getText())
+						.setTimestamp(status.getCreatedAt());
 			}
 		}
-	}
-
-
-	public NewsObject insertNews(NewsObject news) throws ConflictException {
-		NewsHelper helper = new NewsHelper(connection);
-
-		// If if is not null, then check if it exists. If yes, throw an Exception, that it is already present
-		if (news.getUrl() != null && helper.exists(news.getUrl())) {
-			throw new ConflictException("Object already exists");
-		}
-
-		helper.create(news);
-		return news;
 	}
 
 
@@ -212,45 +257,8 @@ public class ESAEventServlet extends HttpServlet {
 	}
 
 
-
-    public void addEvents() throws NotFoundException, IOException {
-        for (String e : events) {
-            List<ESANews> eventNews = listEventNews(e);
-            List<ESATweet> eventTweets = listEventTweets(e);
-
-			List<String> eventSummaries = summarise(eventNews);
-
-			Long timestamp = getMostRecentTweetTime(eventTweets);
-
-			ESAEvent esaEvent = new ESAEvent();
-			esaEvent.setEvent(e);
-			esaEvent.setNews(eventNews);
-			esaEvent.setTweets(eventTweets);
-			esaEvent.setImageUrls(getImageUrls(eventTweets));
-			esaEvent.setSummaries(eventSummaries);
-			esaEvent.setTimestamp(timestamp);
-			insertESAEvent(esaEvent);
-
-			String docID = e.replace(" ", "_");
-
-			String summaries = "";
-			String titles = "";
-
-			for (String sum : eventSummaries) {
-				summaries += sum + " ";
-			}
-			for (ESANews en : eventNews) {
-				titles += en.getTitle() + " ";
-			}
-
-			String searchPool = e + " " + summaries + " " + titles;
-
-			Document eventDoc = createDocument(docID, searchPool);
-			IndexDocument("eventIndex", eventDoc);
-        }
-    }
-
-
+	// TODO: look into (one hour)
+	/*
     public void getEvents() throws IOException {
 		List<ESANews> allNews = listNews();
 
@@ -262,23 +270,10 @@ public class ESAEventServlet extends HttpServlet {
             }
         }
     }
+    */
 
 
-    public List<String> getImageUrls(List<ESATweet> esaTweets) {
-        Set<String> imageUrlsSet = new HashSet<>();
-        List<String> imageUrls = new ArrayList<>();
-        for (ESATweet t : esaTweets) {
-            if (!Objects.equals(t.getImageUrl(), "")) {
-                imageUrlsSet.add(t.getImageUrl());
-            }
-        }
-
-        for (String imgUrl : imageUrlsSet) {
-            imageUrls.add(imgUrl);
-        }
-        return imageUrls;
-    }
-
+/*
 
     // Method to produce a short summary of a group of news articles from a particular day,
     // relating to a particular event.
@@ -312,7 +307,6 @@ public class ESAEventServlet extends HttpServlet {
                 }
             }
 
-
             Date date = new Date(dateInMillis);
             DateFormat dateformat = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.UK);
             String newsDate = dateformat.format(date);
@@ -322,6 +316,8 @@ public class ESAEventServlet extends HttpServlet {
 
         return summaries;
     }
+
+    */
 
 
     public String getSummary(String url) {
@@ -364,43 +360,69 @@ public class ESAEventServlet extends HttpServlet {
         }
 
         return timestamp;
+*/
 
 
 
-    // Method to update a pre-existing ESAEvent entity
-    public ESAEvent updateESAEvent(String event, ESAEvent esaEvent) throws NotFoundException {
-        // Loads the existing event from the datastore
-        ofy().load().type(ESAEvent.class).id(event).safe();
-        // Saves the updated event
-        ofy().save().entity(esaEvent).now();
-        // Returns the updated event
-        return ofy().load().entity(esaEvent).now();
-    }
 
 
-    // Method to check if an event already exists in the datastore
-    private ESAEvent findESAEvent(String event) {
-        return ofy().load().type(ESAEvent.class).id(event).now();
-    }
 
 
-    public List<ESANews> listNews() {
-        List<ESANews> news = ofy().load().type(ESANews.class).list();
-
-        return news;
-    }
 
 
-    public List<ESANews> listEventNews(String event) {
-        List<ESANews> eventNews = ofy().load().type(ESANews.class).filter("event", event).list();
-        return eventNews;
-    }
 
 
-    public List<ESATweet> listEventTweets(String event) {
-        List<ESATweet> eventTweets = ofy().load().type(ESATweet.class).filter("event", event).list();
-        return eventTweets;
-    }
 
-    */
+
+
+
+
+
+
+
+	private class NewsModel {
+		public void addNews(String event, int eventId) throws IOException, FeedException {
+			URL url = new URL(getEventUrl(event));
+			Reader r = new InputStreamReader(url.openStream());
+			SyndFeed feed = new SyndFeedInput().build(r);
+
+			List<SyndEntry> entryList = feed.getEntries();
+
+			if (entryList.size() > 0) {
+				for (int i = 0; i < 2; i++) { // TODO: what is 2 in this case?
+					SyndEntry entry = entryList.get(i);
+					String entryUrl = entry.getUri().substring(33); // TODO: where 33 comes from?
+					String title = entry.getTitle();
+					Date date = entry.getPublishedDate();
+
+					NewsObject news = new NewsObject()
+							.setEventId(eventId)
+							.setEventId(1)
+							.setTitle(title)
+							.setUrl(entryUrl)
+							.setLogoUrl("")
+							.setTimestamp(date);
+
+					try {
+						insertNews(news);
+					} catch (ConflictException e) {
+						// TODO: do nothing, if it exists
+					}
+				}
+			}
+		}
+
+
+		public NewsObject insertNews(NewsObject news) throws ConflictException {
+			NewsHelper helper = new NewsHelper(connection);
+
+			// If if is not null, then check if it exists. If yes, throw an Exception, that it is already present
+			if (news.getUrl() != null && helper.exists(news.getUrl())) {
+				throw new ConflictException("Object already exists");
+			}
+
+			helper.create(news);
+			return news;
+		}
+	}
 }
