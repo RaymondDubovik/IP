@@ -46,7 +46,6 @@ import twitter4j.conf.ConfigurationBuilder;
 
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
-    // private  events = new HashSet<>();
     private Long minusOneHour = System.currentTimeMillis() - 3600000;
 
 	private Connection connection;
@@ -104,13 +103,9 @@ public class ESAEventServlet extends HttpServlet {
 			new NewsModel().addNews(heading, eventId);
 			TweetModel tweetModel = new TweetModel(getTwitterConfiguration());
 			List<TweetObject> tweets = tweetModel.getTweets(eventId, heading);
-			insertTweets(tweets);
+			tweetModel.insertTweets(tweets);
 
-			for (TweetObject tweet: tweets) {
-				// TODO: store the tweet in the database
-			}
-
-			Set<String> imageUrls = getImagesFromTweets(tweets);
+			Set<String> imageUrls = tweetModel.getImagesFromTweets(tweets);
 			for (String image : imageUrls) {
 				// TODO insert images for the event here;
 			}
@@ -118,7 +113,7 @@ public class ESAEventServlet extends HttpServlet {
 			EventObject event = new EventObject()
 					.setId(eventId)
 					.setHeading(heading)
-					.setTimestamp(getMostRecentTweetTime(tweets));
+					.setTimestamp(tweetModel.getMostRecentTweetTime(tweets));
 
 			// TODO: store event summaries
 			// List<String> eventSummaries = summarise(eventNews);
@@ -126,8 +121,6 @@ public class ESAEventServlet extends HttpServlet {
 			/*
 			List<ESANews> eventNews = listEventNews(e);
             List<ESATweet> eventTweets = listEventTweets(e);
-
-
 
 			Long timestamp = getMostRecentTweetTime(eventTweets);
 
