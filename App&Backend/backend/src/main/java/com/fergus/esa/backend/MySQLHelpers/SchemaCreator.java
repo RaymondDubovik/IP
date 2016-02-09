@@ -60,7 +60,8 @@ public class SchemaCreator {
     private static final String querySummaries =
         "CREATE TABLE IF NOT EXISTS `summaries` (" +
                 "`length` INT," +
-                "`text` TEXT" +
+                "`text` TEXT," +
+				"`timestamp` DATETIME" +
             ")";
 
     private static final String queryEventsUsers =
@@ -333,7 +334,7 @@ public class SchemaCreator {
 
             // summaries
             for (int j = 0; j < 30; j++) {
-                query = "INSERT INTO `summaries` (`text`, `length`, `eventId`) VALUES ('Some long summary text here.', 5, " + i + ");";
+                query = "INSERT INTO `summaries` (`text`, `length`, `timestamp`, `eventId`) VALUES ('Some long summary text here.', 5, NOW(), " + i + ");";
                 executeUpdateQuery(connection, query);
             }
         }

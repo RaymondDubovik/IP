@@ -6,12 +6,20 @@ import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.NewsObject;
+import com.fergus.esa.backend.dataObjects.SummaryObject;
 import com.fergus.esa.backend.dataObjects.TweetObject;
 import com.google.api.server.spi.response.ConflictException;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -24,6 +32,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +42,9 @@ import java.util.Set;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
 
+import twitter4j.JSONObject;
 import twitter4j.Query;
 import twitter4j.QueryResult;
 import twitter4j.Status;
@@ -46,7 +57,8 @@ import twitter4j.conf.ConfigurationBuilder;
 
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
-    private Long minusOneHour = System.currentTimeMillis() - 3600000;
+	private static final String SUMMARISATION_SERVER_URL = "http://127.0.0.1:10000/test";
+	private Long minusOneHour = System.currentTimeMillis() - 3600000;
 
 	private Connection connection;
 
@@ -98,7 +110,6 @@ public class ESAEventServlet extends HttpServlet {
 			// TODO: add event here and retrieve event Id:
 			int eventId = addEvent(heading);
 
-			new NewsModel().addNews(heading, eventId);
 			TweetModel tweetModel = new TweetModel(getTwitterConfiguration());
 			List<TweetObject> tweets = tweetModel.getTweets(eventId, heading);
 			tweetModel.insertTweets(tweets);
@@ -108,19 +119,30 @@ public class ESAEventServlet extends HttpServlet {
 				// TODO insert images for the event here;
 			}
 
+			// TODO: refactor NewsModel
+			List<NewsObject> news = new NewsModel().addNews(heading, eventId);
+			List<ResponseJsonObject> summaries = summarise(news);
+			for (ResponseJsonObject response: summaries) {
+				List<SummaryObject> sum = response.getSummaries();
+				for (SummaryObject s : sum) {
+					System.out.println(s.getText());
+				}
+				// System.out.println(summary.getText());
+				// TODO: category
+			}
+
+
 			EventObject event = new EventObject()
 					.setId(eventId)
 					.setHeading(heading)
 					.setTimestamp(tweetModel.getMostRecentTweetTime(tweets));
 
 			// TODO: store event summaries
-			// List<String> eventSummaries = summarise(eventNews);
+			// List<String> eventSummaries = summarise();
 
 			/*
-			List<ESANews> eventNews = listEventNews(e);
+			List<ESANews> eventNews = listEventssNews(e);
             List<ESATweet> eventTweets = listEventTweets(e);
-
-			Long timestamp = getMostRecentTweetTime(eventTweets);
 
 			ESAEvent esaEvent = new ESAEvent();
 			esaEvent.setEvent(e);
@@ -220,78 +242,65 @@ public class ESAEventServlet extends HttpServlet {
     */
 
 
-/*
+	// Method to produce a short summary of a group of news articles from a particular day,
+	// relating to a particular event.
+	public List<ResponseJsonObject> summarise(List<NewsObject> news) {
+		List<ResponseJsonObject> summaries = new ArrayList<>();
+		long dayInMillis = 86400000;
 
-    // Method to produce a short summary of a group of news articles from a particular day,
-    // relating to a particular event.
-    public List<String> summarise(List<ESANews> news) {
-        List<String> summaries = new ArrayList<>();
-        long dayInMillis = 86400000;
+		//http://stackoverflow.com/questions/28578072/split-java-util-date-collection-by-days
+		Multimap<Long, NewsObject> newsByDay = ArrayListMultimap.create();
 
-        //http://stackoverflow.com/questions/28578072/split-java-util-date-collection-by-days
-        Multimap<Long, ESANews> newsByDay = ArrayListMultimap.create();
+		for (NewsObject newsObject : news) { // TODO: fix in a list
+			long newsDateInMillis = newsObject.getTimestamp().getTime();
+			long day = newsDateInMillis / dayInMillis;
+			newsByDay.put(day, newsObject);
+		}
 
-        for (ESANews en : news) {
-            long newsDateInMillis = en.getTimestamp();
-            long day = newsDateInMillis / dayInMillis;
-            newsByDay.put(day, en);
-        }
+		for (long day : newsByDay.keySet()) {
+			ResponseJsonObject retrievedSummaries = null;
+			long dateInMillis = day * dayInMillis;
+			Collection<NewsObject> dailyNews = newsByDay.get(day);
+			Set<String> urls = new HashSet<>();
 
-        for (long day : newsByDay.keySet()) {
-            String summaryText = "";
-            long dateInMillis = day * dayInMillis;
-            Collection<ESANews> dailyNews = newsByDay.get(day);
-            Set<String> urls = new HashSet<>();
+			for (NewsObject newsObject : dailyNews) {
+				urls.add(newsObject.getUrl());
+			}
 
-            for (ESANews dn : dailyNews) {
-                urls.add(dn.getUrl());
-            }
-            for (String url : urls) {
+			for (String url : urls) {
+				retrievedSummaries = getSummaries(url);
+				retrievedSummaries.setDate(new Date(dateInMillis));
+				summaries.add(retrievedSummaries);
+			}
+		}
 
-                summaryText = getSummary(url);
-                if (!summaryText.equals("")) {
-                    break;
-                }
-            }
-
-            Date date = new Date(dateInMillis);
-            DateFormat dateformat = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.UK);
-            String newsDate = dateformat.format(date);
-            String summary = summaryText + "esaseparator" + newsDate;
-            summaries.add(summary);
-        }
-
-        return summaries;
-    }
-
-    */
+		return summaries;
+	}
 
 
-    public String getSummary(String url) {
-        String summary = "";
-
-
-		summary = "this is a summary placeholder here!!!!";
-		// TODO: this piece of crap is giving me headache
-		/*
+    public ResponseJsonObject getSummaries(String url) {
+		ResponseJsonObject summaries = new ResponseJsonObject();
         try {
             Client client = Client.create();
 
-            WebResource esaRESTSummariser = client.resource("http://ec2-52-17-235-186.eu-west-1.compute.amazonaws.com:8080/SummarisationRESTServer/SumServ/esarestsummariser/post");
+            WebResource esaRESTSummariser = client.resource(SUMMARISATION_SERVER_URL + "?url=" + url);
 
-            ClientResponse response = esaRESTSummariser.accept(MediaType.TEXT_PLAIN).post(ClientResponse.class, url);
-            if (response.getStatus() != 201) {
+            ClientResponse response = esaRESTSummariser.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+            if (response.getStatus() != 200) {
                 throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
             }
 
-            summary = response.getEntity(String.class);
+			// TODO: try to use only GSON, because it makes sense..... but I can't understand why there is an exception and how to solve it, when try to decode to ResponseJsonObject
+			JSONObject jsonObject = new JSONObject(response.getEntity(String.class));
+			summaries.setCategory(jsonObject.getString("category"));
+			List<SummaryObject> summaryObjects = new Gson().fromJson(jsonObject.getString("summaries"), new TypeToken<ArrayList<SummaryObject>>(){}.getType());
+			summaries.setSummaries(summaryObjects);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        */
+        /**/
 
-
-        return summary;
+        return summaries;
     }
 
 
@@ -315,7 +324,9 @@ public class ESAEventServlet extends HttpServlet {
 
 
 	private class NewsModel {
-		public void addNews(String event, int eventId) throws IOException, FeedException {
+		public List<NewsObject> addNews(String event, int eventId) throws IOException, FeedException {
+			List<NewsObject> news = new ArrayList<>();
+
 			URL url = new URL(getEventUrl(event));
 			Reader r = new InputStreamReader(url.openStream());
 			SyndFeed feed = new SyndFeedInput().build(r);
@@ -329,7 +340,7 @@ public class ESAEventServlet extends HttpServlet {
 					String title = entry.getTitle();
 					Date date = entry.getPublishedDate();
 
-					NewsObject news = new NewsObject()
+					NewsObject newsObject = new NewsObject()
 							.setEventId(eventId)
 							.setEventId(1)
 							.setTitle(title)
@@ -337,13 +348,17 @@ public class ESAEventServlet extends HttpServlet {
 							.setLogoUrl("")
 							.setTimestamp(date);
 
+
 					try {
-						insertNews(news);
+						insertNews(newsObject);
+						news.add(newsObject);
 					} catch (ConflictException e) {
 						// TODO: do nothing, if it exists
 					}
 				}
 			}
+
+			return news;
 		}
 
 
@@ -455,6 +470,47 @@ public class ESAEventServlet extends HttpServlet {
 			}
 
 			return tweets;
+		}
+	}
+
+
+
+	private class ResponseJsonObject {
+		private String category;
+		private List<SummaryObject> summaries;
+		private Date date;
+
+
+		public String getCategory() {
+			return category;
+		}
+
+
+		public ResponseJsonObject setCategory(String category) {
+			this.category = category;
+			return this;
+		}
+
+
+		public List<SummaryObject> getSummaries() {
+			return summaries;
+		}
+
+
+		public ResponseJsonObject setSummaries(List<SummaryObject> summaries) {
+			this.summaries = summaries;
+			return this;
+		}
+
+
+		public ResponseJsonObject setDate(Date date) {
+			this.date = date;
+			return this;
+		}
+
+
+		public Date getDate() {
+			return date;
 		}
 	}
 }

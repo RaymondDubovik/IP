@@ -2,6 +2,8 @@ package com.fergus.esa.backend.dataObjects;
 
 import com.googlecode.objectify.annotation.Entity;
 
+import java.util.Date;
+
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 03.12.2015
@@ -11,9 +13,10 @@ public class SummaryObject {
     private int length;
     private String text;
     private int eventId;
+	private Date timestamp;
 
 
-    public SummaryObject() {}
+	public SummaryObject() {}
 
 
     public int getLength() {
@@ -47,4 +50,15 @@ public class SummaryObject {
         this.eventId = eventId;
         return this;
     }
+
+
+	public Date getTimestamp() {
+		return timestamp;
+	}
+
+
+	public SummaryObject setTimestamp(Date date) {
+		this.timestamp = date;
+		return this;
+	}
 }
