@@ -1,5 +1,6 @@
 package main.java.uk.ac.gla.student.raymond2039897d;
 
+import com.google.gson.Gson;
 import de.jetwick.snacktory.HtmlFetcher;
 import de.jetwick.snacktory.JResult;
 
@@ -10,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -25,28 +28,39 @@ import java.util.UUID;
 @WebServlet(name = "Servlet")
 public class Servlet extends HttpServlet {
     private static final String MEAD_LOCATION = "/home/svchost/Desktop/mead/";
-    public static final int ARTICLE_RESOLVE_TIMEOUT = 500;
+    public static final int ARTICLE_RESOLVE_TIMEOUT = 1000;
+    public static final int RETRY_COUNT = 3;
 
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO: request parameter
-        String value = request.getParameter("url");
-        System.out.println(value);
+        processRequest(request, response);
+    }
 
-        // TODO: output JSON instead
-        response.setContentType("text/html");
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String url = request.getParameter("url");
+
+        response.setContentType("application/json");
 
         PrintWriter out = response.getWriter();
-        try {
-            out.println(summarise("http://www.bbc.co.uk/news/uk-35516741"));
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        for (int i = 0; i < RETRY_COUNT; i++) {
+            try {
+                out.println(summarise(url));
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
 
     public String summarise(String url) throws IOException {
-        String summary = "";
         String folderName = UUID.randomUUID().toString();
         final String folderAbsolutePath = MEAD_LOCATION + "data/" + folderName;
 
@@ -88,34 +102,34 @@ public class Servlet extends HttpServlet {
 
         execute("perl " + MEAD_LOCATION + "bin/addons/formatting/text2cluster.pl " + folderAbsolutePath);
 
-        try {
-            // TODO: execute for different lengths:
-            Process meadSummarise = Runtime.getRuntime().exec("perl " + MEAD_LOCATION + "bin/mead.pl -w -a 85 " + folderAbsolutePath);
+        List<SummaryObject> summaries = new ArrayList<>();
+        for (int length = 75; length <= 135; length += 15) {
+            try {
+                String summary = "";
+                // TODO: execute for different lengths:
+                Process meadSummarise = Runtime.getRuntime().exec("perl " + MEAD_LOCATION + "bin/mead.pl -w -a " + length + " " + folderAbsolutePath);
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(meadSummarise.getInputStream()));
+                BufferedReader in = new BufferedReader(new InputStreamReader(meadSummarise.getInputStream()));
 
-            String line;
-            while ((line = in.readLine()) != null) {
-                line = line.substring(5);
-                if (!line.equals("")) {
-                    summary = summary + " " + line;
+                String line;
+                while ((line = in.readLine()) != null) {
+                    line = line.substring(5);
+                    if (!line.equals("")) {
+                        summary = summary + " " + line;
+                    }
                 }
+
+                System.out.println(summary);
+
+                summaries.add(new SummaryObject().setText(summary).setLength(length));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
-        // execute("rm -r " + MEAD_LOCATION + "data/" + folderName);
+        execute("rm -r " + MEAD_LOCATION + "data/" + folderName);
 
-        // return Response.status(201).entity(summary).build();
-        // TODO: return as JSON
-        return summary;
-    }
-
-
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO:
-        doGet(request, response);
+        return new Gson().toJson(new ResponseJsonObject("Sport", summaries));
     }
 
 
@@ -145,9 +159,7 @@ public class Servlet extends HttpServlet {
             return e.getMessage();
         }
 
-
-        System.out.println(sb.toString());
-
+        // System.out.println(sb.toString());
 
         return sb.toString();
     }
@@ -156,5 +168,49 @@ public class Servlet extends HttpServlet {
     private String getArticle(String url) throws Exception {
         JResult result = new HtmlFetcher().fetchAndExtract(url, ARTICLE_RESOLVE_TIMEOUT, true);
         return result.getText();
+    }
+
+
+    private class ResponseJsonObject {
+        private String category;
+        private List<SummaryObject> summaries;
+
+
+        public ResponseJsonObject(String category, List<SummaryObject> summaries) {
+            this.category = category;
+            this.summaries = summaries;
+        }
+    }
+
+    
+    private class SummaryObject {
+        private int length;
+        private String text;
+
+
+        public SummaryObject() {
+        }
+
+
+        public int getLength() {
+            return length;
+        }
+
+
+        public SummaryObject setLength(int length) {
+            this.length = length;
+            return this;
+        }
+
+
+        public String getText() {
+            return text;
+        }
+
+
+        public SummaryObject setText(String text) {
+            this.text = text;
+            return this;
+        }
     }
 }
