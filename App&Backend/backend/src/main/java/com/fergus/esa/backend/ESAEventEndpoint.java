@@ -47,6 +47,7 @@ public class ESAEventEndpoint {
     private Connection connection;
 
     public ESAEventEndpoint() {
+		// TODO: need in each method, in constructor it won't work
         connection = (new MySQLJDBC()).getConnection();
 
 		/*

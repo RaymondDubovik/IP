@@ -92,8 +92,6 @@ public class ESAEventServlet extends HttpServlet {
 
 
 	public void storeData(HashSet<String> eventHeading) throws FeedException, IOException, TwitterException {
-		String feedUrl;
-
 		for (String heading : eventHeading) {
 			heading = removeSuffix(removeAccents(heading));
 

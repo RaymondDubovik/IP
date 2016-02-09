@@ -294,7 +294,15 @@ public class EventHelper {
 
 		try {
 			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-			statement.setString(1, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(event.getTimestamp()));
+
+			String time;
+			if (event.getTimestamp() == null) {
+				time = "0000-00-00 00:00:00";
+			} else {
+				time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(event.getTimestamp());
+			}
+
+			statement.setString(1, time);
 			statement.setString(2, event.getHeading());
 			statement.setString(3, event.getImageUrl());
 
