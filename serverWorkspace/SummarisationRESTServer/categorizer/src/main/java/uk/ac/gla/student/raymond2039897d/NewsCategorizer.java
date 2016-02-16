@@ -16,12 +16,14 @@ import java.io.IOException;
  * Do the same for the tests
  */
 public class NewsCategorizer {
-    /** Cirectory, which will be used for training */
-    private static final String FILENAME_TRAINING_DIRECTORY = "links";
-    /** Cirectory, which will be used for testing */
-    private static final String FILENAME_TEST_DIRECTORY = "testLinks";
+    private static final String PATH_ROOT = "/home/svchost/Desktop/shared/categorizer/";
+
+    /** Directory, which will be used for training */
+    private static final String FILENAME_TRAINING_DIRECTORY = PATH_ROOT + "links";
+    /** Directory, which will be used for testing */
+    private static final String FILENAME_TEST_DIRECTORY = PATH_ROOT + "testLinks";
     /** Name of the file, where the classifier will be serialized to for reuse (we don't want to train it on every request to categorize an article */
-    public static final String FILENAME_SERIALIZABLE = "classifier.ser";
+    public static final String FILENAME_SERIALIZABLE = PATH_ROOT + "classifier.ser";
     private static int NGRAM_SIZE = 12; // good results were produced : 12(11/21 correct); 13(10/21 correct);
 
     private Categorizer categorizer;

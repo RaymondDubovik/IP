@@ -27,6 +27,8 @@ import java.util.UUID;
  */
 @WebServlet(name = "Servlet")
 public class Servlet extends HttpServlet {
+    /** Path to categorication */
+    private static final String CATEGORIZATION_LOCATION = "/home/svchost/Desktop/shared/categorizer/categorizer.jar";
     /** Path to MEAD */
     private static final String MEAD_LOCATION = "/home/svchost/Desktop/mead/";
     public static final int ARTICLE_RESOLVE_TIMEOUT = 1000;
@@ -107,7 +109,6 @@ public class Servlet extends HttpServlet {
         for (int length = 75; length <= 135; length += 15) {
             try {
                 String summary = "";
-                // TODO: execute for different lengths:
                 Process meadSummarise = Runtime.getRuntime().exec("perl " + MEAD_LOCATION + "bin/mead.pl -w -a " + length + " " + folderAbsolutePath);
 
                 BufferedReader in = new BufferedReader(new InputStreamReader(meadSummarise.getInputStream()));
@@ -120,7 +121,7 @@ public class Servlet extends HttpServlet {
                     }
                 }
 
-                System.out.println(summary);
+                // System.out.println(summary);
 
                 summaries.add(new SummaryObject().setText(summary).setLength(length));
             } catch (IOException e) {
@@ -130,29 +131,20 @@ public class Servlet extends HttpServlet {
 
         execute("rm -r " + MEAD_LOCATION + "data/" + folderName);
 
-        // System.out.println("a");
-        // String category = new NewsCategorizer().guess(article);
-        //System.out.println("b");
-        // System.out.println(category);
-        //System.out.println("c");
         String category = "";
 
-
-
-        Process meadSummarise = Runtime.getRuntime().exec("java -cp /home/svchost/Desktop/AITraining.jar Categorize \" " + article + "\"");
+        String command = "java -cp " + CATEGORIZATION_LOCATION + " uk.ac.gla.student.raymond2039897d.Categorize \"" + article + "\"";
+        Process meadSummarise = Runtime.getRuntime().exec(command);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(meadSummarise.getInputStream()));
-
         String line;
         while ((line = in.readLine()) != null) {
-            line = line.substring(5);
             if (!line.equals("")) {
-                category = category + " " + line;
+                category = line;
             }
         }
 
         System.out.println(category);
-
 
         return new Gson().toJson(new ResponseJsonObject(category, summaries));
     }
