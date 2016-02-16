@@ -1,0 +1,46 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="SummarisationRESTServer:war exploded">
+    <output-path>$PROJECT_DIR$/categorizer/target/SummarisationRESTServer-0.0.1-SNAPSHOT</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="categorizer" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: com.google.code.gson:gson:2.5" />
+          <element id="library" level="project" name="Maven: org.glassfish.hk2:hk2-api:2.4.0-b34" />
+          <element id="library" level="project" name="Maven: javax.inject:javax.inject:1" />
+          <element id="library" level="project" name="Maven: org.glassfish.hk2:hk2-locator:2.4.0-b34" />
+          <element id="library" level="project" name="Maven: org.javassist:javassist:3.18.1-GA" />
+          <element id="library" level="project" name="Maven: org.glassfish.hk2:hk2-utils:2.4.0-b34" />
+          <element id="library" level="project" name="Maven: org.glassfish.hk2.external:aopalliance-repackaged:2.4.0-b34" />
+          <element id="library" level="project" name="Maven: org.ow2.asm:asm-debug-all:5.0.4" />
+          <element id="library" level="project" name="Maven: org.osgi:core:4.3.0" />
+          <element id="library" level="project" name="Maven: org.glassfish.hk2:osgi-resource-locator:1.0.1" />
+          <element id="library" level="project" name="Maven: de.jetwick:snacktory:1.2-SNAPSHOT" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-log4j12:1.7.2" />
+          <element id="library" level="project" name="Maven: log4j:log4j:1.2.14" />
+          <element id="library" level="project" name="Maven: javax.annotation:javax.annotation-api:1.2" />
+          <element id="library" level="project" name="Maven: org.glassfish.hk2.external:javax.inject:2.4.0-b34" />
+          <element id="library" level="project" name="Maven: javax.xml.bind:jaxb-api:2.2.12" />
+          <element id="library" level="project" name="Maven: org.jsoup:jsoup:1.8.3" />
+          <element id="library" level="project" name="Maven: javax.persistence:persistence-api:1.0.2" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.13" />
+          <element id="library" level="project" name="Maven: javax.validation:validation-api:1.1.0.Final" />
+          <element id="library" level="project" name="Maven: com.eclipsesource.jaxrs:jersey-all:2.22.1" />
+          <element id="library" level="project" name="Maven: org.glassfish.jersey.bundles.repackaged:jersey-guava:2.6" />
+          <element id="library" level="project" name="Maven: org.glassfish.jersey.containers:jersey-container-servlet:2.22.1" />
+          <element id="library" level="project" name="Maven: org.glassfish.jersey.containers:jersey-container-servlet-core:2.22.1" />
+          <element id="library" level="project" name="Maven: org.glassfish.jersey.core:jersey-common:2.22.1" />
+          <element id="library" level="project" name="Maven: org.glassfish.jersey.core:jersey-server:2.22.1" />
+          <element id="library" level="project" name="Maven: org.glassfish.jersey.core:jersey-client:2.22.1" />
+          <element id="library" level="project" name="Maven: org.glassfish.jersey.media:jersey-media-jaxb:2.22.1" />
+        </element>
+      </element>
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/categorizer/target/SummarisationRESTServer-0.0.1-SNAPSHOT/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="javaee-facet-resources" facet="categorizer/web/Web" />
+    </root>
+  </artifact>
+</component>

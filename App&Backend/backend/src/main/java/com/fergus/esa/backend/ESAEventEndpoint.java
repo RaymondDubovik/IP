@@ -46,14 +46,9 @@ import java.util.List;
 
 @Api(name = "esaEventEndpoint", version = "v1", namespace = @ApiNamespace(ownerDomain = "backend.esa.fergus.com", ownerName = "backend.esa.fergus.com", packagePath = ""))
 public class ESAEventEndpoint {
-    private Connection connection;
-
     public ESAEventEndpoint() {
-		// TODO: need in each method, in constructor it won't work
-        connection = (new MySQLJDBC()).getConnection();
-
-
         try {
+			Connection connection = (new MySQLJDBC()).getConnection();
             SchemaCreator schemaCreator = new SchemaCreator();
             schemaCreator.drop(connection);
             schemaCreator.create(connection);
@@ -67,9 +62,11 @@ public class ESAEventEndpoint {
 
     @ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name = "registerGcmToken")
     public UserObject registerGcmToken(@Named("gcmToken") String gcmToken) {
-        // TODO: check, if token is unique (in the database)
+        // TODO: notifications!
+		// TODO: check, if token is unique (in the database)
         GcmObject gcmObject = new GcmObject(gcmToken, "SomeTextHere", "SomeTitleHere").setData("{\"id\":5}"); // TODO: change
         new GcmSender().sendNotification(gcmObject.toJson());
+		Connection connection = (new MySQLJDBC()).getConnection();
         return new UserHelper(connection).create(gcmToken);
 
     }
@@ -78,6 +75,7 @@ public class ESAEventEndpoint {
     @ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name = "updateGcmToken")
     public void updateGcmToken(@Named("userId") int userId, @Named("gcmToken") String gcmToken) {
         // TODO: check, if user with given ID exists
+		Connection connection = (new MySQLJDBC()).getConnection();
         new UserHelper(connection).updateToken(userId, gcmToken);
         // TODO: return true or false in a wrapper....
     }
@@ -97,6 +95,7 @@ public class ESAEventEndpoint {
 			}
 		}
 
+		Connection connection = (new MySQLJDBC()).getConnection();
         return new EventHelper(connection).getNewEvents(categoryIds, from, count);
     }
 
@@ -117,6 +116,7 @@ public class ESAEventEndpoint {
 
 		// List<CategoryRatingObject> categoryRatings = new CategoryHelper(connection).getUserCategoryRating(userId, categoryIds);
 
+		Connection connection = (new MySQLJDBC()).getConnection();
 		return new EventHelper(connection).getRecommendedEvents(userId, categoryIds);
 	}
 
@@ -124,37 +124,42 @@ public class ESAEventEndpoint {
 
     @ApiMethod(name = "getCategories")
     public List<CategoryObject> getCategories() {
+		Connection connection = (new MySQLJDBC()).getConnection();
         return new CategoryHelper(connection).getCategories();
     }
 
 
     @ApiMethod(name="getTweets")
     public List<TweetObject> getTweets(@Named("eventId") int id) {
-        // TODO: remove from and count parameters
+		Connection connection = (new MySQLJDBC()).getConnection();
         return new TweetHelper(connection).getEventTweets(id);
     }
 
 
     @ApiMethod(name="getImages")
     public List<ImageObject> getImages(@Named("eventId") int id) {
+		Connection connection = (new MySQLJDBC()).getConnection();
         return new ImageHelper(connection).getEventImages(id);
     }
 
 
     @ApiMethod(name="getNews")
     public List<NewsObject> getNews(@Named("eventId") int id) {
+		Connection connection = (new MySQLJDBC()).getConnection();
         return new NewsHelper(connection).getEventNews(id);
     }
 
 
     @ApiMethod(name="getSummaries")
     public List<SummaryObject> getSummaries(@Named("eventId") int id) {
+		Connection connection = (new MySQLJDBC()).getConnection();
         return new SummaryHelper(connection).getEventSummaries(id);
     }
 
 
 	@ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name="registerHit")
 	public void registerHit(@Named("userId") int userId, @Named("eventId") int eventId, @Named("milliseconds") double milliseconds) {
+		Connection connection = (new MySQLJDBC()).getConnection();
 		new UserHelper(connection).registerHit(userId, eventId, milliseconds);
 	}
 

@@ -474,7 +474,6 @@ public class ESAEventServlet extends HttpServlet {
 	}
 
 
-
 	private class ResponseJsonObject {
 		private String category;
 		private List<SummaryObject> summaries;
