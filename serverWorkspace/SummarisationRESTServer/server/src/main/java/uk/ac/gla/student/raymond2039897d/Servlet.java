@@ -32,7 +32,7 @@ public class Servlet extends HttpServlet {
     /** Path to MEAD */
     private static final String MEAD_LOCATION = "/home/svchost/Desktop/mead/";
     public static final int ARTICLE_RESOLVE_TIMEOUT = 1000;
-    public static final int RETRY_COUNT = 3;
+    public static final int RETRY_COUNT = 2;
 
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -52,18 +52,21 @@ public class Servlet extends HttpServlet {
 
         PrintWriter out = response.getWriter();
 
-        for (int i = 0; i < RETRY_COUNT; i++) {
+        for (int retryCount = 0; retryCount < RETRY_COUNT; retryCount++) {
             try {
                 out.println(summarise(url));
-                break;
-            } catch (Exception e) {
+                return; // if we were able to summarise, then exit here
+            } catch (Exception e) { // if we were not able to summarise, then output exception and try again, if retryCount < RETRY_COUNT
+                System.out.println("fail here");
                 e.printStackTrace();
             }
         }
+
+        out.println(""); // if above failed, then output empty string;
     }
 
 
-    public String summarise(String url) throws IOException {
+    public String summarise(String url) throws Exception {
         String folderName = UUID.randomUUID().toString();
         final String folderAbsolutePath = MEAD_LOCATION + "data/" + folderName;
 
@@ -73,7 +76,13 @@ public class Servlet extends HttpServlet {
         try {
             article = getArticle(url);
         } catch (Exception e) {
+            System.out.println("Could not retrieve article");
             e.printStackTrace();
+            throw new Exception(e);
+        }
+
+        if (article.length() == 0) { // if could not retrieve article, then throw an exception
+            throw new Exception("Could not retrieve article");
         }
 
         File articleFile = new File(folderAbsolutePath + "/0");
@@ -107,26 +116,22 @@ public class Servlet extends HttpServlet {
 
         List<SummaryObject> summaries = new ArrayList<>();
         for (int length = 75; length <= 135; length += 15) {
-            try {
-                String summary = "";
-                Process meadSummarise = Runtime.getRuntime().exec("perl " + MEAD_LOCATION + "bin/mead.pl -w -a " + length + " " + folderAbsolutePath);
+            String summary = "";
+            Process meadSummarise = Runtime.getRuntime().exec("perl " + MEAD_LOCATION + "bin/mead.pl -w -a " + length + " " + folderAbsolutePath);
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(meadSummarise.getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(meadSummarise.getInputStream()));
 
-                String line;
-                while ((line = in.readLine()) != null) {
-                    line = line.substring(5);
-                    if (!line.equals("")) {
-                        summary = summary + " " + line;
-                    }
+            String line;
+            while ((line = in.readLine()) != null) {
+                line = line.substring(5);
+                if (!line.equals("")) {
+                    summary = summary + " " + line;
                 }
-
-                // System.out.println(summary);
-
-                summaries.add(new SummaryObject().setText(summary).setLength(length));
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+
+            // System.out.println(summary);
+
+            summaries.add(new SummaryObject().setText(summary).setLength(length));
         }
 
         execute("rm -r " + MEAD_LOCATION + "data/" + folderName);
