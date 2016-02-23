@@ -5,7 +5,6 @@ import com.fergus.esa.backend.MySQLHelpers.EventHelper;
 import com.fergus.esa.backend.MySQLHelpers.ImageHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
-import com.fergus.esa.backend.MySQLHelpers.SchemaCreator;
 import com.fergus.esa.backend.MySQLHelpers.SummaryHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.MySQLHelpers.UserHelper;
@@ -35,7 +34,6 @@ import com.google.gson.Gson;
 import com.googlecode.objectify.repackaged.gentyref.TypeToken;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +45,8 @@ import java.util.List;
 @Api(name = "esaEventEndpoint", version = "v1", namespace = @ApiNamespace(ownerDomain = "backend.esa.fergus.com", ownerName = "backend.esa.fergus.com", packagePath = ""))
 public class ESAEventEndpoint {
     public ESAEventEndpoint() {
-        try {
+        /*
+		try {
 			Connection connection = (new MySQLJDBC()).getConnection();
             SchemaCreator schemaCreator = new SchemaCreator();
             schemaCreator.drop(connection);
@@ -56,7 +55,7 @@ public class ESAEventEndpoint {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        /**/
+        */
     }
 
 

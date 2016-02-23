@@ -105,9 +105,9 @@ public class ESAEventServlet extends HttpServlet {
 
 	public void storeData(HashSet<String> eventHeading) throws FeedException, IOException, TwitterException {
 		for (String heading : eventHeading) {
+			System.out.println("NEW EVENT NOW:");
 			heading = removeSuffix(removeAccents(heading));
 
-			// TODO: add event here and retrieve event Id:
 			int eventId = addEvent(heading);
 
 			TweetModel tweetModel = new TweetModel(getTwitterConfiguration());
@@ -121,14 +121,22 @@ public class ESAEventServlet extends HttpServlet {
 
 			// TODO: refactor NewsModel
 			List<NewsObject> news = new NewsModel().addNews(heading, eventId);
-			List<ResponseJsonObject> summaries = summarise(news);
-			for (ResponseJsonObject response: summaries) {
-				List<SummaryObject> sum = response.getSummaries();
-				for (SummaryObject s : sum) {
-					System.out.println(s.getText());
+			List<ResponseJsonObject> responses = summarise(news);
+			for (ResponseJsonObject response: responses) {
+				List<SummaryObject> summaries = response.getSummaries();
+				for (SummaryObject summary : summaries) {
+					if (summary == null || summary.equals("")) {
+						System.out.println("empty summary");
+						break;
+					}
+					//System.out.println(summary.getText());
+					// TODO: if summary text is empty, then don't store the category
 				}
-				// System.out.println(summary.getText());
+
+				System.out.println("category: " + response.getCategory());
+				//System.out.println(summary.getText());
 				// TODO: category
+				// when deciding on category, take it into account only when summaries are not empty
 			}
 
 
@@ -269,8 +277,10 @@ public class ESAEventServlet extends HttpServlet {
 
 			for (String url : urls) {
 				retrievedSummaries = getSummaries(url);
-				retrievedSummaries.setDate(new Date(dateInMillis));
-				summaries.add(retrievedSummaries);
+				if (retrievedSummaries != null) { // adding summary only if it is meaningful
+					retrievedSummaries.setDate(new Date(dateInMillis));
+					summaries.add(retrievedSummaries);
+				}
 			}
 		}
 
@@ -283,15 +293,22 @@ public class ESAEventServlet extends HttpServlet {
         try {
             Client client = Client.create();
 
-            WebResource esaRESTSummariser = client.resource(SUMMARISATION_SERVER_URL + "?url=" + url);
+            WebResource Summariser = client.resource(SUMMARISATION_SERVER_URL + "?url=" + url);
 
-            ClientResponse response = esaRESTSummariser.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+            ClientResponse response = Summariser.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
             if (response.getStatus() != 200) {
                 throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
             }
 
-			// TODO: try to use only GSON, because it makes sense..... but I can't understand why there is an exception and how to solve it, when try to decode to ResponseJsonObject
-			JSONObject jsonObject = new JSONObject(response.getEntity(String.class));
+			// TODO: try to use only GSON, because it makes sense ... but I can't understand why there is an exception and how to solve it, when try to decode to ResponseJsonObject
+
+			String stringResponse = response.getEntity(String.class);
+			if (stringResponse == null || stringResponse.trim().equals("")) {
+				return null;
+			}
+
+			System.out.println("response: '" + stringResponse + "'");
+			JSONObject jsonObject = new JSONObject(stringResponse);
 			summaries.setCategory(jsonObject.getString("category"));
 			List<SummaryObject> summaryObjects = new Gson().fromJson(jsonObject.getString("summaries"), new TypeToken<ArrayList<SummaryObject>>(){}.getType());
 			summaries.setSummaries(summaryObjects);
@@ -334,7 +351,7 @@ public class ESAEventServlet extends HttpServlet {
 			List<SyndEntry> entryList = feed.getEntries();
 
 			if (entryList.size() > 0) {
-				for (int i = 0; i < 2; i++) { // TODO: what is 2 in this case?
+				for (int i = 0; i < entryList.size(); i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
 					SyndEntry entry = entryList.get(i);
 					String entryUrl = entry.getUri().substring(33); // TODO: where 33 comes from?
 					String title = entry.getTitle();
