@@ -86,7 +86,7 @@ public class MyGcmListenerService extends GcmListenerService {
     private void showNotification(int id, String title, String message, boolean playSound) {
         Intent intent = new Intent(this, EventActivity.class);
         intent.putExtra(EventActivity.BUNDLE_PARAM_EVENT_ID, id);
-		intent.putExtra(EventActivity.BUNDLE_PARAM_EVENT_HEADING, message); // TODO: check that event heading is correct
+		intent.putExtra(EventActivity.BUNDLE_PARAM_EVENT_HEADING, message);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent, PendingIntent.FLAG_ONE_SHOT);
