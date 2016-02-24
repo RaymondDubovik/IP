@@ -6,6 +6,7 @@ import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.categorizer.CategoryPicker;
 import com.fergus.esa.backend.categorizer.ESACategoryPicker;
+import com.fergus.esa.backend.categorizer.ScoredCategory;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.NewsObject;
 import com.fergus.esa.backend.dataObjects.SummaryObject;
@@ -96,7 +97,6 @@ public class ESAEventServlet extends HttpServlet {
 
 		for (Element t : topics) {
 			eventHeadings.add(t.text());
-			System.out.println(t);
 		}
 
 		return eventHeadings;
@@ -125,23 +125,28 @@ public class ESAEventServlet extends HttpServlet {
 			List<ResponseJsonObject> responses = summarise(news);
 			for (ResponseJsonObject response: responses) {
 				List<SummaryObject> summaries = response.getSummaries();
-				for (SummaryObject summary : summaries) {
-					//System.out.println(summary.getText());
-					// TODO: store the summary
+				if (summaries != null) {
+					for (SummaryObject summary : summaries) {
+						//System.out.println(summary.getText());
+						// TODO: store the summary
+					}
 				}
 
-				System.out.print(response.getCategory() + " ");
-				categoryPicker.addCategory(response.getCategory());
+				List<ScoredCategory> scoredCategories = response.getCategories();
+
+				System.out.println(scoredCategories.get(0).getCategory() + " " + scoredCategories.get(1).getCategory() + " " + scoredCategories.get(2).getCategory());
+				categoryPicker.addCategories(response.getCategories());
+
 				//System.out.println(summary.getText());
-				// TODO: category
-				// when deciding on category, take it into account only when summaries are not empty
+				// TODO: categories
+				// when deciding on categories, take it into account only when summaries are not empty
 			}
 
 			System.out.println();
 
-			List<String> topCategories = categoryPicker.getRelevantCategories();
-			for (String category :  topCategories) {
-				System.out.print(category + " ");
+			List<String> relevantCategories = categoryPicker.getRelevantCategories();
+			for (String relevantCategory : relevantCategories) {
+				System.out.print("best" + relevantCategory);
 			}
 
 			System.out.println();
@@ -276,7 +281,7 @@ public class ESAEventServlet extends HttpServlet {
 		}
 
 		for (long day : newsByDay.keySet()) {
-			ResponseJsonObject retrievedSummaries = null;
+			ResponseJsonObject retrievedSummaries;
 			long dateInMillis = day * dayInMillis;
 			Collection<NewsObject> dailyNews = newsByDay.get(day);
 			Set<String> urls = new HashSet<>();
@@ -302,27 +307,37 @@ public class ESAEventServlet extends HttpServlet {
 		ResponseJsonObject summaries = new ResponseJsonObject();
         try {
             Client client = Client.create();
+			client.setConnectTimeout(8000);
+			client.setReadTimeout(8000);
 
-            WebResource Summariser = client.resource(SUMMARISATION_SERVER_URL + "?url=" + url);
+            WebResource summariser = client.resource(SUMMARISATION_SERVER_URL + "?url=" + url);
 
-            ClientResponse response = Summariser.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+            ClientResponse response = summariser.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
             if (response.getStatus() != 200) {
                 throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
             }
 
 			// TODO: try to use only GSON, because it makes sense ... but I can't understand why there is an exception and how to solve it, when try to decode to ResponseJsonObject
-
 			String stringResponse = response.getEntity(String.class);
 			if (stringResponse == null || stringResponse.trim().equals("")) {
 				return null;
 			}
 
 			JSONObject jsonObject = new JSONObject(stringResponse);
-			summaries.setCategory(jsonObject.getString("category"));
+
+			String categoriesJson = jsonObject.getString("categoriesJson");
+			if (categoriesJson == null || categoriesJson.trim().equals("")) {
+				return null;
+			}
+
+			List<ScoredCategory> scoredCategoryObjects = new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<ScoredCategory>>(){}.getType());
+			summaries.setCategories(scoredCategoryObjects);
 			List<SummaryObject> summaryObjects = new Gson().fromJson(jsonObject.getString("summaries"), new TypeToken<ArrayList<SummaryObject>>(){}.getType());
 			summaries.setSummaries(summaryObjects);
+
         } catch (Exception e) {
             e.printStackTrace();
+			return null;
         }
 
         return summaries;
@@ -500,18 +515,18 @@ public class ESAEventServlet extends HttpServlet {
 
 
 	private class ResponseJsonObject {
-		private String category;
+		private List<ScoredCategory> categories;
 		private List<SummaryObject> summaries;
 		private Date date;
 
 
-		public String getCategory() {
-			return category;
+		public List<ScoredCategory> getCategories() {
+			return categories;
 		}
 
 
-		public ResponseJsonObject setCategory(String category) {
-			this.category = category;
+		public ResponseJsonObject setCategories(List<ScoredCategory> category) {
+			this.categories = category;
 			return this;
 		}
 

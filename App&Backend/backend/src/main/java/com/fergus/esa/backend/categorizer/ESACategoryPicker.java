@@ -12,6 +12,7 @@ import java.util.Random;
  */
 public class ESACategoryPicker implements CategoryPicker {
 	private static final double THRESHOLD = 0.2;
+	private static final int TOP_CATEGORY_COUNT_TO_USE = 3;
 
 	// key stores category, value stores how many sources reported that category
 	private Map<String, Integer> map;
@@ -25,15 +26,21 @@ public class ESACategoryPicker implements CategoryPicker {
 
 
 	@Override
-	public void addCategory(String category) {
-		Integer count = map.get(category);
+	public void addCategories(List<ScoredCategory> categories) {
+		int weight = TOP_CATEGORY_COUNT_TO_USE;
+		for (int i = 0; i < TOP_CATEGORY_COUNT_TO_USE; i++) {
+			String category = categories.get(i).getCategory();
+			Integer count = map.get(category);
 
-		if (count == null) { // if there is no value for given key, then this category is new (add it to the map)
-			count = 0;
+			if (count == null) { // if there is no value for given key, then this category is new (add it to the map)
+				count = 0;
+			}
+
+			map.put(category, count + weight); // increase the category weight by current weight
+
+			categoryCount += weight;
+			weight--;
 		}
-
-		map.put(category, ++count); // increase the categories by 1
-		categoryCount++;
 	}
 
 
