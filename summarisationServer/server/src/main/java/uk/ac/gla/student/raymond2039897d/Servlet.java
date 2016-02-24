@@ -9,7 +9,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.Response;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +56,8 @@ public class Servlet extends HttpServlet {
                 out.println(summarise(url));
                 return; // if we were able to summarise, then exit here
             } catch (Exception e) { // if we were not able to summarise, then output exception and try again, if retryCount < RETRY_COUNT
-                System.out.println("fail here");
-                e.printStackTrace();
+                System.out.println("Could not summarise: " + e.getMessage());
+                // e.printStackTrace();
             }
         }
 
@@ -72,12 +71,10 @@ public class Servlet extends HttpServlet {
 
         execute("mkdir " + folderAbsolutePath);
 
-        String article = "";
+        String article;
         try {
             article = getArticle(url);
         } catch (Exception e) {
-            System.out.println("Could not retrieve article");
-            e.printStackTrace();
             throw new Exception(e);
         }
 
@@ -129,29 +126,27 @@ public class Servlet extends HttpServlet {
                 }
             }
 
-            // System.out.println(summary);
-
             summaries.add(new SummaryObject().setText(summary).setLength(length));
         }
 
         execute("rm -r " + MEAD_LOCATION + "data/" + folderName);
 
-        String category = "";
+        String categoriesJson = "";
 
-        String command = "java -cp " + CATEGORIZATION_LOCATION + " uk.ac.gla.student.raymond2039897d.Categorize \"" + article + "\"";
-        Process meadSummarise = Runtime.getRuntime().exec(command);
+        String command = "java -cp " + CATEGORIZATION_LOCATION + " uk.ac.gla.student.raymond2039897d.Categorize -c \"" + article + "\"";
+        Process categorize = Runtime.getRuntime().exec(command);
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(meadSummarise.getInputStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(categorize.getInputStream()));
         String line;
         while ((line = in.readLine()) != null) {
+            System.out.println("line: " + line);
             if (!line.equals("")) {
-                category = line;
+                categoriesJson = line;
             }
         }
 
-        System.out.println(category);
-
-        return new Gson().toJson(new ResponseJsonObject(category, summaries));
+        System.out.println(categoriesJson);
+        return new Gson().toJson(new ResponseJsonObject(categoriesJson, summaries));
     }
 
 
@@ -161,11 +156,9 @@ public class Servlet extends HttpServlet {
         try {
             Process proc = Runtime.getRuntime().exec(commands);
             //Process proc = new ProcessBuilder(commands).start();
-            BufferedReader stdInput = new BufferedReader(new
-                    InputStreamReader(proc.getInputStream()));
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
-            BufferedReader stdError = new BufferedReader(new
-                    InputStreamReader(proc.getErrorStream()));
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
             String s = null;
             while ((s = stdInput.readLine()) != null) {
@@ -181,8 +174,6 @@ public class Servlet extends HttpServlet {
             return e.getMessage();
         }
 
-        // System.out.println(sb.toString());
-
         return sb.toString();
     }
 
@@ -194,12 +185,12 @@ public class Servlet extends HttpServlet {
 
 
     private class ResponseJsonObject {
-        private String category;
+        private String categoriesJson;
         private List<SummaryObject> summaries;
 
 
-        public ResponseJsonObject(String category, List<SummaryObject> summaries) {
-            this.category = category;
+        public ResponseJsonObject(String categoriesJson, List<SummaryObject> summaries) {
+            this.categoriesJson = categoriesJson;
             this.summaries = summaries;
         }
     }
@@ -210,8 +201,7 @@ public class Servlet extends HttpServlet {
         private String text;
 
 
-        public SummaryObject() {
-        }
+        public SummaryObject() {}
 
 
         public int getLength() {

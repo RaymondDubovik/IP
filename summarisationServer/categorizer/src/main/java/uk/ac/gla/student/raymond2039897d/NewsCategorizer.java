@@ -2,6 +2,7 @@ package uk.ac.gla.student.raymond2039897d;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
@@ -24,7 +25,7 @@ public class NewsCategorizer {
     private static final String FILENAME_TEST_DIRECTORY = PATH_ROOT + "testLinks";
     /** Name of the file, where the classifier will be serialized to for reuse (we don't want to train it on every request to categorize an article */
     public static final String FILENAME_SERIALIZABLE = PATH_ROOT + "classifier.ser";
-    private static int DEFAULT_NGRM_SIZE = 12; // good results were produced : 12(11/21 correct); 13(10/21 correct);
+    private static int DEFAULT_NGRM_SIZE = 12; // 12 produces a good result of 18/22 correct guesses
 
     private Categorizer categorizer;
 
@@ -67,6 +68,11 @@ public class NewsCategorizer {
 
 
     public String guess(String text) {
-        return categorizer.guess(text);
+        return categorizer.getBestCategory(text);
+    }
+
+
+    public List<ScoredCategory> getCategoryScores(String text) {
+        return categorizer.getCategoryScores(text);
     }
 }
