@@ -4,6 +4,8 @@ import com.fergus.esa.backend.MySQLHelpers.EventHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
+import com.fergus.esa.backend.categorizer.CategoryPicker;
+import com.fergus.esa.backend.categorizer.ESACategoryPicker;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.NewsObject;
 import com.fergus.esa.backend.dataObjects.SummaryObject;
@@ -58,12 +60,11 @@ import twitter4j.conf.ConfigurationBuilder;
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
 	private static final String SUMMARISATION_SERVER_URL = "http://127.0.0.1:10000/test";
-	private Long minusOneHour = System.currentTimeMillis() - 3600000;
 
 	private Connection connection;
 
 
-	private Configuration getTwitterConfiguration() {
+	private static Configuration getTwitterConfiguration() {
 		ConfigurationBuilder cb = new ConfigurationBuilder();
 		cb.setDebugEnabled(true);
 		cb.setOAuthConsumerKey("AAfSJDnui3xQTegXr2GOogBAp");
@@ -71,9 +72,7 @@ public class ESAEventServlet extends HttpServlet {
 		cb.setOAuthAccessToken("3345365331-7amtdWHIU2U98JJyTLWwm2ewFpxJ61YIkRraEWh");
 		cb.setOAuthAccessTokenSecret("Mm9Efm05yZqALZ0bkSVVRwrK08j9NZ6YQryAZiUuPgY4a");
 
-		// Create a Configuration instance which can be reused
-		Configuration configuration = cb.build();
-		return configuration;
+		return cb.build();
 	}
 
 
@@ -97,6 +96,7 @@ public class ESAEventServlet extends HttpServlet {
 
 		for (Element t : topics) {
 			eventHeadings.add(t.text());
+			System.out.println(t);
 		}
 
 		return eventHeadings;
@@ -105,7 +105,7 @@ public class ESAEventServlet extends HttpServlet {
 
 	public void storeData(HashSet<String> eventHeading) throws FeedException, IOException, TwitterException {
 		for (String heading : eventHeading) {
-			System.out.println("NEW EVENT NOW:");
+			System.out.println("----------" + heading + "----------");
 			heading = removeSuffix(removeAccents(heading));
 
 			int eventId = addEvent(heading);
@@ -120,24 +120,34 @@ public class ESAEventServlet extends HttpServlet {
 			}
 
 			// TODO: refactor NewsModel
+			CategoryPicker categoryPicker = new ESACategoryPicker();
 			List<NewsObject> news = new NewsModel().addNews(heading, eventId);
 			List<ResponseJsonObject> responses = summarise(news);
 			for (ResponseJsonObject response: responses) {
 				List<SummaryObject> summaries = response.getSummaries();
 				for (SummaryObject summary : summaries) {
-					if (summary == null || summary.equals("")) {
-						System.out.println("empty summary");
-						break;
-					}
 					//System.out.println(summary.getText());
-					// TODO: if summary text is empty, then don't store the category
+					// TODO: store the summary
 				}
 
-				System.out.println("category: " + response.getCategory());
+				System.out.print(response.getCategory() + " ");
+				categoryPicker.addCategory(response.getCategory());
 				//System.out.println(summary.getText());
 				// TODO: category
 				// when deciding on category, take it into account only when summaries are not empty
 			}
+
+			System.out.println();
+
+			List<String> topCategories = categoryPicker.getRelevantCategories();
+			for (String category :  topCategories) {
+				System.out.print(category + " ");
+			}
+
+			System.out.println();
+			// TODO: send a push notification here
+			categoryPicker.getBestMatch();
+			System.out.println("Best: " + categoryPicker.getBestMatch());
 
 
 			EventObject event = new EventObject()
@@ -307,7 +317,6 @@ public class ESAEventServlet extends HttpServlet {
 				return null;
 			}
 
-			System.out.println("response: '" + stringResponse + "'");
 			JSONObject jsonObject = new JSONObject(stringResponse);
 			summaries.setCategory(jsonObject.getString("category"));
 			List<SummaryObject> summaryObjects = new Gson().fromJson(jsonObject.getString("summaries"), new TypeToken<ArrayList<SummaryObject>>(){}.getType());
@@ -315,7 +324,6 @@ public class ESAEventServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        /**/
 
         return summaries;
     }
