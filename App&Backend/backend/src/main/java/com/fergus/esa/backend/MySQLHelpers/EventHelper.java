@@ -302,10 +302,15 @@ public class EventHelper {
 				time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(event.getTimestamp());
 			}
 
+			if (event.getImageUrl() == null) {
+				event.setImageUrl("");
+			}
+
 			statement.setString(1, time);
 			statement.setString(2, event.getHeading());
 			statement.setString(3, event.getImageUrl());
 
+			statement.executeUpdate();
 			results = statement.getGeneratedKeys();
 			if (results.next()) {
 				return results.getInt(1);
@@ -369,5 +374,39 @@ public class EventHelper {
 		}
 
 		return 0;
+	}
+
+
+	public boolean update(EventObject event) {
+		PreparedStatement statement = null;
+
+		String query =
+				"UPDATE `events`" +
+						" SET `mainImageUrl` = ?," +
+						" `heading` = ?," +
+						" `timestamp` = ?" +
+						" WHERE `id` = ?" ;
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, event.getImageUrl());
+			statement.setString(2, event.getHeading());
+			statement.setString(3, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(event.getTimestamp()));
+			statement.setInt(4, event.getId());
+
+			return statement.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return false;
 	}
 }

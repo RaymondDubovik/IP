@@ -50,8 +50,6 @@ public class SummaryListAdapter extends ArrayAdapter<ESASummary> {
             DateFormat dateformat = new SimpleDateFormat("EEE, dd MMM yyyy");
             String sumDate = dateformat.format(summary.getDate());
             viewHolder.summaryDate.setText(sumDate);
-
-
         }
 
         return convertView;

@@ -11,7 +11,6 @@ import com.fergus.esa.backend.MySQLHelpers.UserHelper;
 import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
-import com.fergus.esa.backend.dataObjects.GcmObject;
 import com.fergus.esa.backend.dataObjects.ImageObject;
 import com.fergus.esa.backend.dataObjects.NewsObject;
 import com.fergus.esa.backend.dataObjects.SummaryObject;
@@ -61,13 +60,9 @@ public class ESAEventEndpoint {
 
     @ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name = "registerGcmToken")
     public UserObject registerGcmToken(@Named("gcmToken") String gcmToken) {
-        // TODO: notifications!
 		// TODO: check, if token is unique (in the database)
-        GcmObject gcmObject = new GcmObject(gcmToken, "SomeTextHere", "SomeTitleHere").setData("{\"id\":5}"); // TODO: change
-        new GcmSender().sendNotification(gcmObject.toJson());
 		Connection connection = (new MySQLJDBC()).getConnection();
         return new UserHelper(connection).create(gcmToken);
-
     }
 
 

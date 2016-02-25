@@ -129,6 +129,7 @@ public class TweetHelper {
 			statement.setString(6, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(tweet.getTimestamp()));
 			statement.setInt(7, tweet.getEventId());
 
+			statement.executeUpdate();
 			results = statement.getGeneratedKeys();
 			if (results.next()) {
 				return results.getInt(1);

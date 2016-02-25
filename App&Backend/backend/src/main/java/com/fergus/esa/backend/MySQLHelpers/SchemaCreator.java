@@ -295,9 +295,16 @@ public class SchemaCreator {
     }
 
 
+	public void populate(Connection connection) throws SQLException {
+		String query = "INSERT INTO `categories` (`name`) VALUES ('Business'),('Culture'),('Education'),('Politics'),('Science'),('Sport'),('Technology')";
+		executeUpdateQuery(connection, query);
+	}
+
+
     public void populateWithMockData(Connection connection) throws SQLException {
-        String query = "INSERT INTO `categories` (`name`) VALUES ('Category 1'),('Category 2'),('Category 3'),('Category 4'),('Category 5'),('Category 6'),('Category 7')";
-        executeUpdateQuery(connection, query);
+		String query;
+
+		populate(connection);
 
         for (int i = 1; i <= 22; i++) {
 			String mainImgUrl = "http://staging.mediawales.co.uk/_files/images//jun_10/mw__1276511479_News_Image.jpg";

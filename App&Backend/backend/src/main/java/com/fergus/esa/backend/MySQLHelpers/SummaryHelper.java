@@ -68,4 +68,45 @@ public class SummaryHelper {
 
         return null;
     }
+
+
+	public int create(SummaryObject summary, int eventId) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "INSERT INTO `summaries` (`text`, `length`, `timestamp`, `eventId`) VALUES (?, ?, NOW(), ?);";
+
+		try {
+			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+			statement.setString(1, summary.getText());
+			statement.setInt(2, summary.getLength());
+			statement.setInt(3, eventId);
+
+			statement.executeUpdate();
+			results = statement.getGeneratedKeys();
+			if (results.next()) {
+				return results.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return 0;
+	}
 }

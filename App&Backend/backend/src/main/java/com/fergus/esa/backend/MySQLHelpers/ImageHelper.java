@@ -62,4 +62,82 @@ public class ImageHelper {
 
         return null;
     }
+
+
+	public boolean exists(String url) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "SELECT EXISTS(SELECT 1 FROM `images` WHERE `url`=?) AS `exists`";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, url);
+			results = statement.executeQuery();
+
+			if (results.next()) {
+				return results.getBoolean("exists");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return false;
+	}
+
+
+	public int create(String url, int eventId) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = "INSERT INTO `images` (`eventId`, `url`) VALUES (?, ?)";
+
+		try {
+			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+			statement.setInt(1, eventId);
+			statement.setString(2, url);
+
+			statement.executeUpdate();
+			results = statement.getGeneratedKeys();
+			if (results.next()) {
+				return results.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return 0;
+	}
 }

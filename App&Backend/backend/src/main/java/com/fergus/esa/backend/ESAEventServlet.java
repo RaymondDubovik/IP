@@ -1,8 +1,11 @@
 package com.fergus.esa.backend;
 
+import com.fergus.esa.backend.MySQLHelpers.CategoryHelper;
 import com.fergus.esa.backend.MySQLHelpers.EventHelper;
+import com.fergus.esa.backend.MySQLHelpers.ImageHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
+import com.fergus.esa.backend.MySQLHelpers.SummaryHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.categorizer.CategoryPicker;
 import com.fergus.esa.backend.categorizer.ESACategoryPicker;
@@ -104,19 +107,41 @@ public class ESAEventServlet extends HttpServlet {
 
 
 	public void storeData(HashSet<String> eventHeading) throws FeedException, IOException, TwitterException {
-		for (String heading : eventHeading) {
-			System.out.println("----------" + heading + "----------");
-			heading = removeSuffix(removeAccents(heading));
+		EventHelper eventHelper = new EventHelper(connection);
+		CategoryHelper categoryHelper = new CategoryHelper(connection);
+		SummaryHelper summaryHelper = new SummaryHelper(connection);
+		ImageHelper imageHelper = new ImageHelper(connection);
 
-			int eventId = addEvent(heading);
+		for (String heading : eventHeading) {
+			boolean newEvent = false;
+			heading = removeSuffix(removeAccents(heading));
+			System.out.println("----------" + heading + "----------");
+
+			EventObject event = new EventObject().setHeading(heading);
+			int eventId = eventHelper.getIdByHeading(event.getHeading());
+
+			if (eventId == 0) {
+				eventId = eventHelper.create(event);
+				newEvent = true;
+			} else {
+				categoryHelper.deleteCagetogies(eventId);
+			}
+			System.out.println("eventId" + eventId);
 
 			TweetModel tweetModel = new TweetModel(getTwitterConfiguration());
 			List<TweetObject> tweets = tweetModel.getTweets(eventId, heading);
 			tweetModel.insertTweets(tweets);
 
 			Set<String> imageUrls = tweetModel.getImagesFromTweets(tweets);
-			for (String image : imageUrls) {
-				// TODO insert images for the event here;
+			String mainImageUrl = "";
+			for (String imageUrl : imageUrls) {
+				if (newEvent && mainImageUrl.equals("")) {
+					mainImageUrl = imageUrl;
+				}
+
+				if (!imageHelper.exists(imageUrl)) {
+					imageHelper.create(imageUrl, eventId);
+				}
 			}
 
 			// TODO: refactor NewsModel
@@ -127,63 +152,39 @@ public class ESAEventServlet extends HttpServlet {
 				List<SummaryObject> summaries = response.getSummaries();
 				if (summaries != null) {
 					for (SummaryObject summary : summaries) {
-						//System.out.println(summary.getText());
-						// TODO: store the summary
+						summaryHelper.create(summary, eventId);
 					}
 				}
 
-				List<ScoredCategory> scoredCategories = response.getCategories();
-
-				System.out.println(scoredCategories.get(0).getCategory() + " " + scoredCategories.get(1).getCategory() + " " + scoredCategories.get(2).getCategory());
 				categoryPicker.addCategories(response.getCategories());
-
-				//System.out.println(summary.getText());
-				// TODO: categories
-				// when deciding on categories, take it into account only when summaries are not empty
 			}
-
-			System.out.println();
 
 			List<String> relevantCategories = categoryPicker.getRelevantCategories();
 			for (String relevantCategory : relevantCategories) {
-				System.out.print("best" + relevantCategory);
+				// System.out.print("best" + relevantCategory);
+				// TODO: add new categories here!
 			}
 
 			System.out.println();
-			// TODO: send a push notification here
-			categoryPicker.getBestMatch();
-			System.out.println("Best: " + categoryPicker.getBestMatch());
 
+			if (newEvent) {
+				// categoryPicker.getBestMatch();
+				// TODO: send a push notification to the relevant recipients
 
-			EventObject event = new EventObject()
-					.setId(eventId)
+				/*
+				GcmObject gcmObject = new GcmObject(gcmToken, "SomeTextHere", "SomeTitleHere").setData("{\"id\":5}"); // TODO: change
+				new GcmSender().sendNotification(gcmObject.toJson());
+				*/
+			}
+
+			// finish populating the event object
+			event.setId(eventId)
 					.setHeading(heading)
+					.setImageUrl(mainImageUrl)
 					.setTimestamp(tweetModel.getMostRecentTweetTime(tweets));
 
-			// TODO: store event summaries
-			// List<String> eventSummaries = summarise();
-
-			/*
-			List<ESANews> eventNews = listEventssNews(e);
-            List<ESATweet> eventTweets = listEventTweets(e);
-
-			ESAEvent esaEvent = new ESAEvent();
-			esaEvent.setEvent(e);
-			esaEvent.setNews(eventNews);
-
-			insertESAEvent(esaEvent);
-			 */
-
-
-
-			// TODO: update the event here
+			eventHelper.update(event);
 		}
-	}
-
-
-	private int addEvent(String eventHeading) {
-		EventObject event = new EventObject().setHeading(eventHeading);
-		return insertEvent(event);
 	}
 
 
@@ -235,36 +236,6 @@ public class ESAEventServlet extends HttpServlet {
 	}
 
 
-	public int insertEvent(EventObject event) {
-		EventHelper helper = new EventHelper(connection);
-
-		if (event.getHeading() == null) {
-			return 0;
-		}
-
-		// If if is not null, then check if it exists. If yes, throw an Exception, that it is already present
-		int id = helper.getIdByHeading(event.getHeading()); // TODO: return an ID here
-
-		return (id != 0) ? id :	helper.create(event);
-	}
-
-
-	// TODO: look into (one hour)
-	/*
-    public void getEvents() throws IOException {
-		List<ESANews> allNews = listNews();
-
-        for (ESANews en : allNews) {
-            String event;
-            if (en.getTimestamp() > minusOneHour) {
-                event = en.getEvent();
-                events.add(event);
-            }
-        }
-    }
-    */
-
-
 	// Method to produce a short summary of a group of news articles from a particular day,
 	// relating to a particular event.
 	public List<ResponseJsonObject> summarise(List<NewsObject> news) {
@@ -301,6 +272,12 @@ public class ESAEventServlet extends HttpServlet {
 
 		return summaries;
 	}
+
+
+
+
+
+
 
 
     public ResponseJsonObject getSummaries(String url) {
@@ -374,7 +351,11 @@ public class ESAEventServlet extends HttpServlet {
 			List<SyndEntry> entryList = feed.getEntries();
 
 			if (entryList.size() > 0) {
-				for (int i = 0; i < entryList.size(); i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
+				// TODO:
+				// TODO:
+				// TODO:
+				// TODO:
+				for (int i = 0; i < 2; i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
 					SyndEntry entry = entryList.get(i);
 					String entryUrl = entry.getUri().substring(33); // TODO: where 33 comes from?
 					String title = entry.getTitle();
@@ -388,13 +369,10 @@ public class ESAEventServlet extends HttpServlet {
 							.setLogoUrl("")
 							.setTimestamp(date);
 
-
 					try {
 						insertNews(newsObject);
 						news.add(newsObject);
-					} catch (ConflictException e) {
-						// TODO: do nothing, if it exists
-					}
+					} catch (ConflictException ignored) {} // does nothing, if news article already exists in the database
 				}
 			}
 

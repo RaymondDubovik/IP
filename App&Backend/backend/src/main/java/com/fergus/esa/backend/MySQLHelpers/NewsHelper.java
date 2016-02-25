@@ -124,6 +124,7 @@ public class NewsHelper {
 			statement.setString(4, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(news.getTimestamp()));
 			statement.setInt(5, news.getEventId());
 
+			statement.executeUpdate();
 			results = statement.getGeneratedKeys();
 			if (results.next()) {
 				return results.getInt(1);
