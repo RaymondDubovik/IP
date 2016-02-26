@@ -46,6 +46,9 @@ public class Servlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String url = request.getParameter("url");
+        boolean summarize = new Boolean(request.getParameter("summarize"));
+
+        System.out.println("summarize: " + summarize);
 
         response.setContentType("application/json");
 
@@ -53,7 +56,7 @@ public class Servlet extends HttpServlet {
 
         for (int retryCount = 0; retryCount < RETRY_COUNT; retryCount++) {
             try {
-                out.println(summarise(url));
+                out.println(summarise(url, summarize));
                 return; // if we were able to summarise, then exit here
             } catch (Exception e) { // if we were not able to summarise, then output exception and try again, if retryCount < RETRY_COUNT
                 System.out.println("Could not summarise: " + e.getMessage());
@@ -65,12 +68,7 @@ public class Servlet extends HttpServlet {
     }
 
 
-    public String summarise(String url) throws Exception {
-        String folderName = UUID.randomUUID().toString();
-        final String folderAbsolutePath = MEAD_LOCATION + "data/" + folderName;
-
-        execute("mkdir " + folderAbsolutePath);
-
+    public String summarise(String url, boolean summarize) throws Exception {
         String article;
         try {
             article = getArticle(url);
@@ -81,6 +79,52 @@ public class Servlet extends HttpServlet {
         if (article.length() == 0) { // if could not retrieve article, then throw an exception
             throw new Exception("Could not retrieve article");
         }
+
+        List<SummaryObject> summaries;
+        if (summarize) {
+            String folderName = UUID.randomUUID().toString();
+            final String folderAbsolutePath = MEAD_LOCATION + "data/" + folderName;
+
+            initFiles(article, folderName, folderAbsolutePath);
+
+            execute("perl " + MEAD_LOCATION + "bin/addons/formatting/text2cluster.pl " + folderAbsolutePath);
+
+            summaries = summarize(folderAbsolutePath);
+
+            execute("rm -r " + MEAD_LOCATION + "data/" + folderName);
+        } else {
+            summaries = null;
+        }
+
+        String categoriesJson = getCategory(article);
+        return new Gson().toJson(new ResponseJsonObject(categoriesJson, summaries));
+    }
+
+
+    private List<SummaryObject> summarize(String folderAbsolutePath) throws IOException {
+        List<SummaryObject> summaries = new ArrayList<>();
+        for (int length = 75; length <= 135; length += 15) {
+            String summary = "";
+            Process meadSummarise = Runtime.getRuntime().exec("perl " + MEAD_LOCATION + "bin/mead.pl -w -a " + length + " " + folderAbsolutePath);
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(meadSummarise.getInputStream()));
+
+            String line;
+            while ((line = in.readLine()) != null) {
+                line = line.substring(5);
+                if (!line.equals("")) {
+                    summary = summary + " " + line;
+                }
+            }
+
+            summaries.add(new SummaryObject().setText(summary).setLength(length));
+        }
+        return summaries;
+    }
+
+
+    private void initFiles(String article, String folderName, String folderAbsolutePath) throws IOException {
+        execute("mkdir " + folderAbsolutePath);
 
         File articleFile = new File(folderAbsolutePath + "/0");
 
@@ -108,29 +152,10 @@ public class Servlet extends HttpServlet {
         clusterWriter.write(clusterXML);
         clusterWriter.flush();
         clusterWriter.close();
+    }
 
-        execute("perl " + MEAD_LOCATION + "bin/addons/formatting/text2cluster.pl " + folderAbsolutePath);
 
-        List<SummaryObject> summaries = new ArrayList<>();
-        for (int length = 75; length <= 135; length += 15) {
-            String summary = "";
-            Process meadSummarise = Runtime.getRuntime().exec("perl " + MEAD_LOCATION + "bin/mead.pl -w -a " + length + " " + folderAbsolutePath);
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(meadSummarise.getInputStream()));
-
-            String line;
-            while ((line = in.readLine()) != null) {
-                line = line.substring(5);
-                if (!line.equals("")) {
-                    summary = summary + " " + line;
-                }
-            }
-
-            summaries.add(new SummaryObject().setText(summary).setLength(length));
-        }
-
-        execute("rm -r " + MEAD_LOCATION + "data/" + folderName);
-
+    private String getCategory(String article) throws IOException {
         String categoriesJson = "";
 
         String command = "java -cp " + CATEGORIZATION_LOCATION + " uk.ac.gla.student.raymond2039897d.Categorize -c \"" + article + "\"";
@@ -146,7 +171,7 @@ public class Servlet extends HttpServlet {
         }
 
         System.out.println(categoriesJson);
-        return new Gson().toJson(new ResponseJsonObject(categoriesJson, summaries));
+        return categoriesJson;
     }
 
 
