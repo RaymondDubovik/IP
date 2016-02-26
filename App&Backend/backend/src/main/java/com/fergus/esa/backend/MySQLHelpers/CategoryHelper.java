@@ -97,7 +97,7 @@ public class CategoryHelper {
 
 
 	// TODO: use
-	public int addCategory(CategoryObject category, int eventId) {
+	public int addCategory(int categoryId, int eventId) {
 		PreparedStatement statement = null;
 		ResultSet results = null;
 
@@ -105,7 +105,7 @@ public class CategoryHelper {
 
 		try {
 			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-			statement.setInt(1, category.getId());
+			statement.setInt(1, categoryId);
 			statement.setInt(2, eventId);
 
 			statement.executeUpdate();

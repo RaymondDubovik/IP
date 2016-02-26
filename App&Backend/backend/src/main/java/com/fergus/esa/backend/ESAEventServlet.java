@@ -5,11 +5,13 @@ import com.fergus.esa.backend.MySQLHelpers.EventHelper;
 import com.fergus.esa.backend.MySQLHelpers.ImageHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
+import com.fergus.esa.backend.MySQLHelpers.SchemaCreator;
 import com.fergus.esa.backend.MySQLHelpers.SummaryHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.categorizer.CategoryPicker;
 import com.fergus.esa.backend.categorizer.ESACategoryPicker;
 import com.fergus.esa.backend.categorizer.ScoredCategory;
+import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.NewsObject;
 import com.fergus.esa.backend.dataObjects.SummaryObject;
@@ -36,12 +38,15 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -83,11 +88,28 @@ public class ESAEventServlet extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		connection = (new MySQLJDBC()).getConnection();
 
+		/*
+		try {
+            SchemaCreator schemaCreator = new SchemaCreator();
+            schemaCreator.drop(connection);
+            schemaCreator.create(connection);
+            // schemaCreator.populateWithMockData(connection);
+            schemaCreator.populate(connection);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        */
+
 		try {
 			storeData(getEventHeadings());
 		} catch (IOException | FeedException | TwitterException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException ignored) {}
 		}
+
 	}
 
 
@@ -111,6 +133,13 @@ public class ESAEventServlet extends HttpServlet {
 		CategoryHelper categoryHelper = new CategoryHelper(connection);
 		SummaryHelper summaryHelper = new SummaryHelper(connection);
 		ImageHelper imageHelper = new ImageHelper(connection);
+
+		List<CategoryObject> allCategoriesList =  categoryHelper.getCategories();
+
+		Map<String, Integer> allCategories = new HashMap<>();
+		for (CategoryObject category : allCategoriesList) {
+			allCategories.put(category.getName().toLowerCase(), category.getId());
+		}
 
 		for (String heading : eventHeading) {
 			boolean newEvent = false;
@@ -144,7 +173,6 @@ public class ESAEventServlet extends HttpServlet {
 				}
 			}
 
-			// TODO: refactor NewsModel
 			CategoryPicker categoryPicker = new ESACategoryPicker();
 			List<NewsObject> news = new NewsModel().addNews(heading, eventId);
 			List<ResponseJsonObject> responses = summarise(news);
@@ -161,8 +189,7 @@ public class ESAEventServlet extends HttpServlet {
 
 			List<String> relevantCategories = categoryPicker.getRelevantCategories();
 			for (String relevantCategory : relevantCategories) {
-				// System.out.print("best" + relevantCategory);
-				// TODO: add new categories here!
+				categoryHelper.addCategory(allCategories.get(relevantCategory), eventId);
 			}
 
 			System.out.println();

@@ -33,6 +33,7 @@ import com.google.gson.Gson;
 import com.googlecode.objectify.repackaged.gentyref.TypeToken;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,26 +44,13 @@ import java.util.List;
 
 @Api(name = "esaEventEndpoint", version = "v1", namespace = @ApiNamespace(ownerDomain = "backend.esa.fergus.com", ownerName = "backend.esa.fergus.com", packagePath = ""))
 public class ESAEventEndpoint {
-    public ESAEventEndpoint() {
-        /*
-		try {
-			Connection connection = (new MySQLJDBC()).getConnection();
-            SchemaCreator schemaCreator = new SchemaCreator();
-            schemaCreator.drop(connection);
-            schemaCreator.create(connection);
-            schemaCreator.populateWithMockData(connection);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        */
-    }
-
-
     @ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name = "registerGcmToken")
     public UserObject registerGcmToken(@Named("gcmToken") String gcmToken) {
 		// TODO: check, if token is unique (in the database)
 		Connection connection = (new MySQLJDBC()).getConnection();
-        return new UserHelper(connection).create(gcmToken);
+		UserObject userObject = new UserHelper(connection).create(gcmToken);
+		closeConnection(connection);
+		return userObject;
     }
 
 
@@ -72,10 +60,12 @@ public class ESAEventEndpoint {
 		Connection connection = (new MySQLJDBC()).getConnection();
         new UserHelper(connection).updateToken(userId, gcmToken);
         // TODO: return true or false in a wrapper....
+
+		closeConnection(connection);
     }
 
 
-    @ApiMethod(name = "getNewEvents")
+	@ApiMethod(name = "getNewEvents")
     public List<EventObject> getNewEvents(@Named("from") int from, @Named("count") int count, @Named("categories") String categoriesJson) {
         categoriesJson = categoriesJson.trim();
         List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
@@ -90,7 +80,10 @@ public class ESAEventEndpoint {
 		}
 
 		Connection connection = (new MySQLJDBC()).getConnection();
-        return new EventHelper(connection).getNewEvents(categoryIds, from, count);
+
+		List<EventObject> newEvents = new EventHelper(connection).getNewEvents(categoryIds, from, count);
+		closeConnection(connection);
+		return newEvents;
     }
 
 
@@ -111,7 +104,9 @@ public class ESAEventEndpoint {
 		// List<CategoryRatingObject> categoryRatings = new CategoryHelper(connection).getUserCategoryRating(userId, categoryIds);
 
 		Connection connection = (new MySQLJDBC()).getConnection();
-		return new EventHelper(connection).getRecommendedEvents(userId, categoryIds);
+		List<EventObject> recommendedEvents = new EventHelper(connection).getRecommendedEvents(userId, categoryIds);
+		closeConnection(connection);
+		return recommendedEvents;
 	}
 
 
@@ -119,35 +114,45 @@ public class ESAEventEndpoint {
     @ApiMethod(name = "getCategories")
     public List<CategoryObject> getCategories() {
 		Connection connection = (new MySQLJDBC()).getConnection();
-        return new CategoryHelper(connection).getCategories();
+		List<CategoryObject> categories = new CategoryHelper(connection).getCategories();
+		closeConnection(connection);
+		return categories;
     }
 
 
     @ApiMethod(name="getTweets")
     public List<TweetObject> getTweets(@Named("eventId") int id) {
 		Connection connection = (new MySQLJDBC()).getConnection();
-        return new TweetHelper(connection).getEventTweets(id);
+		List<TweetObject> eventTweets = new TweetHelper(connection).getEventTweets(id);
+		closeConnection(connection);
+		return eventTweets;
     }
 
 
     @ApiMethod(name="getImages")
     public List<ImageObject> getImages(@Named("eventId") int id) {
 		Connection connection = (new MySQLJDBC()).getConnection();
-        return new ImageHelper(connection).getEventImages(id);
+		List<ImageObject> eventImages = new ImageHelper(connection).getEventImages(id);
+		closeConnection(connection);
+		return eventImages;
     }
 
 
     @ApiMethod(name="getNews")
     public List<NewsObject> getNews(@Named("eventId") int id) {
 		Connection connection = (new MySQLJDBC()).getConnection();
-        return new NewsHelper(connection).getEventNews(id);
+		List<NewsObject> eventNews = new NewsHelper(connection).getEventNews(id);
+		closeConnection(connection);
+		return eventNews;
     }
 
 
     @ApiMethod(name="getSummaries")
     public List<SummaryObject> getSummaries(@Named("eventId") int id) {
 		Connection connection = (new MySQLJDBC()).getConnection();
-        return new SummaryHelper(connection).getEventSummaries(id);
+		List<SummaryObject> eventSummaries = new SummaryHelper(connection).getEventSummaries(id);
+		closeConnection(connection);
+		return eventSummaries;
     }
 
 
@@ -155,6 +160,7 @@ public class ESAEventEndpoint {
 	public void registerHit(@Named("userId") int userId, @Named("eventId") int eventId, @Named("milliseconds") double milliseconds) {
 		Connection connection = (new MySQLJDBC()).getConnection();
 		new UserHelper(connection).registerHit(userId, eventId, milliseconds);
+		closeConnection(connection);
 	}
 
 
@@ -190,6 +196,13 @@ public class ESAEventEndpoint {
         //return esaEvent;
 		return null;
     }
+
+
+	private void closeConnection(Connection connection) {
+		try {
+			connection.close();
+		} catch (SQLException ignored) {}
+	}
 
 
     private List<ScoredEvent> getEventsByQuery(String userQuery) {

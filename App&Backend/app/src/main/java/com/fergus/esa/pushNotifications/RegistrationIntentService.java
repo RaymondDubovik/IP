@@ -61,6 +61,7 @@ public class RegistrationIntentService extends IntentService {
 
                     if (userId == UserObjectWrapper.NO_USER_ID) {
                         try {
+							Log.d(TAG, "registering push notification");
                             UserObject user = ServerUrls.endpoint.registerGcmToken(token).execute();
                             sharedPreferences.edit().putInt(SharedPreferencesKeys.USER_ID, user.getId()).putString(SharedPreferencesKeys.GCM_TOKEN, token).apply();
                         } catch (IOException e) {

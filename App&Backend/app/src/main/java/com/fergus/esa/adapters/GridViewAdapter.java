@@ -1,6 +1,7 @@
 package com.fergus.esa.adapters;
 
 import android.app.Activity;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,7 +79,7 @@ public final class GridViewAdapter extends BaseAdapter {
         view.eventTitle.setText(event.getHeading());
 
         String imgUrl = event.getImageUrl();
-        if (imgUrl == null) {
+        if (TextUtils.isEmpty(imgUrl)) {
             imgUrl = PLACEHOLDER_IMAGE_URL;
         }
 
