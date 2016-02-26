@@ -1,6 +1,7 @@
 package com.fergus.esa.activities;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -67,7 +68,7 @@ public class EventActivity extends AppCompatActivity {
         eventTitle = extras.getString(BUNDLE_PARAM_EVENT_HEADING);
 
 		// in separate async tasks, so that it is easier to implement infinite scrolling for each of the fragments in the future
-		new SummaryAsyncTask().execute();
+		new SummaryAsyncTask(this).execute();
 		new ImageAsyncTask().execute();
 		new TweetAsyncTask().execute();
         new NewsAsyncTask().execute();
@@ -170,10 +171,19 @@ public class EventActivity extends AppCompatActivity {
 
 
     private class SummaryAsyncTask extends CounterAsyncTask {
-        @Override
+		private int summaryLength;
+
+
+		public SummaryAsyncTask(Context context) {
+			summaryLength = PreferenceManager.getDefaultSharedPreferences(context).getInt(SharedPreferencesKeys.SUMMARY_LENGTH, 75); // remove hardcode from here
+		}
+
+
+		@Override
         protected Void doInBackground(Void... params) {
             try {
-				SummaryObjectCollection collection = ServerUrls.endpoint.getSummaries(eventId).execute();
+
+				SummaryObjectCollection collection = ServerUrls.endpoint.getSummaries(eventId, summaryLength).execute();
 				summaries = (collection == null) ? Collections.<SummaryObject>emptyList() : collection.getItems();
             } catch (IOException e) {
                 // TODO: do something
@@ -204,7 +214,7 @@ public class EventActivity extends AppCompatActivity {
 
             if (progressDialogCounter == 0) {
                 onDataLoaded();
-                progressDialog.hide();
+                progressDialog.dismiss();
                 progressDialog = null;
             }
         }

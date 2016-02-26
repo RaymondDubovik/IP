@@ -5,7 +5,6 @@ import com.fergus.esa.backend.MySQLHelpers.EventHelper;
 import com.fergus.esa.backend.MySQLHelpers.ImageHelper;
 import com.fergus.esa.backend.MySQLHelpers.MySQLJDBC;
 import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
-import com.fergus.esa.backend.MySQLHelpers.SchemaCreator;
 import com.fergus.esa.backend.MySQLHelpers.SummaryHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.categorizer.CategoryPicker;
@@ -98,7 +97,7 @@ public class ESAEventServlet extends HttpServlet {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        */
+		*/
 
 		try {
 			storeData(getEventHeadings());
@@ -146,25 +145,26 @@ public class ESAEventServlet extends HttpServlet {
 			heading = removeSuffix(removeAccents(heading));
 			System.out.println("----------" + heading + "----------");
 
-			EventObject event = new EventObject().setHeading(heading);
+			EventObject event = new EventObject()
+					.setHeading(heading);
 			int eventId = eventHelper.getIdByHeading(event.getHeading());
 
 			if (eventId == 0) {
-				eventId = eventHelper.create(event);
+				eventId = eventHelper.create(event.setImageUrl(""));
 				newEvent = true;
 			} else {
 				categoryHelper.deleteCagetogies(eventId);
 			}
-			System.out.println("eventId" + eventId);
+			System.out.println("eventId: " + eventId);
 
 			TweetModel tweetModel = new TweetModel(getTwitterConfiguration());
 			List<TweetObject> tweets = tweetModel.getTweets(eventId, heading);
 			tweetModel.insertTweets(tweets);
 
 			Set<String> imageUrls = tweetModel.getImagesFromTweets(tweets);
-			String mainImageUrl = "";
+			String mainImageUrl = null;
 			for (String imageUrl : imageUrls) {
-				if (newEvent && mainImageUrl.equals("")) {
+				if (newEvent && mainImageUrl == null) {
 					mainImageUrl = imageUrl;
 				}
 
@@ -209,6 +209,10 @@ public class ESAEventServlet extends HttpServlet {
 					.setHeading(heading)
 					.setImageUrl(mainImageUrl)
 					.setTimestamp(tweetModel.getMostRecentTweetTime(tweets));
+
+			if (mainImageUrl != null) {
+				event.setImageUrl(mainImageUrl);
+			}
 
 			eventHelper.update(event);
 		}

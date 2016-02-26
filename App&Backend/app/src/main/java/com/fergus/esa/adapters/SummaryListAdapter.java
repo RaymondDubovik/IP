@@ -42,6 +42,7 @@ public class SummaryListAdapter extends ArrayAdapter<ESASummary> {
             // recycle the already inflated view
             viewHolder = (ViewHolder) convertView.getTag();
         }
+
         if (getItem(position) != null) {
             ESASummary summary = getItem(position);
 

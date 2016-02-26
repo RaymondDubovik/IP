@@ -48,36 +48,13 @@ public class SummaryFragment extends Fragment {
             return null;
         }
 
+		// TODO: use the formatter in proper place!
         SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.UK);
         List<ESASummary> summaryObjects = new ArrayList<>();
 
         for (SummaryObject summary : summaries) {
             ESASummary sumObj = new ESASummary(summary.getText(), new Date()); // TODO: change date (also in DB design too) !!!!!!
             summaryObjects.add(sumObj);
-
-
-            // TODO: this code needs to be run in different part of the project (before data enters the database)
-            /*
-            String sum = summary.getText();
-            if (!sum.startsWith("esaseparator")) {
-                String sumText;
-                Date sumDate = new Date();
-
-                String[] sumArray = sum.split("esaseparator");
-                sumText = sumArray[0];
-                String sumDateString = sumArray[1];
-
-                try {
-                    sumDate = dateFormatter.parse(sumDateString);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-
-
-                ESASummary sumObj = new ESASummary(sumText, sumDate);
-                summaryObjects.add(sumObj);
-            }
-            */
         }
 
         return summaryObjects;

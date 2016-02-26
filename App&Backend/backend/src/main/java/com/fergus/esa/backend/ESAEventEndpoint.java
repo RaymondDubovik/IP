@@ -148,9 +148,9 @@ public class ESAEventEndpoint {
 
 
     @ApiMethod(name="getSummaries")
-    public List<SummaryObject> getSummaries(@Named("eventId") int id) {
+    public List<SummaryObject> getSummaries(@Named("eventId") int id, @Named("summaryLength") int summaryLength) {
 		Connection connection = (new MySQLJDBC()).getConnection();
-		List<SummaryObject> eventSummaries = new SummaryHelper(connection).getEventSummaries(id);
+		List<SummaryObject> eventSummaries = new SummaryHelper(connection).getEventSummaries(id, summaryLength);
 		closeConnection(connection);
 		return eventSummaries;
     }

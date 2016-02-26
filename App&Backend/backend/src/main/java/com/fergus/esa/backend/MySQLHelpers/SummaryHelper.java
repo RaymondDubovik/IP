@@ -22,18 +22,20 @@ public class SummaryHelper {
     }
 
 
-    public List<SummaryObject> getEventSummaries(int id) {
+    public List<SummaryObject> getEventSummaries(int id, int length) {
         PreparedStatement statement = null;
         ResultSet results = null;
 
         String query =
                 "SELECT `length`, `text`" +
                         " FROM `summaries`" +
-                        " WHERE `eventId` = ?";
+                        " WHERE `eventId` = ?" +
+						" AND `length` = ?";
 
         try {
             statement = connection.prepareStatement(query);
             statement.setInt(1, id);
+			statement.setInt(2, length);
             results = statement.executeQuery();
             List<SummaryObject> summaries = new ArrayList<>();
             while (results.next()) {

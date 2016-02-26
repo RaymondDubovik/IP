@@ -124,7 +124,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 		if (type == TYPE_EVENTS_RECOMMENDED) {
 			categoryLayout.setVisibility(View.GONE);
 		}
-		
+
 		swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
 		swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 			@Override
