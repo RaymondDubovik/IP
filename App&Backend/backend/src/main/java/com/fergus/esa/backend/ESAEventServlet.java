@@ -16,8 +16,6 @@ import com.fergus.esa.backend.dataObjects.NewsObject;
 import com.fergus.esa.backend.dataObjects.SummaryObject;
 import com.fergus.esa.backend.dataObjects.TweetObject;
 import com.google.api.server.spi.response.ConflictException;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -40,7 +38,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -141,6 +138,7 @@ public class ESAEventServlet extends HttpServlet {
 		}
 
 		for (String heading : eventHeading) {
+			String mainImageUrl = null;
 			boolean newEvent = false;
 			heading = removeSuffix(removeAccents(heading));
 			System.out.println("----------" + heading + "----------");
@@ -154,6 +152,8 @@ public class ESAEventServlet extends HttpServlet {
 				newEvent = true;
 			} else {
 				categoryHelper.deleteCagetogies(eventId);
+				event = eventHelper.get(eventId);
+				mainImageUrl = event.getImageUrl();
 			}
 			System.out.println("eventId: " + eventId);
 
@@ -162,9 +162,8 @@ public class ESAEventServlet extends HttpServlet {
 			tweetModel.insertTweets(tweets);
 
 			Set<String> imageUrls = tweetModel.getImagesFromTweets(tweets);
-			String mainImageUrl = null;
 			for (String imageUrl : imageUrls) {
-				if (newEvent && mainImageUrl == null) {
+				if (mainImageUrl == null) {
 					mainImageUrl = imageUrl;
 				}
 
@@ -194,16 +193,6 @@ public class ESAEventServlet extends HttpServlet {
 
 			System.out.println();
 
-			if (newEvent) {
-				// categoryPicker.getBestMatch();
-				// TODO: send a push notification to the relevant recipients
-
-				/*
-				GcmObject gcmObject = new GcmObject(gcmToken, "SomeTextHere", "SomeTitleHere").setData("{\"id\":5}"); // TODO: change
-				new GcmSender().sendNotification(gcmObject.toJson());
-				*/
-			}
-
 			// finish populating the event object
 			event.setId(eventId)
 					.setHeading(heading)
@@ -215,6 +204,16 @@ public class ESAEventServlet extends HttpServlet {
 			}
 
 			eventHelper.update(event);
+
+			if (newEvent) {
+				// TODO: send a push notification to the relevant recipients
+				// categoryPicker.getBestMatch();
+
+				/*
+				GcmObject gcmObject = new GcmObject(gcmToken, "SomeTextHere", "SomeTitleHere").setData("{\"id\":5}"); // TODO: change
+				new GcmSender().sendNotification(gcmObject.toJson());
+				*/
+			}
 		}
 	}
 
@@ -271,33 +270,12 @@ public class ESAEventServlet extends HttpServlet {
 	// relating to a particular event.
 	public List<ResponseJsonObject> summarise(List<NewsObject> news) {
 		List<ResponseJsonObject> summaries = new ArrayList<>();
-		long dayInMillis = 86400000;
 
-		//http://stackoverflow.com/questions/28578072/split-java-util-date-collection-by-days
-		Multimap<Long, NewsObject> newsByDay = ArrayListMultimap.create();
-
-		for (NewsObject newsObject : news) { // TODO: fix in a list
-			long newsDateInMillis = newsObject.getTimestamp().getTime();
-			long day = newsDateInMillis / dayInMillis;
-			newsByDay.put(day, newsObject);
-		}
-
-		for (long day : newsByDay.keySet()) {
-			ResponseJsonObject retrievedSummaries;
-			long dateInMillis = day * dayInMillis;
-			Collection<NewsObject> dailyNews = newsByDay.get(day);
-			Set<String> urls = new HashSet<>();
-
-			for (NewsObject newsObject : dailyNews) {
-				urls.add(newsObject.getUrl());
-			}
-
-			for (String url : urls) {
-				retrievedSummaries = getSummaries(url);
-				if (retrievedSummaries != null) { // adding summary only if it is meaningful
-					retrievedSummaries.setDate(new Date(dateInMillis));
-					summaries.add(retrievedSummaries);
-				}
+		for (NewsObject n : news) {
+			ResponseJsonObject retrievedSummaries = getSummaries(n.getUrl(), n.isNew());
+			if (retrievedSummaries != null) { // adding summary only if it is meaningful
+				retrievedSummaries.setDate(n.getTimestamp());
+				summaries.add(retrievedSummaries);
 			}
 		}
 
@@ -311,14 +289,16 @@ public class ESAEventServlet extends HttpServlet {
 
 
 
-    public ResponseJsonObject getSummaries(String url) {
+    public ResponseJsonObject getSummaries(String url, boolean summarize) {
 		ResponseJsonObject summaries = new ResponseJsonObject();
         try {
             Client client = Client.create();
 			client.setConnectTimeout(8000);
 			client.setReadTimeout(8000);
 
-            WebResource summariser = client.resource(SUMMARISATION_SERVER_URL + "?url=" + url);
+			url = SUMMARISATION_SERVER_URL + "?url=" + url + "&summarize=" + summarize;
+
+            WebResource summariser = client.resource(url);
 
             ClientResponse response = summariser.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
             if (response.getStatus() != 200) {
@@ -340,8 +320,14 @@ public class ESAEventServlet extends HttpServlet {
 
 			List<ScoredCategory> scoredCategoryObjects = new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<ScoredCategory>>(){}.getType());
 			summaries.setCategories(scoredCategoryObjects);
-			List<SummaryObject> summaryObjects = new Gson().fromJson(jsonObject.getString("summaries"), new TypeToken<ArrayList<SummaryObject>>(){}.getType());
-			summaries.setSummaries(summaryObjects);
+
+			if (summarize) {
+				List<SummaryObject> summaryObjects = new Gson().fromJson(jsonObject.getString("summaries"), new TypeToken<ArrayList<SummaryObject>>() {}.getType());
+				summaries.setSummaries(summaryObjects);
+			} else {
+				summaries.setSummaries(null);
+			}
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -386,7 +372,7 @@ public class ESAEventServlet extends HttpServlet {
 				// TODO:
 				// TODO:
 				// TODO:
-				for (int i = 0; i < 2; i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
+				for (int i = 0; i < entryList.size(); i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
 					SyndEntry entry = entryList.get(i);
 					String entryUrl = entry.getUri().substring(33); // TODO: where 33 comes from?
 					String title = entry.getTitle();
@@ -394,7 +380,6 @@ public class ESAEventServlet extends HttpServlet {
 
 					NewsObject newsObject = new NewsObject()
 							.setEventId(eventId)
-							.setEventId(1)
 							.setTitle(title)
 							.setUrl(entryUrl)
 							.setLogoUrl("")
@@ -403,7 +388,9 @@ public class ESAEventServlet extends HttpServlet {
 					try {
 						insertNews(newsObject);
 						news.add(newsObject);
-					} catch (ConflictException ignored) {} // does nothing, if news article already exists in the database
+					} catch (ConflictException e) {
+						news.add(newsObject.setNew(false)); // adds article with indication, that it already exists in the database
+					}
 				}
 			}
 

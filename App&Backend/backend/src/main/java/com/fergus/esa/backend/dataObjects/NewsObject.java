@@ -17,6 +17,8 @@ public class NewsObject {
     private Date timestamp;
     private int eventId;
 
+	private boolean isNew = true;
+
 
     public NewsObject() {}
 
@@ -85,4 +87,15 @@ public class NewsObject {
         this.eventId = eventId;
         return this;
     }
+
+
+	public boolean isNew() {
+		return isNew;
+	}
+
+
+	public NewsObject setNew(boolean aNew) {
+		isNew = aNew;
+		return this;
+	}
 }

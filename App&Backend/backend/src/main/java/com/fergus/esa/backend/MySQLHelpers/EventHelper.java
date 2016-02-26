@@ -409,4 +409,49 @@ public class EventHelper {
 
 		return false;
 	}
+
+
+	public EventObject get(int eventId) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query =
+				"SELECT `id`, `timestamp`, `heading`, `mainImageUrl`" +
+						" FROM `events`" +
+						" WHERE `id` = ?";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setInt(1, eventId);
+
+			results = statement.executeQuery();
+			if (results.next()) {
+				return new EventObject()
+						.setId(results.getInt("id"))
+						.setTimestamp(results.getDate("timestamp"))
+						.setHeading(results.getString("heading"))
+						.setImageUrl(results.getString("mainImageUrl"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException sqlEx) {} // ignore
+
+				statement = null;
+			}
+		}
+
+		return null;
+	}
 }
