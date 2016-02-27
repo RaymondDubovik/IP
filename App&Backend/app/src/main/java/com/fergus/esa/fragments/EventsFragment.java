@@ -51,6 +51,7 @@ import in.srain.cube.views.GridViewWithHeaderAndFooter;
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 29/01/2016
  */
+// TODO: rewrite using the inheritance instead of switch/case statements
 public class EventsFragment extends Fragment implements NetworkFragment, BackButtonFragment {
 	public static final int TYPE_EVENTS_NEW = 1;
 	public static final int TYPE_EVENTS_RECOMMENDED = 2;

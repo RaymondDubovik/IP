@@ -20,11 +20,18 @@ import java.util.List;
 public final class ImageAdapter extends BaseAdapter {
 	private List<ImageObject> images;
 	private Activity activity;
+	private final boolean hasText;
 
 
 	public ImageAdapter(Activity activity, List<ImageObject> images) {
+		this(activity, images, true);
+	}
+
+
+	public ImageAdapter(Activity activity, List<ImageObject> images, boolean hasText) {
 		this.activity = activity;
 		this.images = images;
+		this.hasText = hasText;
 	}
 
 
@@ -56,7 +63,9 @@ public final class ImageAdapter extends BaseAdapter {
 			view = new ViewHolder();
 			convertView = inflater.inflate(R.layout.activity_main_row, null);
 
-			// (TextView) convertView.findViewById(R.id.mainTextView); // TODO: maybe this will need to be set to setVisibility(View.GONE);
+			if (!hasText) {
+				convertView.findViewById(R.id.mainTextView).setVisibility(View.GONE); // TODO: maybe this will need to be set to setVisibility(View.GONE);
+			}
 			view.imageView = (SquaredImageView) convertView.findViewById(R.id.mainImageView);
 
 			convertView.setTag(view);

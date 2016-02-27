@@ -25,7 +25,7 @@ public class ImageFragment extends Fragment {
 		EventActivity activity = ((EventActivity) getActivity());
 
 		gridView = (GridView) view.findViewById(R.id.gridViewImages);
-		ImageAdapter imageAdapter = new ImageAdapter(activity, activity.getImages());
+		ImageAdapter imageAdapter = new ImageAdapter(activity, activity.getImages(), false);
 		gridView.setAdapter(imageAdapter);
 
 		return view;
