@@ -64,8 +64,9 @@ public final class ImageAdapter extends BaseAdapter {
 			convertView = inflater.inflate(R.layout.activity_main_row, null);
 
 			if (!hasText) {
-				convertView.findViewById(R.id.mainTextView).setVisibility(View.GONE); // TODO: maybe this will need to be set to setVisibility(View.GONE);
+				convertView.findViewById(R.id.mainTextView).setVisibility(View.GONE);
 			}
+
 			view.imageView = (SquaredImageView) convertView.findViewById(R.id.mainImageView);
 
 			convertView.setTag(view);

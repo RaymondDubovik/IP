@@ -143,7 +143,7 @@ public class MainActivity extends ActionBarActivity {
     private void initToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Events");
+        getSupportActionBar().setTitle("Events"); // TODO: remove hardcode
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 

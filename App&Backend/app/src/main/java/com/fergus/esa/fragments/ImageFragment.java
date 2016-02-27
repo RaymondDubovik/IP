@@ -18,6 +18,7 @@ import com.fergus.esa.adapters.ImageAdapter;
 public class ImageFragment extends Fragment {
 	private GridView gridView;
 
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_images, container, false);

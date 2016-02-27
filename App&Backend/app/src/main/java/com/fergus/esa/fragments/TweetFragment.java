@@ -1,19 +1,15 @@
 package com.fergus.esa.fragments;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ListView;
 
-import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.R;
+import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.adapters.TweetListAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
 
@@ -26,9 +22,8 @@ import java.util.List;
  */
 
 public class TweetFragment extends Fragment {
-    private EditText editTextSearch;
+    private SearchView searchView;
     private List<TweetObject> tweets;
-    private AlertDialog alertDialog;
     private TweetListAdapter adapter;
 
 
@@ -45,56 +40,27 @@ public class TweetFragment extends Fragment {
         lv.setAdapter(adapter);
         lv.setTextFilterEnabled(true);
 
-        editTextSearch = (EditText) view.findViewById(R.id.searchText);
+        searchView = (SearchView) view.findViewById(R.id.searchText);
+		searchView.setIconifiedByDefault(false);
+		searchView.setQueryHint("Filter tweets...");
 
-        editTextSearch.setOnTouchListener(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                editTextSearch.setHint("");
-                return false;
-            }
-
-        });
-
-        editTextSearch.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    editTextSearch.setHint(R.string.tweet_search_hint);
-                }
-            }
-        });
-
-        editTextSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextSubmit(String query) {return false;}
 
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (count < before) {
-                    // We're deleting char so we need to reset the adapter data
-                    adapter.resetTweets();
-                }
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				adapter.resetTweets();
 
-                adapter.getFilter().filter(s.toString());
-            }
-
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
+				adapter.getFilter().filter(newText);
+				return true;
+			}
+		});
 
         return view;
     }
-
+	
 
     public void retrieveTweets() {
         EventActivity activity = ((EventActivity) getActivity());
