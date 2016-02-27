@@ -6,20 +6,20 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.CompoundButton;
-import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.fergus.esa.R;
 import com.fergus.esa.SharedPreferencesKeys;
+import com.github.channguyen.rsv.RangeSliderView;
 
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 29/01/2016
  */
 public class SettingActivity extends ActionBarActivity {
-	private static final int STEP = 5;
+	private static final int MIN_VALUE = 75;
+	private static final int STEP = 15;
 
 
 	@Override
@@ -42,7 +42,6 @@ public class SettingActivity extends ActionBarActivity {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				if (isChecked){
-					Toast.makeText(SettingActivity.this, "enabled", Toast.LENGTH_SHORT).show();
 					preferences.edit().putBoolean(SharedPreferencesKeys.NOTIFICATIONS_ALLOWED, true).apply();
 				} else{
 					preferences.edit().putBoolean(SharedPreferencesKeys.NOTIFICATIONS_ALLOWED, false).apply();
@@ -51,28 +50,23 @@ public class SettingActivity extends ActionBarActivity {
 		});
 
 
-		int summaryLength = preferences.getInt(SharedPreferencesKeys.SUMMARY_LENGTH, 80);
+		int summaryLength = preferences.getInt(SharedPreferencesKeys.SUMMARY_LENGTH, MIN_VALUE);
 
 		final TextView textViewSummaryLength = (TextView) findViewById(R.id.textViewSummaryLength);
 		textViewSummaryLength.setText(String.valueOf(summaryLength));
-		SeekBar seekBarSummaryLength = (SeekBar) findViewById(R.id.seekBarSummaryLength);
 
-		seekBarSummaryLength.setProgress(summaryLength - 80);
-		seekBarSummaryLength.incrementProgressBy(20);
-		seekBarSummaryLength.setMax(30);
-		seekBarSummaryLength.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+		RangeSliderView rangeSliderSummaryLength = (RangeSliderView) findViewById(R.id.rangeSliderSummaryLength);
+		rangeSliderSummaryLength.setInitialIndex((summaryLength - MIN_VALUE) / STEP);
+
+		final RangeSliderView.OnSlideListener listener = new RangeSliderView.OnSlideListener() {
 			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				progress = progress / STEP;
-				progress = progress * STEP + 80;
+			public void onSlide(int index) {
+				int progress = MIN_VALUE + STEP * index;
 				textViewSummaryLength.setText(String.valueOf(progress));
 				preferences.edit().putInt(SharedPreferencesKeys.SUMMARY_LENGTH, progress).apply();
 			}
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {}
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {}
-		});
+		};
+		rangeSliderSummaryLength.setOnSlideListener(listener);
 	}
 
 

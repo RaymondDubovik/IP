@@ -31,6 +31,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.4'
     compile 'com.novoda:merlin:0.7.0'
     compile 'in.srain.cube:grid-view-with-header-footer:1.0.12'
+    compile 'com.github.channguyen:rsv:1.0.1'
 }
 
 

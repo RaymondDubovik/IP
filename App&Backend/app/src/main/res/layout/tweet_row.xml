@@ -9,7 +9,6 @@
 		android:id="@+id/userImage"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_alignParentTop="true"
 		android:layout_marginRight="6dp"
 		android:src="@drawable/placeholder"/>
 
@@ -22,10 +21,6 @@
 			android:id="@+id/tweetUser"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:layout_alignParentRight="true"
-			android:layout_alignParentTop="true"
-			android:layout_alignWithParentIfMissing="true"
-			android:layout_toRightOf="@id/userImage"
 			android:textColorLink="@color/blue"
 			android:gravity="center_vertical"
 			android:textStyle="bold"/>
@@ -34,10 +29,7 @@
 			android:id="@+id/tweetText"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:layout_alignParentRight="true"
-			android:layout_below="@id/tweetUser"
 			android:layout_marginTop="2dp"
-			android:layout_toRightOf="@id/userImage"
 			android:autoLink="web"
 			android:ellipsize="marquee"
 			android:textColorLink="@color/blue"

@@ -7,4 +7,7 @@
     <string name="search">Search</string>
     <string name="no_internet">Can\'t connect right now</string>
 	<string name="open_link">Open Link</string>
+	<string name="notifications">Notifications:</string>
+	<string name="summary_length">Summary Length:</string>
+	<string name="words"> words</string>
 </resources>
