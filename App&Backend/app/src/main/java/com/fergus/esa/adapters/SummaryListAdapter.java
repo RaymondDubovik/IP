@@ -7,18 +7,18 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.fergus.esa.dataObjects.ESASummary;
 import com.fergus.esa.R;
+import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObject;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-public class SummaryListAdapter extends ArrayAdapter<ESASummary> {
+public class SummaryListAdapter extends ArrayAdapter<SummaryObject> {
     private final Context context;
 
 
-    public SummaryListAdapter(Context context, List<ESASummary> summaries) {
+    public SummaryListAdapter(Context context, List<SummaryObject> summaries) {
         super(context, R.layout.summary_row, summaries);
         this.context = context;
     }
@@ -44,12 +44,12 @@ public class SummaryListAdapter extends ArrayAdapter<ESASummary> {
         }
 
         if (getItem(position) != null) {
-            ESASummary summary = getItem(position);
+            SummaryObject summary = getItem(position);
 
-            viewHolder.summaryText.setText(summary.getSummary());
+            viewHolder.summaryText.setText(summary.getText());
 
             DateFormat dateformat = new SimpleDateFormat("EEE, dd MMM yyyy");
-            String sumDate = dateformat.format(summary.getDate());
+            String sumDate = dateformat.format(summary.getTimestamp().getValue());
             viewHolder.summaryDate.setText(sumDate);
         }
 

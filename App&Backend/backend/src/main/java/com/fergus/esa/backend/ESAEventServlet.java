@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -65,6 +67,8 @@ import twitter4j.conf.ConfigurationBuilder;
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
 	private static final String SUMMARISATION_SERVER_URL = "http://127.0.0.1:10000/test";
+
+	private static final Pattern TWEET_URL_PATTERN = Pattern.compile("https://t.co/[a-zA-z0-9\\-]*");
 
 	private Connection connection;
 
@@ -412,7 +416,7 @@ public class ESAEventServlet extends HttpServlet {
 	}
 
 
-	// TODO: refactor this class
+	// TODO: refactor this class - keep tweets as a field
 	private class TweetModel {
 		private Configuration twitterConfiguration;
 
@@ -427,9 +431,7 @@ public class ESAEventServlet extends HttpServlet {
 			for (TweetObject tweet : tweets) {
 				try {
 					insertTweet(helper, tweet);
-				} catch (ConflictException e) {
-					e.printStackTrace();
-				}
+				} catch (ConflictException ignored) {}
 
 				helper.create(tweet);
 			}
@@ -438,7 +440,7 @@ public class ESAEventServlet extends HttpServlet {
 
 		private void insertTweet(TweetHelper helper, TweetObject tweet) throws ConflictException {
 			//If if is not null, then check if it exists. If yes, throw an Exception that it is already present
-			if (tweet.getId() != 0 && helper.exists(tweet.getId())) {
+			if (tweet.getId() != 0 && helper.exists(tweet.getUsername(), tweet.getText(), tweet.getEventId())) {
 				throw new ConflictException("Object already exists");
 			}
 		}
@@ -475,10 +477,9 @@ public class ESAEventServlet extends HttpServlet {
 			TwitterFactory tf = new TwitterFactory(twitterConfiguration);
 			Twitter twitter = tf.getInstance();
 
-			// For each trending event pull the top 10 most popular tweets
-
+			// For each trending event pull the top 15 most popular tweets
 			twitter4j.Query query = new twitter4j.Query(eventHeading);
-			query.count(10);
+			query.count(15);
 			query.lang("en");
 			query.resultType(Query.ResultType.mixed);
 
@@ -492,15 +493,25 @@ public class ESAEventServlet extends HttpServlet {
 						imageUrl = status.getMediaEntities()[0].getMediaURL();
 					}
 
+					String text = status.getText();
+
+					String url = null;
+					Matcher urlMatcher = TWEET_URL_PATTERN.matcher(text); // get a matcher object
+					if (urlMatcher.find()) {
+						url = text.substring(urlMatcher.start(), urlMatcher.end());
+						text = text.substring(0, urlMatcher.start()) + text.substring(urlMatcher.end());
+					}
+
 					tweets.add(new TweetObject()
-							.setEventId(eventId) // TODO fix;
+							.setEventId(eventId)
 							.setId(status.getId())
 							.setUsername(status.getUser().getName())
 							.setScreenName(status.getUser().getScreenName())
 							.setProfileImgUrl(status.getUser().getBiggerProfileImageURL())
 							.setImageUrl(imageUrl)
-							.setText(status.getText())
+							.setText(text)
 							.setTimestamp(status.getCreatedAt())
+							.setUrl(url)
 					);
 				}
 			}

@@ -22,33 +22,25 @@ import java.util.List;
  */
 
 public class TweetFragment extends Fragment {
-    private SearchView searchView;
-    private List<TweetObject> tweets;
+	private List<TweetObject> tweets;
     private TweetListAdapter adapter;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        retrieveTweets();
-
         View view = inflater.inflate(R.layout.fragment_tweet, container, false);
 
-        ListView lv = (ListView) view.findViewById(R.id.tweetList);
+		retrieveTweets();
 
+        ListView listView = (ListView) view.findViewById(R.id.tweetList);
         adapter = new TweetListAdapter(getActivity(), tweets);
+        listView.setAdapter(adapter);
+        listView.setTextFilterEnabled(true);
 
-        lv.setAdapter(adapter);
-        lv.setTextFilterEnabled(true);
-
-        searchView = (SearchView) view.findViewById(R.id.searchText);
+		SearchView searchView = (SearchView) view.findViewById(R.id.searchText);
 		searchView.setIconifiedByDefault(false);
-		searchView.setQueryHint("Filter tweets...");
-
+		searchView.setQueryHint("Filter tweets..."); // TODO: remove hardcode
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-			@Override
-			public boolean onQueryTextSubmit(String query) {return false;}
-
-
 			@Override
 			public boolean onQueryTextChange(String newText) {
 				adapter.resetTweets();
@@ -56,20 +48,22 @@ public class TweetFragment extends Fragment {
 				adapter.getFilter().filter(newText);
 				return true;
 			}
+
+
+			@Override
+			public boolean onQueryTextSubmit(String query) {return false;}
 		});
 
         return view;
     }
-	
+
 
     public void retrieveTweets() {
         EventActivity activity = ((EventActivity) getActivity());
 
         tweets = activity.getTweets();
-
         if (tweets != null) {
             Collections.reverse(tweets);
         }
-
     }
 }

@@ -89,13 +89,12 @@ public class ESAEventEndpoint {
 
 	@ApiMethod(name = "getRecommendedEvents")
 	public List<EventObject> getRecommendedEvents(@Named("userId") int userId, @Named("categories") String categoriesJson) {
-		// TODO: fix this shit!!!!
 		categoriesJson = categoriesJson.trim();
 		List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
 
 		if (categoryIds != null) {
 			for (int categoryId : categoryIds) {
-				if (categoryId == -1) { // TODO: REMOVE HARDCODE HERE -1 is all categories
+				if (categoryId == -1) { // TODO: remove hardcode. -1 means All Categories
 					return null;
 				}
 			}
@@ -188,15 +187,6 @@ public class ESAEventEndpoint {
 
         return events;
     }
-
-
-    @ApiMethod(name = "returnESAEvent")
-    public ESAEvent returnESAEvent(@Named("event") String event) {
-        //ESAEvent esaEvent = ofy().load().type(ESAEvent.class).id(event).now();
-        //return esaEvent;
-		return null;
-    }
-
 
 	private void closeConnection(Connection connection) {
 		try {

@@ -17,8 +17,8 @@ public class TweetObject {
     private String imageUrl;
     private String text;
     private Date timestamp;
+	private String url;
     private int eventId;
-    // TODO: rank here!!!
 
 
     public TweetObject() {}
@@ -101,7 +101,18 @@ public class TweetObject {
     }
 
 
-    public int getEventId() {
+	public String getUrl() {
+		return url;
+	}
+
+
+	public TweetObject setUrl(String url) {
+		this.url = url;
+		return this;
+	}
+
+
+	public int getEventId() {
         return eventId;
     }
 

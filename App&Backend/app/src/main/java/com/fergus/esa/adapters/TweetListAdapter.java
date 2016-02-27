@@ -1,6 +1,11 @@
 package com.fergus.esa.adapters;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Paint;
+import android.net.Uri;
+import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +19,8 @@ import com.fergus.esa.backend.esaEventEndpoint.model.ESATweet;
 import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
 import com.squareup.picasso.Picasso;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -63,6 +68,8 @@ public class TweetListAdapter extends ArrayAdapter<TweetObject> {
             viewHolder.userImage = (ImageView) convertView.findViewById(R.id.userImage);
             viewHolder.tweetUser = (TextView) convertView.findViewById(R.id.tweetUser);
             viewHolder.tweetText = (TextView) convertView.findViewById(R.id.tweetText);
+			viewHolder.tweetUrl = (TextView) convertView.findViewById(R.id.tweetUrl);
+			viewHolder.tweetUrl.setPaintFlags(viewHolder.tweetUrl.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
             viewHolder.tweetDate = (TextView) convertView.findViewById(R.id.tweetDate);
             convertView.setTag(viewHolder);
         } else {
@@ -79,10 +86,35 @@ public class TweetListAdapter extends ArrayAdapter<TweetObject> {
                 .tag(context)//
                 .into(viewHolder.userImage);
 
-        String user = (item.getUsername() + " · @" + item.getScreenName());
+		String user = ("@" +item.getScreenName() + " (" + item.getUsername() + ")");
+
+		SimpleDateFormat dateFormat;
+		long timestamp = item.getTimestamp().getValue();
+		if (DateUtils.isToday(timestamp)) {
+			dateFormat = new SimpleDateFormat("hh:mm a");
+		} else {
+			dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+		}
+
+		final String url = item.getUrl();
+
         viewHolder.tweetUser.setText(user);
         viewHolder.tweetText.setText(item.getText());
-        viewHolder.tweetDate.setText(new Date().toString()); // TODO: fix this one! item.getTimestamp().toString()
+		viewHolder.tweetDate.setText(dateFormat.format(timestamp));
+
+		if (!TextUtils.isEmpty(url)) {
+			viewHolder.tweetUrl.setVisibility(View.VISIBLE);
+			viewHolder.tweetUrl.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View arg0) {
+					Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+					context.startActivity(intent);
+				}
+			});
+		} else {
+			viewHolder.tweetUrl.setOnClickListener(null);
+			viewHolder.tweetUrl.setVisibility(View.INVISIBLE);
+		}
 
         return convertView;
     }
@@ -92,6 +124,7 @@ public class TweetListAdapter extends ArrayAdapter<TweetObject> {
         ImageView userImage;
         TextView tweetUser;
         TextView tweetText;
+		TextView tweetUrl;
         TextView tweetDate;
     }
 

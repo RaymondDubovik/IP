@@ -254,7 +254,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 						break;
 				}
 
-				return (collection == null) ? null : collection.getItems(); // TODO: change
+				return (collection == null) ? null : collection.getItems();
 			} catch (IOException e) {
 				setError(true);
 				e.printStackTrace();

@@ -19,8 +19,6 @@ import com.fergus.esa.SharedPreferencesKeys;
  * Date: 29/01/2016
  */
 public class SettingActivity extends ActionBarActivity {
-
-
 	private static final int STEP = 5;
 
 

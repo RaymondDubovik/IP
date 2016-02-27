@@ -28,9 +28,10 @@ public class TweetHelper {
         ResultSet results = null;
 
         String query =
-                "SELECT `username`, `screenName`, `profileImgUrl`, `imageUrl`, `text`, `timestamp`" +
+                "SELECT `username`, `screenName`, `profileImgUrl`, `imageUrl`, `text`, `timestamp`, `url`" +
                         " FROM `tweets`" +
-                        " WHERE `eventId` = ?";
+                        " WHERE `eventId` = ?" +
+						" ORDER BY `timestamp` DESC";
 
         try {
             statement = connection.prepareStatement(query);
@@ -45,7 +46,8 @@ public class TweetHelper {
                         .setProfileImgUrl(results.getString("profileImgUrl"))
                         .setImageUrl(results.getString("imageUrl"))
                         .setText(results.getString("text"))
-                        .setTimestamp(results.getDate("timestamp"))
+						.setTimestamp(results.getTimestamp("timestamp"))
+						.setUrl(results.getString("url"))
                         .setEventId(id)
 
                 );
@@ -57,7 +59,7 @@ public class TweetHelper {
             if (results != null) {
                 try {
                     results.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException sqlEx) {}
 
                 results = null;
             }
@@ -65,7 +67,7 @@ public class TweetHelper {
             if (statement != null) {
                 try {
                     statement.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 statement = null;
             }
@@ -75,15 +77,17 @@ public class TweetHelper {
     }
 
 
-	public boolean exists(long id) {
+	public boolean exists(String username, String text, int eventId) {
 		PreparedStatement statement = null;
 		ResultSet results = null;
 
-		String query = "SELECT EXISTS(SELECT 1 FROM `tweets` WHERE `id`=?) AS `exists`";
+		String query = "SELECT EXISTS(SELECT 1 FROM `tweets` WHERE `username`=? AND `text`=? AND `eventId`=?) AS `exists`";
 
 		try {
 			statement = connection.prepareStatement(query);
-			statement.setLong(1, id);
+			statement.setString(1, username);
+			statement.setString(2, text);
+			statement.setInt(3, eventId);
 			results = statement.executeQuery();
 
 			if (results.next()) {
@@ -95,7 +99,7 @@ public class TweetHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -103,7 +107,7 @@ public class TweetHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}
@@ -117,7 +121,7 @@ public class TweetHelper {
 		PreparedStatement statement = null;
 		ResultSet results = null;
 
-		String query = "INSERT INTO `tweets` (`username`, `screenName`, `profileImgUrl`, `imageUrl`, `text`, `timestamp`, `eventId`) VALUES (?, ?, ?, ?, ?, ?, ?);";
+		String query = "INSERT INTO `tweets` (`username`, `screenName`, `profileImgUrl`, `imageUrl`, `text`, `timestamp`, `url`, `eventId`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
 		try {
 			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
@@ -127,7 +131,8 @@ public class TweetHelper {
 			statement.setString(4, tweet.getImageUrl());
 			statement.setString(5, tweet.getText());
 			statement.setString(6, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(tweet.getTimestamp()));
-			statement.setInt(7, tweet.getEventId());
+			statement.setString(7, tweet.getUrl());
+			statement.setInt(8, tweet.getEventId());
 
 			statement.executeUpdate();
 			results = statement.getGeneratedKeys();
@@ -140,7 +145,7 @@ public class TweetHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -148,7 +153,7 @@ public class TweetHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}

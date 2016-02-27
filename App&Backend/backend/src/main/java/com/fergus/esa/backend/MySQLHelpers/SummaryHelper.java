@@ -27,10 +27,11 @@ public class SummaryHelper {
         ResultSet results = null;
 
         String query =
-                "SELECT `length`, `text`" +
+                "SELECT `length`, `text`, `timestamp`" +
                         " FROM `summaries`" +
                         " WHERE `eventId` = ?" +
-						" AND `length` = ?";
+						" AND `length` = ?" +
+						" ORDER BY `timestamp` DESC";
 
         try {
             statement = connection.prepareStatement(query);
@@ -43,6 +44,7 @@ public class SummaryHelper {
                         new SummaryObject()
                                 .setLength(results.getInt("length"))
                                 .setText(results.getString("text"))
+								.setTimestamp(results.getTimestamp("timestamp"))
                                 .setEventId(id)
 
                 );
@@ -54,7 +56,7 @@ public class SummaryHelper {
             if (results != null) {
                 try {
                     results.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 results = null;
             }
@@ -62,7 +64,7 @@ public class SummaryHelper {
             if (statement != null) {
                 try {
                     statement.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 statement = null;
             }
@@ -95,7 +97,7 @@ public class SummaryHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -103,7 +105,7 @@ public class SummaryHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}

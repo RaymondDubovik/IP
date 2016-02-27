@@ -1,50 +1,69 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="@drawable/card_view"
-    android:padding="6dp">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			  android:layout_width="match_parent"
+			  android:layout_height="wrap_content"
+			  android:background="@drawable/card_view"
+			  android:orientation="horizontal"
+			  android:padding="5dp">
 
-    <ImageView
-        android:id="@+id/userImage"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:layout_alignParentTop="true"
-        android:layout_marginRight="6dp"
-        android:src="@drawable/placeholder" />
+	<ImageView
+		android:id="@+id/userImage"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="true"
+		android:layout_marginRight="6dp"
+		android:src="@drawable/placeholder"/>
 
-    <TextView
-        android:id="@+id/tweetUser"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:layout_toRightOf="@id/userImage"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignWithParentIfMissing="true"
-        android:gravity="center_vertical" />
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tweetText"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/userImage"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="2dp"
-        android:layout_below="@id/tweetUser"
-        android:scrollHorizontally="false"
-        android:ellipsize="marquee"
-        android:autoLink="web"/>
+		<TextView
+			android:id="@+id/tweetUser"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true"
+			android:layout_alignParentTop="true"
+			android:layout_alignWithParentIfMissing="true"
+			android:layout_toRightOf="@id/userImage"
+			android:textColorLink="@color/blue"
+			android:gravity="center_vertical"
+			android:textStyle="bold"/>
 
-    <TextView
-        android:id="@+id/tweetDate"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/userImage"
-        android:layout_marginTop="2dp"
-        android:layout_alignWithParentIfMissing="true"
-        android:layout_below="@id/tweetText"
-        android:gravity="end"
-        android:layout_alignParentBottom="true" />
+		<TextView
+			android:id="@+id/tweetText"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true"
+			android:layout_below="@id/tweetUser"
+			android:layout_marginTop="2dp"
+			android:layout_toRightOf="@id/userImage"
+			android:autoLink="web"
+			android:ellipsize="marquee"
+			android:textColorLink="@color/blue"
+			android:scrollHorizontally="false"/>
 
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="2dp"
+			android:orientation="horizontal">
 
-</RelativeLayout>
+			<TextView
+				android:id="@+id/tweetUrl"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="@string/open_link"
+				android:textColor="@color/blue"
+				android:gravity="start"/>
+
+			<TextView
+				android:id="@+id/tweetDate"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:gravity="end"/>
+
+		</LinearLayout>
+	</LinearLayout>
+</LinearLayout>

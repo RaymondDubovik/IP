@@ -48,7 +48,8 @@ public class SchemaCreator {
             "`profileImgUrl` VARCHAR(400)," +
             "`imageUrl` VARCHAR(255)," +
             "`text` TEXT," +
-            "`timestamp` DATETIME" +
+            "`timestamp` DATETIME," +
+			"`url` VARCHAR(30)" +
         ")";
 
     private static final String queryUsers =

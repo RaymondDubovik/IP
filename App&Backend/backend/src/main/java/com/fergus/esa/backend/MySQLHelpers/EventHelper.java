@@ -49,7 +49,7 @@ public class EventHelper {
 				" JOIN `categories` AS `c` ON `c`.`id`=`ec`.`categoryId`" +
 				" WHERE `e`.`id` < ?" + categorySqlPart +
 				" GROUP BY `e`.`id`" +
-				" ORDER BY `e`.`id` DESC" +
+				" ORDER BY `e`.`timestamp` DESC" +
 				" LIMIT ?) AS `eventAlias`";
 
         try {
@@ -75,7 +75,7 @@ public class EventHelper {
             if (results != null) {
                 try {
                     results.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 results = null;
             }
@@ -83,7 +83,7 @@ public class EventHelper {
             if (statement != null) {
                 try {
                     statement.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 statement = null;
             }
@@ -107,7 +107,7 @@ public class EventHelper {
 						" JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
 						" JOIN `categories` AS `c` ON `c`.`id`=`ec`.`categoryId`" +
 						" WHERE `e`.`id` >= ? AND `e`.`id` < ?" + categorySqlPart +
-                        " ORDER BY `e`.`id` DESC";
+                        " ORDER BY `e`.`timestamp` DESC";
 
         try {
             statement = connection.prepareStatement(query);
@@ -125,7 +125,7 @@ public class EventHelper {
 			while (results.next()) {
 				events.add(new EventObject()
                         .setId(results.getInt("id"))
-                        .setTimestamp(results.getDate("timestamp"))
+						.setTimestamp(results.getTimestamp("timestamp"))
                         .setHeading(results.getString("heading"))
 						.setImageUrl(results.getString("mainImageUrl"))
                 );
@@ -138,7 +138,7 @@ public class EventHelper {
             if (results != null) {
                 try {
                     results.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 results = null;
             }
@@ -146,7 +146,7 @@ public class EventHelper {
             if (statement != null) {
                 try {
                     statement.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 statement = null;
             }
@@ -215,7 +215,7 @@ public class EventHelper {
 			while (results.next()) {
 				events.add(new EventObject()
 						.setId(results.getInt("id"))
-						.setTimestamp(results.getDate("timestamp"))
+						.setTimestamp(results.getTimestamp("timestamp"))
 						.setHeading(results.getString("heading"))
 						.setImageUrl(results.getString("mainImageUrl"))
 				);
@@ -230,7 +230,7 @@ public class EventHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -238,7 +238,7 @@ public class EventHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}
@@ -268,7 +268,7 @@ public class EventHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -276,7 +276,7 @@ public class EventHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}
@@ -321,7 +321,7 @@ public class EventHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -329,7 +329,7 @@ public class EventHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}
@@ -359,7 +359,7 @@ public class EventHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -367,7 +367,7 @@ public class EventHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}
@@ -401,7 +401,7 @@ public class EventHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}
@@ -428,7 +428,7 @@ public class EventHelper {
 			if (results.next()) {
 				return new EventObject()
 						.setId(results.getInt("id"))
-						.setTimestamp(results.getDate("timestamp"))
+						.setTimestamp(results.getTimestamp("timestamp"))
 						.setHeading(results.getString("heading"))
 						.setImageUrl(results.getString("mainImageUrl"));
 			}
@@ -438,7 +438,7 @@ public class EventHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -446,7 +446,7 @@ public class EventHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}

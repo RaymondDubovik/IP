@@ -6,4 +6,5 @@
     <string name="tweet_search_hint">Filter tweets…</string>
     <string name="search">Search</string>
     <string name="no_internet">Can\'t connect right now</string>
+	<string name="open_link">Open Link</string>
 </resources>

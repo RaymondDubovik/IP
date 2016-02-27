@@ -11,14 +11,8 @@ import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.R;
 import com.fergus.esa.adapters.SummaryListAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObject;
-import com.fergus.esa.dataObjects.ESASummary;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class SummaryFragment extends Fragment {
     @Override
@@ -26,37 +20,12 @@ public class SummaryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_summary, container, false);
 
         EventActivity activity = ((EventActivity) getActivity());
-
         List<SummaryObject> summaries = activity.getSummaries();
-
-        List<ESASummary> summaryObjects = getSummaryObjects(summaries);
-
-		if (summaryObjects != null) {
-			Collections.sort(summaryObjects);
-		}
 
         ListView listView = (ListView) view.findViewById(R.id.summaries);
 
-        listView.setAdapter(new SummaryListAdapter(getActivity(), summaryObjects));
+        listView.setAdapter(new SummaryListAdapter(getActivity(), summaries));
 
         return view;
-    }
-
-
-    public List<ESASummary> getSummaryObjects(List<SummaryObject> summaries) {
-        if (summaries == null) {
-            return null;
-        }
-
-		// TODO: use the formatter in proper place!
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.UK);
-        List<ESASummary> summaryObjects = new ArrayList<>();
-
-        for (SummaryObject summary : summaries) {
-            ESASummary sumObj = new ESASummary(summary.getText(), new Date()); // TODO: change date (also in DB design too) !!!!!!
-            summaryObjects.add(sumObj);
-        }
-
-        return summaryObjects;
     }
 }

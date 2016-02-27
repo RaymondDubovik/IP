@@ -30,7 +30,8 @@ public class NewsHelper {
         String query =
                 "SELECT `title`, `url`, `logoUrl`, `timestamp`" +
                         " FROM `news`" +
-                        " WHERE `eventId` = ?";
+                        " WHERE `eventId` = ?" +
+						" ORDER BY `timestamp` DESC";
 
         try {
             statement = connection.prepareStatement(query);
@@ -43,7 +44,7 @@ public class NewsHelper {
                                 .setTitle(results.getString("title"))
                                 .setUrl(results.getString("url"))
                                 .setLogoUrl(results.getString("logoUrl"))
-                                .setTimestamp(results.getDate("timestamp"))
+								.setTimestamp(results.getTimestamp("timestamp"))
                                 .setEventId(id)
                 );
             }
@@ -54,7 +55,7 @@ public class NewsHelper {
             if (results != null) {
                 try {
                     results.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 results = null;
             }
@@ -62,7 +63,7 @@ public class NewsHelper {
             if (statement != null) {
                 try {
                     statement.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 statement = null;
             }
@@ -92,7 +93,7 @@ public class NewsHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -100,7 +101,7 @@ public class NewsHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}
@@ -135,7 +136,7 @@ public class NewsHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -143,7 +144,7 @@ public class NewsHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}

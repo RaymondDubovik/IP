@@ -42,7 +42,7 @@ public class UserHelper {
             if (results != null) {
                 try {
                     results.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 results = null;
             }
@@ -50,7 +50,7 @@ public class UserHelper {
             if (statement != null) {
                 try {
                     statement.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 statement = null;
             }
@@ -83,7 +83,7 @@ public class UserHelper {
             if (results != null) {
                 try {
                     results.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 results = null;
             }
@@ -91,7 +91,7 @@ public class UserHelper {
             if (statement != null) {
                 try {
                     statement.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 statement = null;
             }
@@ -120,7 +120,7 @@ public class UserHelper {
             if (statement != null) {
                 try {
                     statement.close();
-                } catch (SQLException sqlEx) {} // ignore
+                } catch (SQLException ignore) {}
 
                 statement = null;
             }
@@ -156,7 +156,7 @@ public class UserHelper {
 			if (results != null) {
 				try {
 					results.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				results = null;
 			}
@@ -164,7 +164,7 @@ public class UserHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}
@@ -190,7 +190,7 @@ public class UserHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}
@@ -222,7 +222,7 @@ public class UserHelper {
 			if (statement != null) {
 				try {
 					statement.close();
-				} catch (SQLException sqlEx) {} // ignore
+				} catch (SQLException ignore) {}
 
 				statement = null;
 			}

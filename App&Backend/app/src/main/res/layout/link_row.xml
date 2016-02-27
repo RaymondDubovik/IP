@@ -11,18 +11,26 @@
         android:scrollHorizontally="false"
         android:ellipsize="marquee" />
 
-    <TextView
-        android:id="@+id/linkUrl"
-        android:autoLink="web"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:scrollHorizontally="false"
-        android:ellipsize="marquee"/>
-    <TextView
-        android:id="@+id/linkDate"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:scrollHorizontally="false"
-        android:ellipsize="marquee" />
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="2dp"
+		android:orientation="horizontal">
 
+		<TextView
+			android:id="@+id/linkUrl"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:text="@string/open_link"
+			android:textColor="@color/blue"
+			android:gravity="start"/>
+
+		<TextView
+			android:id="@+id/linkDate"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:gravity="end"/>
+
+	</LinearLayout>
 </LinearLayout>
