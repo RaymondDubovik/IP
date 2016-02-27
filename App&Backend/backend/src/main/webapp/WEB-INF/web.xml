@@ -14,22 +14,7 @@
         <servlet-name>SystemServiceServlet</servlet-name>
         <url-pattern>/_ah/spi/*</url-pattern>
     </servlet-mapping>
-    <servlet>
-        <servlet-name>ESA Tweet</servlet-name>
-        <servlet-class>com.fergus.esa.backend.ESATweetServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ESA Tweet</servlet-name>
-        <url-pattern>/esa_tweet</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>ESA News</servlet-name>
-        <servlet-class>com.fergus.esa.backend.ESANewsServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ESA News</servlet-name>
-        <url-pattern>/esa_news</url-pattern>
-    </servlet-mapping>
+
     <servlet>
         <servlet-name>ESA Event</servlet-name>
         <servlet-class>com.fergus.esa.backend.ESAEventServlet</servlet-class>
@@ -38,6 +23,7 @@
         <servlet-name>ESA Event</servlet-name>
         <url-pattern>/esa_event</url-pattern>
     </servlet-mapping>
+
     <servlet>
         <display-name>Remote API Servlet</display-name>
         <servlet-name>RemoteApiServlet</servlet-name>
