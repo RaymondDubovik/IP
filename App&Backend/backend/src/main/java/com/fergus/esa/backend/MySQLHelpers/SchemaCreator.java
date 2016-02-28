@@ -69,7 +69,8 @@ public class SchemaCreator {
         "CREATE TABLE IF NOT EXISTS `eventsUsers` (" +
             "`userId` INT REFERENCES `users`(`id`)," +
             "`eventId` INT REFERENCES `events`(`id`)," +
-            "`hits` INT DEFAULT 0," +
+            "`timestamp` DATETIME DEFAULT '1970-01-01 00:00:00'," +
+			"`hits` INT DEFAULT 0," +
             "`time` DOUBLE DEFAULT 0" +
         ")";
 

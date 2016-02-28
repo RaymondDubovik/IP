@@ -162,7 +162,9 @@ public class CategoryHelper {
 						" JOIN `events` AS `e` ON `e`.`id`=`eu`.`eventId`" +
 						" JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
 						" JOIN `categories` AS `c` ON `c`.`id` = `ec`.`categoryId`" +
-						" WHERE `u`.`id` = ?" + categorySqlPart +
+						" WHERE `u`.`id` = ?" +
+						"	AND `eu`.`timestamp` > DATE_SUB(NOW(), INTERVAL 2 WEEK) " + // we are interested only in user actions not older than 2 weeks
+						categorySqlPart +
 						" GROUP BY `c`.`id` " +
 						" ORDER BY `score` DESC";
 

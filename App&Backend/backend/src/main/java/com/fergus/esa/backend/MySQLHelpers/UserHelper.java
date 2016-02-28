@@ -175,7 +175,7 @@ public class UserHelper {
 	private boolean createHit(int userId, int eventId, double milliseconds) {
 		PreparedStatement statement = null;
 
-		String query = "INSERT INTO `eventsUsers`(`userId`, `eventId`, `hits`, `time`) VALUES (?, ?, 1, ?)";
+		String query = "INSERT INTO `eventsUsers`(`userId`, `eventId`, `timestamp`, `hits`, `time`) VALUES (?, ?, NOW(), 1, ?)";
 
 		try {
 			statement = connection.prepareStatement(query);
@@ -206,7 +206,8 @@ public class UserHelper {
 		String query =
 				"UPDATE `eventsUsers`" +
 						" SET `hits` = `hits` + 1," +
-						" `time` = `time` + ?" +
+						" `time` = `time` + ?," +
+						" `timestamp`=NOW()" +
 						" WHERE `userId` = ?" +
 						" AND `eventId` = ?" ;
 

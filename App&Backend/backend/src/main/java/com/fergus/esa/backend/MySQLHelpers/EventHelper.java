@@ -185,6 +185,7 @@ public class EventHelper {
 				"		JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
 				"		JOIN `categories` AS `c` ON `c`.`id` = `ec`.`categoryId`" +
 				"		WHERE `u`.`id` = ?" +
+				"			AND `eu`.`timestamp` > DATE_SUB(NOW(), INTERVAL 2 WEEK)" + // we are interested only in user actions not older than 2 weeks
 				"		GROUP BY `c`.`id` " +
 				"		ORDER BY `score` DESC) AS `categoryScores` ON `categoryScores`.`categoryId` = `c`.`id`" +
 				" WHERE `e`.`timestamp` > DATE_SUB(NOW(), INTERVAL 1 WEEK) " + // we are interested only in events not older than a week
