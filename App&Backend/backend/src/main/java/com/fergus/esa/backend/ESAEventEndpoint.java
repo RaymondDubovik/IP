@@ -100,8 +100,6 @@ public class ESAEventEndpoint {
 			}
 		}
 
-		// List<CategoryRatingObject> categoryRatings = new CategoryHelper(connection).getUserCategoryRating(userId, categoryIds);
-
 		Connection connection = (new MySQLJDBC()).getConnection();
 		List<EventObject> recommendedEvents = new EventHelper(connection).getRecommendedEvents(userId, categoryIds);
 		closeConnection(connection);

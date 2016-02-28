@@ -8,62 +8,34 @@ import twitter4j.JSONObject;
  * Date: 20.01.2016
  */
 public class GcmObject {
-    /**
-     * Holds parameter key name
-     */
+    /** Holds parameter key name */
     private static final String PARAM_DATA = "data";
-    /**
-     * Holds parameter key name
-     */
+    /** Holds parameter key name */
     private static final String PARAM_RECIPIENT = "to";
-    /**
-     * Holds parameter key name
-     */
+    /** Holds parameter key name */
     private static final String PARAM_TEST = "dry_run";
-    /**
-     * Holds parameter key name
-     */
+    /** Holds parameter key name */
     private static final String PARAM_NOTIFICATION = "notification";
-    /**
-     * Holds parameter key name
-     */
+    /** Holds parameter key name */
     private static final String PARAM_MESSAGE = "body";
-    /**
-     * Holds parameter key name
-     */
+    /** Holds parameter key name */
     private static final String PARAM_SOUND = "sound";
-    /**
-     * Holds parameter key name
-     */
-    private static final String PARAM_TITLE = "push_title";
-    /**
-     * Holds parameter key name
-     */
+    /** Holds parameter key name */
+    private static final String PARAM_TITLE = "title";
+    /** Holds parameter key name */
     private static final String PARAM_CONTENT_AVAILABLE = "content_available";
 
-    /**
-     * Holds recipient push notification token ID
-     */
+    /** Holds recipient push notification token ID */
     private String recipient = "";
-    /**
-     * Holds message to be sent with the push notification
-     */
+    /** Holds message to be sent with the push notification */
     private String message = "";
-    /**
-     * Holds the name of the sound that will be played once notification is received
-     */
+    /** Holds the name of the sound that will be played once notification is received */
     private String sound = "default";
-    /**
-     * True if no notification will be delivered, false otherwise
-     */
+    /** True if no notification will be delivered, false otherwise */
     private boolean isTest = false;
-    /**
-     * Title of the push notification
-     */
+    /** Title of the push notification */
     private String title = "";
-    /**
-     * Additional data for the push notification
-     */
+    /** Additional data for the push notification */
     private String data = "";
 
 
@@ -104,6 +76,7 @@ public class GcmObject {
             // Prepare JSON containing the GCM message content. What to send and where to send.
             JSONObject json = new JSONObject();
             json.put("message", message.trim());
+			json.put("title", title.trim());
             json.put(PARAM_CONTENT_AVAILABLE, true);
             json.put(PARAM_RECIPIENT, recipient);
 
@@ -123,8 +96,9 @@ public class GcmObject {
                 data.put(PARAM_DATA, this.data);
             }
 
+			data.put("click_action", "OPEN_EVENT_ACTIVITY_FROM_PUSH");
             json.put(PARAM_NOTIFICATION, data);
-
+			System.out.println(json.toString());
             return json.toString();
         } catch (JSONException e) {
             e.printStackTrace();

@@ -1,7 +1,9 @@
 package com.fergus.esa.backend.MySQLHelpers;
 
 import com.fergus.esa.backend.dataObjects.CategoryObject;
-import com.fergus.esa.backend.dataObjects.CategoryRatingObject;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -137,61 +139,39 @@ public class CategoryHelper {
 	}
 
 
-	// TODO: use this method for each user to get their category ratings.
-	public List<CategoryRatingObject> getUserCategoryRating(int userId, List<Integer> categories) {
+	public Multimap<CategoryObject, String> getBestCategoriesForEachUser() {
+		ListMultimap<CategoryObject, String> multimap = ArrayListMultimap.create();
+
 		PreparedStatement statement = null;
 		ResultSet results = null;
 
-		String categorySqlPart = "";
-		if (categories != null && categories.size() > 0) {
-			StringBuilder builder = new StringBuilder(" AND `c`.`id` IN (");
-
-			String prefix = "";
-			for (int categoryId : categories) {
-				builder.append(prefix).append('?');
-				prefix = ",";
-			}
-			builder.append(") ");
-			categorySqlPart = builder.toString();
-		}
-
 		String query =
-				"SELECT `c`.`id`, SUM(`eu`.`hits` * 12000 + `eu`.`time`) AS `score`" +
-						" FROM `users` AS `u`" +
-						" JOIN `eventsUsers` AS `eu` ON `eu`.`userId` = `u`.`id`" +
-						" JOIN `events` AS `e` ON `e`.`id`=`eu`.`eventId`" +
-						" JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
-						" JOIN `categories` AS `c` ON `c`.`id` = `ec`.`categoryId`" +
-						" WHERE `u`.`id` = ?" +
-						"	AND `eu`.`timestamp` > DATE_SUB(NOW(), INTERVAL 2 WEEK) " + // we are interested only in user actions not older than 2 weeks
-						categorySqlPart +
-						" GROUP BY `c`.`id` " +
-						" ORDER BY `score` DESC";
+				"SELECT `sub`.`gcmToken`, `sub`.`categoryId`, `sub`.`categoryName`, MAX(`sub`.`score`)" +
+				" FROM" +
+				"	(SELECT `u`.`gcmToken` AS `gcmToken`, `c`.`id` AS `categoryId`, `c`.`name` AS `categoryName`, SUM(`eu`.`hits` * 12000 + `eu`.`time`) AS `score`" +
+				" 	FROM `users` AS `u`" +
+				"	JOIN `eventsUsers` AS `eu` ON `eu`.`userId` = `u`.`id`" +
+				" 	JOIN `events` AS `e` ON `e`.`id`=`eu`.`eventId`" +
+				" 	JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
+				"	JOIN `categories` AS `c` ON `c`.`id` = `ec`.`categoryId`" +
+				"	WHERE `eu`.`timestamp` > DATE_SUB(NOW(), INTERVAL 2 WEEK) " + // we are interested only in user actions not older than 2 weeks
+				" 	GROUP BY `c`.`id`, `u`.`id`" +
+				"	ORDER BY `score` DESC) AS `sub`" +
+				" GROUP BY `sub`.`gcmToken`";
 
 		try {
 			statement = connection.prepareStatement(query);
-
-			int param = 1;
-			statement.setInt(param++, userId);
-			if (categories != null) {
-				for (int categoryId : categories) {
-					statement.setInt(param++, categoryId);
-				}
-			}
-
-			List<CategoryRatingObject> categoryRatings = new ArrayList<>();
 			results = statement.executeQuery();
 			while (results.next()) {
-				categoryRatings.add(
-						new CategoryRatingObject()
-								.setCategoryId(results.getInt("id"))
-								.setScore(results.getInt("score"))
-				);
+				/** http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/collect/Multimap.html **/
+				CategoryObject categoryObject = new CategoryObject()
+						.setId(results.getInt("categoryId"))
+						.setName(results.getString("categoryName"));
 
-				System.out.println(results.getInt("id") + " " + results.getInt("score"));
+				multimap.put(categoryObject, results.getString("gcmToken"));
 			}
 
-			return categoryRatings;
+			return multimap;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {

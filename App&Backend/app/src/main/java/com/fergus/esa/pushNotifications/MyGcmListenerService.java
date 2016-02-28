@@ -20,14 +20,15 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
+import com.fergus.esa.R;
 import com.fergus.esa.SharedPreferencesKeys;
 import com.fergus.esa.activities.EventActivity;
-import com.fergus.esa.R;
 import com.google.android.gms.gcm.GcmListenerService;
 
 import org.json.JSONException;
@@ -37,7 +38,7 @@ import org.json.JSONObject;
 public class MyGcmListenerService extends GcmListenerService {
     public static final String DEFAULT_TITLE = "ESA";
 
-    public static final String BUNDLE_TITLE_KEY = "push_title";
+    public static final String BUNDLE_TITLE_KEY = "title";
     public static final String BUNDLE_MESSAGE_KEY = "body";
     public static final String BUNDLE_SOUND_KEY = "sound";
     public static final String BUNDLE_DATA = "data";
@@ -61,9 +62,10 @@ public class MyGcmListenerService extends GcmListenerService {
 
         data = data.getBundle(BUNDLE_NOTIFICATION);
 
-        if (data == null) {
+		if (data == null) {
             return;
         }
+
 
         String title = data.getString(BUNDLE_TITLE_KEY, DEFAULT_TITLE);
         String message = data.getString(BUNDLE_MESSAGE_KEY);
@@ -100,7 +102,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_stat_small)
-                // .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_stat_small))
                 .setContentTitle(title)
                 .setContentText(message)
                 .setAutoCancel(true)

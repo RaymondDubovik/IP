@@ -20,7 +20,7 @@ public class SchemaCreator {
     private static final String queryEvents =
         "CREATE TABLE IF NOT EXISTS `events` (" +
             "`id` INT PRIMARY KEY AUTO_INCREMENT," +
-            "`timestamp` DATETIME, " +
+            "`timestamp` DATETIME DEFAULT '1970-01-01 00:00:00'," +
             "`heading` VARCHAR(255)," +
 			"`mainImageUrl` VARCHAR(400)" +
         ")";
@@ -37,7 +37,7 @@ public class SchemaCreator {
             "`title` VARCHAR(255)," +
             "`url` VARCHAR(400)," +
             "`logoUrl` VARCHAR(400)," +
-            "`timestamp` DATETIME" +
+            "`timestamp` DATETIME DEFAULT '1970-01-01 00:00:00'" +
         ")";
 
     private static final String queryTweets =
@@ -48,7 +48,7 @@ public class SchemaCreator {
             "`profileImgUrl` VARCHAR(400)," +
             "`imageUrl` VARCHAR(255)," +
             "`text` TEXT," +
-            "`timestamp` DATETIME," +
+            "`timestamp` DEFAULT '1970-01-01 00:00:00'," +
 			"`url` VARCHAR(30)" +
         ")";
 
@@ -62,7 +62,7 @@ public class SchemaCreator {
         "CREATE TABLE IF NOT EXISTS `summaries` (" +
                 "`length` INT," +
                 "`text` TEXT," +
-				"`timestamp` DATETIME" +
+				"`timestamp` DEFAULT '1970-01-01 00:00:00'" +
             ")";
 
     private static final String queryEventsUsers =

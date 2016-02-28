@@ -12,10 +12,12 @@ import com.fergus.esa.backend.categorizer.ESACategoryPicker;
 import com.fergus.esa.backend.categorizer.ScoredCategory;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
+import com.fergus.esa.backend.dataObjects.GcmObject;
 import com.fergus.esa.backend.dataObjects.NewsObject;
 import com.fergus.esa.backend.dataObjects.SummaryObject;
 import com.fergus.esa.backend.dataObjects.TweetObject;
 import com.google.api.server.spi.response.ConflictException;
+import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -38,6 +40,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,8 +70,9 @@ import twitter4j.conf.ConfigurationBuilder;
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
 	private static final String SUMMARISATION_SERVER_URL = "http://127.0.0.1:10000/test";
-
 	private static final Pattern TWEET_URL_PATTERN = Pattern.compile("https://t.co/[a-zA-z0-9\\-]*");
+	/** to the existing events push is issues only if the event was inactive for this time period */
+	private static final long PUSH_TIMESTAMP_SECONDS = 1 * 24 * 60 * 60; // 1 day
 
 	private Connection connection;
 
@@ -133,7 +137,6 @@ public class ESAEventServlet extends HttpServlet {
 		CategoryHelper categoryHelper = new CategoryHelper(connection);
 		SummaryHelper summaryHelper = new SummaryHelper(connection);
 		ImageHelper imageHelper = new ImageHelper(connection);
-
 		List<CategoryObject> allCategoriesList =  categoryHelper.getCategories();
 
 		Map<String, Integer> allCategories = new HashMap<>();
@@ -143,7 +146,7 @@ public class ESAEventServlet extends HttpServlet {
 
 		for (String heading : eventHeading) {
 			String mainImageUrl = null;
-			boolean newEvent = false;
+			boolean pushRequired = false;
 			heading = removeSuffix(removeAccents(heading));
 			System.out.println("----------" + heading + "----------");
 
@@ -153,11 +156,16 @@ public class ESAEventServlet extends HttpServlet {
 
 			if (eventId == 0) {
 				eventId = eventHelper.create(event.setImageUrl(""));
-				newEvent = true;
+				pushRequired = true;
 			} else {
 				categoryHelper.deleteCagetogies(eventId);
 				event = eventHelper.get(eventId);
 				mainImageUrl = event.getImageUrl();
+
+				long ago = System.currentTimeMillis() - PUSH_TIMESTAMP_SECONDS;
+				if (event.getTimestamp().getTime() < ago) {
+					pushRequired = true;
+				}
 			}
 			System.out.println("eventId: " + eventId);
 
@@ -176,6 +184,7 @@ public class ESAEventServlet extends HttpServlet {
 				}
 			}
 
+			String pushNotificationSummary = null;
 			CategoryPicker categoryPicker = new ESACategoryPicker();
 			List<NewsObject> news = new NewsModel().addNews(heading, eventId);
 			List<ResponseJsonObject> responses = summarise(news);
@@ -184,6 +193,10 @@ public class ESAEventServlet extends HttpServlet {
 				if (summaries != null) {
 					for (SummaryObject summary : summaries) {
 						summaryHelper.create(summary, eventId);
+						if (summary.getLength() == 75 && summary.getLength() != 0) { // TODO: remove hardcode
+							int length = summary.getLength() < 140 ? summary.getLength() - 1 : 140; // TODO: remove hardcode
+							pushNotificationSummary = summary.getText().substring(0, length - 1);
+						}
 					}
 				}
 
@@ -209,14 +222,21 @@ public class ESAEventServlet extends HttpServlet {
 
 			eventHelper.update(event);
 
-			if (newEvent) {
-				// TODO: send a push notification to the relevant recipients
-				// categoryPicker.getBestMatch();
-
-				/*
-				GcmObject gcmObject = new GcmObject(gcmToken, "SomeTextHere", "SomeTitleHere").setData("{\"id\":5}"); // TODO: change
-				new GcmSender().sendNotification(gcmObject.toJson());
-				*/
+			// if it is new event and there is summary that can be displayed in the push notification
+			if (pushRequired && pushNotificationSummary != null) {
+				String bestCategory = categoryPicker.getBestMatch();
+				Multimap<CategoryObject, String> categoriesUsers = categoryHelper.getBestCategoriesForEachUser();
+				if (categoriesUsers != null) {
+					for (CategoryObject currentCategory : categoriesUsers.keySet()) {
+						if (bestCategory.equalsIgnoreCase(currentCategory.getName())) { // if current category is the best category
+							Collection<String> gcmTokens = categoriesUsers.get(currentCategory);
+							for (String gcmToken : gcmTokens) {
+								GcmObject gcmObject = new GcmObject(gcmToken, event.getHeading(), pushNotificationSummary).setData("{\"id\":" + event.getId() + "}"); // TODO: do not hardcode json, encode it
+								new GcmSender().sendNotification(gcmObject.toJson());
+							}
+						}
+					}
+				}
 			}
 		}
 	}

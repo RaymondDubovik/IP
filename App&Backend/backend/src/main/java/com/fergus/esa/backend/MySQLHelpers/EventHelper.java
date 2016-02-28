@@ -298,7 +298,7 @@ public class EventHelper {
 
 			String time;
 			if (event.getTimestamp() == null) {
-				time = "0000-00-00 00:00:00";
+				time = "1970-01-01 00:00:00";
 			} else {
 				time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(event.getTimestamp());
 			}

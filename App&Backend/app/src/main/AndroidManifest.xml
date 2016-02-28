@@ -44,6 +44,10 @@
             android:name=".activities.EventActivity"
             android:exported="true"
             android:screenOrientation="portrait">
+			<intent-filter>
+				<action android:name="OPEN_EVENT_ACTIVITY_FROM_PUSH" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
         </activity>
         <activity
             android:name=".activities.SearchResultsActivity"
