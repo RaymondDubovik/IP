@@ -7,24 +7,14 @@ import java.util.List;
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 15.02.2016
- *
- * Here you can change parameters of the categorizer
- * To add more training data to the categorizer, simply add links to the news articles in correct categories
- * To add more tests, simply add links to the news articles in correct categories
- *
- * If you wish to add more categories, simply create a new file within FILENAME_TRAINING_DIRECTORY with the name of the category
- * And place links to the articles in there
- * Do the same for the tests
  */
 public class NewsCategorizer {
-    private static final String PATH_ROOT = "/home/svchost/Desktop/shared/categorizer/";
-
     /** Directory, which will be used for training */
-    private static final String FILENAME_TRAINING_DIRECTORY = PATH_ROOT + "links";
+    private static final String FILENAME_TRAINING_DIRECTORY = "trainingLinks";
     /** Directory, which will be used for testing */
-    private static final String FILENAME_TEST_DIRECTORY = PATH_ROOT + "testLinks";
+    private static final String FILENAME_TEST_DIRECTORY = "testingLinks";
     /** Name of the file, where the classifier will be serialized to for reuse (we don't want to train it on every request to categorize an article */
-    public static final String FILENAME_SERIALIZABLE = PATH_ROOT + "classifier.ser";
+    public static final String FILENAME_SERIALIZABLE = "classifier.ser";
     private static int DEFAULT_NGRM_SIZE = 12; // 12 produces a good result of 18/22 correct guesses
 
     private Categorizer categorizer;

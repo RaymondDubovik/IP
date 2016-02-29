@@ -4,34 +4,61 @@ import com.google.gson.Gson;
 import de.jetwick.snacktory.HtmlFetcher;
 import de.jetwick.snacktory.JResult;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
- * Created by svchost on 08/02/16.
- * <p/>
- * First run Install.PL in MEAD directory
- *
- * /mead/bin/addons/formatting/*.pm files need to be added to the perl path (read /mead/bin/addons/formatting/Readme)
- * the above didn't work for me, so I added them manually to the perl directory ( /usr/lib/perl/_perl_version_here )
- *
- * next, give full permissions to the data folder for the user that tomcat and perl are running on (your user)
+ * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
+ * Date: 08/02/16
  */
 @WebServlet(name = "Servlet")
 public class Servlet extends HttpServlet {
-    /** Path to categorisation */
-    private static final String CATEGORIZATION_LOCATION = "/home/svchost/Desktop/shared/categorizer/categorizer.jar";
-    /** Path to MEAD */
-    private static final String MEAD_LOCATION = "/home/svchost/Desktop/mead/";
-    public static final int ARTICLE_RESOLVE_TIMEOUT = 1000;
-    public static final int RETRY_COUNT = 2;
+    public static final String PROPERTIES_LOCATION = "config.properties";
+    private static final String CATEGORIZER_LAUNCH_STRING = "uk.ac.gla.student.raymond2039897d.Categorize -c";
+
+    private static String CATEGORIZATION_LOCATION;
+    private static String CATEGORIZER_FILENAME;
+    private static String MEAD_LOCATION;
+    private static String MEAD_DATA_LOCATION;
+    private static int ARTICLE_RESOLVE_TIMEOUT;
+    private static int RETRY_COUNT;
+
+
+    private static boolean configRead = false;
+
+
+    private static void readConfigs(ServletContext servletContext) {
+        if (configRead) { // if config is already read, skip
+            return;
+        }
+
+        Properties properties = new Properties();
+        try {
+            properties.load(servletContext.getResourceAsStream(PROPERTIES_LOCATION));
+            CATEGORIZATION_LOCATION = properties.getProperty("categorizationRoot");
+            CATEGORIZER_FILENAME = properties.getProperty("categorizerFilename");
+            MEAD_LOCATION = properties.getProperty("mead");
+            MEAD_DATA_LOCATION = properties.getProperty("dataFolder");
+            ARTICLE_RESOLVE_TIMEOUT = Integer.parseInt(properties.getProperty("articleResolveTimeout"));
+            RETRY_COUNT = Integer.parseInt(properties.getProperty("retryCount"));
+            configRead = true;
+
+            System.out.println(MEAD_LOCATION);
+            System.out.println(MEAD_DATA_LOCATION);
+        } catch (IOException e) {
+            System.err.println("Could not read property file!");
+            System.exit(-1);
+        } catch (NumberFormatException e) {
+            System.err.println("Could not parse integer in the property file!");
+            System.exit(-1);
+        }
+    }
 
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -44,11 +71,11 @@ public class Servlet extends HttpServlet {
     }
 
 
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        readConfigs(getServletContext());
+
         String url = request.getParameter("url");
         boolean summarize = new Boolean(request.getParameter("summarize"));
-
-        System.out.println("summarize: " + summarize);
 
         response.setContentType("application/json");
 
@@ -56,10 +83,10 @@ public class Servlet extends HttpServlet {
 
         for (int retryCount = 0; retryCount < RETRY_COUNT; retryCount++) {
             try {
-                out.println(summarise(url, summarize));
-                return; // if we were able to summarise, then exit here
-            } catch (Exception e) { // if we were not able to summarise, then output exception and try again, if retryCount < RETRY_COUNT
-                System.out.println("Could not summarise: " + e.getMessage());
+                out.println(summarize(url, summarize));
+                return; // if we were able to summarize, then exit here
+            } catch (Exception e) { // if we were not able to summarize, then output exception and try again, if retryCount < RETRY_COUNT
+                System.out.println("Could not summarize: " + e.getMessage());
                 // e.printStackTrace();
             }
         }
@@ -68,8 +95,8 @@ public class Servlet extends HttpServlet {
     }
 
 
-    public String summarise(String url, boolean summarize) throws Exception {
-        String article;
+    public String summarize(String url, boolean summarize) throws Exception {
+        String article = "";
         try {
             article = getArticle(url);
         } catch (Exception e) {
@@ -83,7 +110,7 @@ public class Servlet extends HttpServlet {
         List<SummaryObject> summaries;
         if (summarize) {
             String folderName = UUID.randomUUID().toString();
-            final String folderAbsolutePath = MEAD_LOCATION + "data/" + folderName;
+            final String folderAbsolutePath = MEAD_DATA_LOCATION + folderName;
 
             initFiles(article, folderName, folderAbsolutePath);
 
@@ -91,7 +118,7 @@ public class Servlet extends HttpServlet {
 
             summaries = summarize(folderAbsolutePath);
 
-            execute("rm -r " + MEAD_LOCATION + "data/" + folderName);
+            execute("rm -r " + MEAD_DATA_LOCATION + folderName);
         } else {
             summaries = null;
         }
@@ -103,7 +130,7 @@ public class Servlet extends HttpServlet {
 
     private List<SummaryObject> summarize(String folderAbsolutePath) throws IOException {
         List<SummaryObject> summaries = new ArrayList<>();
-        for (int length = 75; length <= 135; length += 15) {
+        for (int length = 75; length <= 135; length += 15) { // T0D0: remove hardcode
             String summary = "";
             Process meadSummarise = Runtime.getRuntime().exec("perl " + MEAD_LOCATION + "bin/mead.pl -w -a " + length + " " + folderAbsolutePath);
 
@@ -158,8 +185,10 @@ public class Servlet extends HttpServlet {
     private String getCategory(String article) throws IOException {
         String categoriesJson = "";
 
-        String command = "java -cp " + CATEGORIZATION_LOCATION + " uk.ac.gla.student.raymond2039897d.Categorize -c \"" + article + "\"";
-        Process categorize = Runtime.getRuntime().exec(command);
+        String command = "java -cp " + CATEGORIZER_FILENAME + " " + CATEGORIZER_LAUNCH_STRING + " \"" + article + "\"";
+
+        System.out.println(command);
+        Process categorize = Runtime.getRuntime().exec(command, null, new File(CATEGORIZATION_LOCATION));
 
         BufferedReader in = new BufferedReader(new InputStreamReader(categorize.getInputStream()));
         String line;
@@ -170,7 +199,7 @@ public class Servlet extends HttpServlet {
             }
         }
 
-        System.out.println(categoriesJson);
+        System.out.println("categories:" + categoriesJson);
         return categoriesJson;
     }
 
@@ -180,7 +209,6 @@ public class Servlet extends HttpServlet {
         String[] commands = new String[]{"/bin/bash", "-c", command};
         try {
             Process proc = Runtime.getRuntime().exec(commands);
-            //Process proc = new ProcessBuilder(commands).start();
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
             BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
@@ -220,7 +248,7 @@ public class Servlet extends HttpServlet {
         }
     }
 
-    
+
     private class SummaryObject {
         private int length;
         private String text;

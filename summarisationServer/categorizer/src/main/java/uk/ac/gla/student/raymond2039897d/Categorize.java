@@ -5,6 +5,11 @@ import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
+
+/**
+ * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
+ * Date: 08/02/16
+ */
 public class Categorize {
     private static final String SWITCH_TRAIN = "-t";
     private static final String SWITCH_EVALUATE = "-e";
