@@ -193,8 +193,8 @@ public class ESAEventServlet extends HttpServlet {
 				if (summaries != null) {
 					for (SummaryObject summary : summaries) {
 						summaryHelper.create(summary, eventId);
-						if (summary.getLength() == 75 && summary.getLength() != 0) { // TODO: remove hardcode
-							int length = summary.getLength() < 140 ? summary.getLength() - 1 : 140; // TODO: remove hardcode
+						if (summary.getLength() == 75 && summary.getLength() != 0) { // T0D0 remove hardcode
+							int length = summary.getLength() < 140 ? summary.getLength() - 1 : 140; // T0D0 remove hardcode
 							pushNotificationSummary = summary.getText().substring(0, length - 1);
 						}
 					}
@@ -362,25 +362,6 @@ public class ESAEventServlet extends HttpServlet {
     }
 
 
-
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	private class NewsModel {
 		public List<NewsObject> addNews(String event, int eventId) throws IOException, FeedException {
 			List<NewsObject> news = new ArrayList<>();
@@ -392,10 +373,6 @@ public class ESAEventServlet extends HttpServlet {
 			List<SyndEntry> entryList = feed.getEntries();
 
 			if (entryList.size() > 0) {
-				// TODO:
-				// TODO:
-				// TODO:
-				// TODO:
 				for (int i = 0; i < entryList.size(); i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
 					SyndEntry entry = entryList.get(i);
 					String entryUrl = entry.getUri().substring(33); // TODO: where 33 comes from?

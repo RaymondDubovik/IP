@@ -139,11 +139,10 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 
-
     private void initToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Events"); // TODO: remove hardcode
+        getSupportActionBar().setTitle("Events"); // T0D0 remove hardcode
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
@@ -161,7 +160,7 @@ public class MainActivity extends ActionBarActivity {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
 
-            Intent searchIntent = new Intent(MainActivity.this, SearchResultsActivity.class);
+            Intent searchIntent = new Intent(this, SearchResultsActivity.class);
             searchIntent.putExtra(SearchResultsActivity.BUNDLE_PARAM_QUERY, query);
             startActivity(searchIntent);
         }

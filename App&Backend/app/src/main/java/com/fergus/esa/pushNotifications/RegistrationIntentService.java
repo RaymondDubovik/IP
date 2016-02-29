@@ -70,7 +70,7 @@ public class RegistrationIntentService extends IntentService {
                     } else {
                         try {
                             ServerUrls.endpoint.updateGcmToken(userId, token).execute();
-                            // TODO: verify, that the server updated the token
+                            // T0D0: verify, that the server updated the token
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

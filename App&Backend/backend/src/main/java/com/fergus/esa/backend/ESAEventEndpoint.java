@@ -48,9 +48,8 @@ public class ESAEventEndpoint {
         // TODO: check, if user with given ID exists
 		Connection connection = (new MySQLJDBC()).getConnection();
         new UserHelper(connection).updateToken(userId, gcmToken);
-        // TODO: return true or false in a wrapper....
-
 		closeConnection(connection);
+		// TODO: return true on success or false on failure
     }
 
 
@@ -61,7 +60,7 @@ public class ESAEventEndpoint {
 
 		if (categoryIds != null) {
 			for (int categoryId : categoryIds) {
-				if (categoryId == -1) { // TODO: REMOVE HARDCODE HERE -1 is all categories
+				if (categoryId == -1) { // T0D0 remove hardcode -1 is all categories
 					categoryIds = null;
 					break;
 				}
@@ -83,7 +82,7 @@ public class ESAEventEndpoint {
 
 		if (categoryIds != null) {
 			for (int categoryId : categoryIds) {
-				if (categoryId == -1) { // TODO: remove hardcode. -1 means All Categories
+				if (categoryId == -1) { // T0D0 remove hardcode. -1 means All Categories
 					return null;
 				}
 			}

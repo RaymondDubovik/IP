@@ -271,7 +271,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 					connectionErrorView.quickHide();
 				}
 
-				connectionErrorView.show("Could not get data"); // TODO: remove hardcode
+				connectionErrorView.show("Could not get data"); // T0D0 remove hardcode
 
 				loadRequired = true;
 				return;
@@ -385,7 +385,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 					connectionErrorView.quickHide();
 				}
 
-				connectionErrorView.show("Could not get data"); // TODO: remove hardcode
+				connectionErrorView.show("Could not get data"); // T0D0 remove hardcode
 
 				loadRequired = true;
 				return;

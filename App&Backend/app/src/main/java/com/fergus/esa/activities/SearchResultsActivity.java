@@ -2,12 +2,17 @@ package com.fergus.esa.activities;
 
 
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -15,6 +20,7 @@ import android.widget.TextView;
 
 import com.fergus.esa.R;
 import com.fergus.esa.ServerUrls;
+import com.fergus.esa.SharedPreferencesKeys;
 import com.fergus.esa.adapters.GridViewAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
 
@@ -48,7 +54,48 @@ public class SearchResultsActivity extends ActionBarActivity {
 
         EventSearchAsyncTask eventSearchTask = new EventSearchAsyncTask(this, query);
         eventSearchTask.execute();
+		handleIntent(getIntent());
     }
+
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.toolbar, menu);
+
+		// http://stackoverflow.com/questions/27378981/how-to-use-searchview-in-toolbar-android
+		MenuItem searchItem = menu.findItem(R.id.action_search);
+		SearchView searchView = (searchItem != null) ? (SearchView) searchItem.getActionView() : null;
+		if (searchView != null) {
+			SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+			searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+		}
+
+		return super.onCreateOptionsMenu(menu);
+	}
+
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.action_settings:
+				Intent intent = new Intent(this, SettingActivity.class);
+				startActivity(intent);
+				return true;
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
+
+
+	private void handleIntent(Intent intent) {
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+			String query = intent.getStringExtra(SearchManager.QUERY);
+
+			Intent searchIntent = new Intent(this, SearchResultsActivity.class);
+			searchIntent.putExtra(SearchResultsActivity.BUNDLE_PARAM_QUERY, query);
+			startActivity(searchIntent);
+		}
+	}
 
 
     @Override
@@ -83,8 +130,8 @@ public class SearchResultsActivity extends ActionBarActivity {
         @Override
         protected List<EventObject> doInBackground(Void... params) {
             try {
-				// TODO: get real value here
-                return ServerUrls.endpoint.listSearchedEvents(query, 75).execute().getItems();
+				int summaryLength = PreferenceManager.getDefaultSharedPreferences(context).getInt(SharedPreferencesKeys.SUMMARY_LENGTH, 75); // T0D0 remove hardcode
+                return ServerUrls.endpoint.listSearchedEvents(query, summaryLength).execute().getItems();
             } catch (IOException e) {
                 return Collections.EMPTY_LIST;
             }
@@ -118,23 +165,6 @@ public class SearchResultsActivity extends ActionBarActivity {
 						startActivity(intent);
 					}
 				});
-
-
-				/*gv.setAdapter(new SearchGridViewAdapter(SearchResultsActivity.this, context, events, query));
-                gv.setOnScrollListener(new ScrollListener(context));
-                gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        // TODO: put correct data int the intent
-						String heading = events.get(position).getHeading();
-                        Intent intent = new Intent(SearchResultsActivity.this, EventActivity.class);
-                        Bundle extras = new Bundle();
-
-                        intent.putExtras(extras);
-                        startActivity(intent);
-                    }
-                });
-                */
             }
 
             pd.hide();

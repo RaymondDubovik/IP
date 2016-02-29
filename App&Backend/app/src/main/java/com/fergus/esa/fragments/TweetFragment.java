@@ -39,7 +39,7 @@ public class TweetFragment extends Fragment {
 
 		SearchView searchView = (SearchView) view.findViewById(R.id.searchText);
 		searchView.setIconifiedByDefault(false);
-		searchView.setQueryHint("Filter tweets..."); // TODO: remove hardcode
+		searchView.setQueryHint("Filter tweets..."); // T0D0 remove hardcode
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextChange(String newText) {
