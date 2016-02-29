@@ -28,8 +28,6 @@ public class Servlet extends HttpServlet {
     private static String MEAD_DATA_LOCATION;
     private static int ARTICLE_RESOLVE_TIMEOUT;
     private static int RETRY_COUNT;
-
-
     private static boolean configRead = false;
 
 
@@ -48,9 +46,6 @@ public class Servlet extends HttpServlet {
             ARTICLE_RESOLVE_TIMEOUT = Integer.parseInt(properties.getProperty("articleResolveTimeout"));
             RETRY_COUNT = Integer.parseInt(properties.getProperty("retryCount"));
             configRead = true;
-
-            System.out.println(MEAD_LOCATION);
-            System.out.println(MEAD_DATA_LOCATION);
         } catch (IOException e) {
             System.err.println("Could not read property file!");
             System.exit(-1);

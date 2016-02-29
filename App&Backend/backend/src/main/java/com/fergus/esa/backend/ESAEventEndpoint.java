@@ -33,7 +33,7 @@ import java.util.List;
 
 @Api(name = "esaEventEndpoint", version = "v1", namespace = @ApiNamespace(ownerDomain = "backend.esa.fergus.com", ownerName = "backend.esa.fergus.com", packagePath = ""))
 public class ESAEventEndpoint {
-    @ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name = "registerGcmToken")
+	@ApiMethod(httpMethod = ApiMethod.HttpMethod.GET, name = "registerGcmToken")
     public UserObject registerGcmToken(@Named("gcmToken") String gcmToken) {
 		// TODO: check, if token is unique (in the database)
 		Connection connection = (new MySQLJDBC()).getConnection();
