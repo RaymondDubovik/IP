@@ -44,7 +44,6 @@ public class TweetFragment extends Fragment {
 			@Override
 			public boolean onQueryTextChange(String newText) {
 				adapter.resetTweets();
-
 				adapter.getFilter().filter(newText);
 				return true;
 			}
