@@ -8,7 +8,6 @@ import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
 import com.fergus.esa.backend.MySQLHelpers.SummaryHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.MySQLHelpers.UserHelper;
-import com.fergus.esa.backend.OLD_DATAOBJECTS.ESAEvent;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.ImageObject;
@@ -20,22 +19,12 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.MatchScorer;
-import com.google.appengine.api.search.Query;
-import com.google.appengine.api.search.QueryOptions;
-import com.google.appengine.api.search.Results;
-import com.google.appengine.api.search.ScoredDocument;
-import com.google.appengine.api.search.SearchServiceFactory;
-import com.google.appengine.api.search.SortOptions;
 import com.google.gson.Gson;
 import com.googlecode.objectify.repackaged.gentyref.TypeToken;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /*
@@ -161,29 +150,12 @@ public class ESAEventEndpoint {
 	}
 
 
-
-
-
-    // SOMETHING THERE.....
-
-
-
     @ApiMethod(name = "listSearchedEvents")
-    public List<ESAEvent> listSearchedEvents(@Named("query") String query) {
-
-        List<ScoredEvent> scoredEvents = getEventsByQuery(query);
-        Collections.sort(scoredEvents);
-        List<ESAEvent> events = new ArrayList<>();
-/*
-        for (ScoredEvent se : scoredEvents) {
-
-            ESAEvent matchingEvent = ofy().load().type(ESAEvent.class).id(se.getEvent()).safe();
-            matchingEvent.setEvent(se.getEvent() + "esaseparator" + se.getScore());
-            events.add(matchingEvent);
-        }
-        */
-
-        return events;
+    public List<EventObject> listSearchedEvents(@Named("query") String query, @Named("summaryLength") int summaryLength) {
+		Connection connection = (new MySQLJDBC()).getConnection();
+		List<EventObject> searchedEvents = new EventHelper(connection).getSearchedEvents(query, summaryLength);
+		closeConnection(connection);
+        return searchedEvents;
     }
 
 	private void closeConnection(Connection connection) {
@@ -191,73 +163,4 @@ public class ESAEventEndpoint {
 			connection.close();
 		} catch (SQLException ignored) {}
 	}
-
-
-    private List<ScoredEvent> getEventsByQuery(String userQuery) {
-        List<ScoredEvent> scoredEvents = new ArrayList<>();
-        Index index = SearchServiceFactory.getSearchService()
-                .getIndex(IndexSpec.newBuilder().setName("eventIndex"));
-
-        Query query = Query.newBuilder()
-                .setOptions(QueryOptions.newBuilder()
-                        .setSortOptions(SortOptions.newBuilder()
-                                .setMatchScorer(MatchScorer.newBuilder())))
-                .build(userQuery);
-        Results<ScoredDocument> results = index.search(query);
-
-        for (ScoredDocument document : results) {
-            String event = document.getId().replace("_", " ");
-            Double score = document.getSortScores().get(0);
-            ScoredEvent se = new ScoredEvent(event, score);
-            scoredEvents.add(se);
-        }
-
-        return scoredEvents;
-    }
-
-
-    private class ScoredEvent implements Comparable<ScoredEvent> {
-        private String event;
-        private Double score;
-
-
-        public ScoredEvent(String event, Double score) {
-            this.event = event;
-            this.score = score;
-        }
-
-
-        public String getEvent() {
-            return event;
-        }
-
-
-        public void setEvent(String event) {
-            this.event = event;
-        }
-
-
-        public Double getScore() {
-            return score;
-        }
-
-
-        public void setScore(Double score) {
-            this.score = score;
-        }
-
-
-        @Override
-        public int compareTo(ScoredEvent other) {
-            Double thisScore = this.getScore();
-            Double otherScore = other.getScore();
-
-            if (thisScore > otherScore)
-                return -1;
-            else if (thisScore == otherScore)
-                return 0;
-            else
-                return 1;
-        }
-    }
 }

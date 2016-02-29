@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.fergus.esa.R;
-import com.fergus.esa.backend.esaEventEndpoint.model.ESATweet;
 import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
 import com.squareup.picasso.Picasso;
 
@@ -134,15 +133,17 @@ public class TweetListAdapter extends ArrayAdapter<TweetObject> {
     }
 
 
+	// TODO: look into
     public Filter getSearchFilter() {
-        if (searchFilter == null)
-            searchFilter = new searchFilter();
+        if (searchFilter == null) {
+			searchFilter = new SearchFilter();
+		}
 
         return searchFilter;
     }
 
 
-    private class searchFilter extends Filter {
+    private class SearchFilter extends Filter {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
             FilterResults matchingTweets = new FilterResults();
@@ -153,11 +154,12 @@ public class TweetListAdapter extends ArrayAdapter<TweetObject> {
                 matchingTweets.count = allTweets.size();
             } else {
                 // We perform filtering operation
-                List<ESATweet> matchingTweetsList = new ArrayList<ESATweet>();
+                List<TweetObject> matchingTweetsList = new ArrayList<>();
 
-                for (ESATweet t : matchingTweetsList) {
-                    if (t.getText().toUpperCase().contains(constraint.toString().toUpperCase()))
-                        matchingTweetsList.add(t);
+                for (TweetObject t : matchingTweetsList) {
+                    if (t.getText().toUpperCase().contains(constraint.toString().toUpperCase())) {
+						matchingTweetsList.add(t);
+					}
                 }
 
                 matchingTweets.values = matchingTweetsList;

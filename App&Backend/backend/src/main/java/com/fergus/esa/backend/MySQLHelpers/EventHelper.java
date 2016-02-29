@@ -455,4 +455,57 @@ public class EventHelper {
 
 		return null;
 	}
+
+
+	public List<EventObject> getSearchedEvents(String searchQuery, int summaryLength) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query =
+				" SELECT `e`.`id`, `e`.`timestamp`, `e`.`heading`, `e`.`mainImageUrl`" +
+				" FROM `summaries` AS `s`" +
+				" JOIN `events` AS `e` ON `e`.`id`= `s`.`eventId`" +
+				" WHERE match(`s`.`text`) against(? IN BOOLEAN MODE)" +
+				"	AND `s`.`length` = ?" +
+				" GROUP BY `s`.`eventId`" +
+				" ORDER By `e`.`timestamp` DESC";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, searchQuery);
+			statement.setInt(2, summaryLength);
+
+			results = statement.executeQuery();
+			List<EventObject> events = new ArrayList<>();
+			while (results.next()) {
+				events.add(new EventObject()
+						.setId(results.getInt("id"))
+						.setTimestamp(results.getTimestamp("timestamp"))
+						.setHeading(results.getString("heading"))
+						.setImageUrl(results.getString("mainImageUrl")));
+			}
+
+			return events;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException ignore) {}
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+
+				statement = null;
+			}
+		}
+
+		return null;
+	}
 }

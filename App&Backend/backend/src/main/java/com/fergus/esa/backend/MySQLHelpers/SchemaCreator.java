@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
-// TODO: think about
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 24.11.2015
@@ -62,7 +61,8 @@ public class SchemaCreator {
         "CREATE TABLE IF NOT EXISTS `summaries` (" +
                 "`length` INT," +
                 "`text` TEXT," +
-				"`timestamp` DEFAULT '1970-01-01 00:00:00'" +
+				"`timestamp` DEFAULT '1970-01-01 00:00:00'," +
+				"FULLTEXT fulltext_summary_idx (`text`)" +
             ")";
 
     private static final String queryEventsUsers =

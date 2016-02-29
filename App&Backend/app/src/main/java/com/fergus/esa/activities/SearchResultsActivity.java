@@ -1,16 +1,12 @@
 package com.fergus.esa.activities;
 
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
@@ -18,37 +14,38 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import com.fergus.esa.R;
-import com.fergus.esa.adapters.SearchGridViewAdapter;
-import com.fergus.esa.backend.esaEventEndpoint.EsaEventEndpoint;
-import com.fergus.esa.backend.esaEventEndpoint.model.ESAEvent;
-import com.fergus.esa.listeners.ScrollListener;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.extensions.android.json.AndroidJsonFactory;
+import com.fergus.esa.ServerUrls;
+import com.fergus.esa.adapters.GridViewAdapter;
+import com.fergus.esa.backend.esaEventEndpoint.model.EventObject;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 public class SearchResultsActivity extends ActionBarActivity {
-    private String query;
+	public static final String BUNDLE_PARAM_QUERY = "query";
 
 
-    protected void onCreate(Bundle savedInstanceState) {
+	private GridView gridView;
+	private GridViewAdapter eventAdapter;
+
+
+	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_results);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        // Associate searchable configuration with the SearchView
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) findViewById(R.id.search);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        if (toolbar != null) {
+
+		Intent intent = getIntent();
+		String query = intent.getStringExtra(BUNDLE_PARAM_QUERY);
+
+		if (toolbar != null) {
             setSupportActionBar(toolbar);
-            getSupportActionBar().setTitle(R.string.app_name);
+            getSupportActionBar().setTitle(query);
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         }
 
-        Intent intent = getIntent();
-        query = intent.getStringExtra("query");
+		gridView = (GridView) findViewById(R.id.gridView);
+
         EventSearchAsyncTask eventSearchTask = new EventSearchAsyncTask(this, query);
         eventSearchTask.execute();
     }
@@ -62,11 +59,10 @@ public class SearchResultsActivity extends ActionBarActivity {
     }
 
 
-    private class EventSearchAsyncTask extends AsyncTask<Void, Void, List<ESAEvent>> {
-        EsaEventEndpoint myApiService = null;
+    private class EventSearchAsyncTask extends AsyncTask<Void, Void, List<EventObject>> {
         private Context context;
         private String query;
-        ProgressDialog pd;
+        private ProgressDialog pd;
 
 
         EventSearchAsyncTask(Context context, String query) {
@@ -85,16 +81,10 @@ public class SearchResultsActivity extends ActionBarActivity {
 
 
         @Override
-        protected List<ESAEvent> doInBackground(Void... params) {
-            if (myApiService == null) {  // Only do this once
-                EsaEventEndpoint.Builder builder = new EsaEventEndpoint.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null)
-                        .setRootUrl("https://esabackend-1049.appspot.com/_ah/api/");
-
-                myApiService = builder.build();
-            }
-
+        protected List<EventObject> doInBackground(Void... params) {
             try {
-                return myApiService.listSearchedEvents(query).execute().getItems();
+				// TODO: get real value here
+                return ServerUrls.endpoint.listSearchedEvents(query, 75).execute().getItems();
             } catch (IOException e) {
                 return Collections.EMPTY_LIST;
             }
@@ -102,47 +92,52 @@ public class SearchResultsActivity extends ActionBarActivity {
 
 
         @Override
-        protected void onPostExecute(final List<ESAEvent> events) {
-
+        protected void onPostExecute(final List<EventObject> events) {
             TextView searchResults = (TextView) findViewById(R.id.results);
             if (events != null) {
                 searchResults.setText(events.size() + " result(s) found for \"" + query + "\":");
             } else {
                 searchResults.setText("No results found for \"" + query + "\"");
             }
-            GridView gv = (GridView) findViewById(R.id.gridView);
+
             if (events != null) {
-                gv.setAdapter(new SearchGridViewAdapter(SearchResultsActivity.this, context, events, query));
+				eventAdapter = new GridViewAdapter(SearchResultsActivity.this);
+				gridView.setAdapter(eventAdapter);
+
+				eventAdapter.addItems(events);
+
+				gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+					@Override
+					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+						EventObject event = eventAdapter.getItem(position);
+						Intent intent = new Intent(SearchResultsActivity.this, EventActivity.class);
+						Bundle extras = new Bundle();
+						extras.putInt(EventActivity.BUNDLE_PARAM_EVENT_ID, event.getId());
+						extras.putString(EventActivity.BUNDLE_PARAM_EVENT_HEADING, event.getHeading());
+						intent.putExtras(extras);
+						startActivity(intent);
+					}
+				});
+
+
+				/*gv.setAdapter(new SearchGridViewAdapter(SearchResultsActivity.this, context, events, query));
                 gv.setOnScrollListener(new ScrollListener(context));
                 gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        String eventString = events.get(position).getEvent();
-                        String[] eventWithScore = eventString.split("esaseparator");
-                        String event = eventWithScore[0];
+                        // TODO: put correct data int the intent
+						String heading = events.get(position).getHeading();
                         Intent intent = new Intent(SearchResultsActivity.this, EventActivity.class);
                         Bundle extras = new Bundle();
-                        extras.putString("event", event);
+
                         intent.putExtras(extras);
                         startActivity(intent);
                     }
                 });
-            } else {
-                AlertDialog.Builder alertDialogBuilder =
-                        new AlertDialog.Builder(SearchResultsActivity.this)
-                                .setTitle("No Events Found")
-                                .setMessage("No events matching query: " + query + " found.")
-                                .setNegativeButton("OK", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.cancel();
-                                    }
-                                });
-                AlertDialog alertDialog = alertDialogBuilder.show();
+                */
             }
 
             pd.hide();
-
-
         }
     }
 }

@@ -162,7 +162,7 @@ public class MainActivity extends ActionBarActivity {
             String query = intent.getStringExtra(SearchManager.QUERY);
 
             Intent searchIntent = new Intent(MainActivity.this, SearchResultsActivity.class);
-            searchIntent.putExtra("query", query);
+            searchIntent.putExtra(SearchResultsActivity.BUNDLE_PARAM_QUERY, query);
             startActivity(searchIntent);
         }
     }

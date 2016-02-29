@@ -218,7 +218,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 
 	private class EventAsyncTask extends ErrorAsyncTask<Void, Void, List<EventObject>> {
-		private static final int EVENT_COUNT_PER_PAGE = 7;
+		private static final int EVENT_COUNT_PER_PAGE = 10;
 		private ProgressDialog pd;
 		private boolean displayDialog;
 
