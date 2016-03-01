@@ -69,7 +69,7 @@ import twitter4j.conf.ConfigurationBuilder;
 
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
-	private static final String SUMMARISATION_SERVER_URL = "http://127.0.0.1:10000/test";
+	private static final String SUMMARISATION_SERVER_URL = "http://127.0.0.1:10000/summarize";
 	private static final Pattern TWEET_URL_PATTERN = Pattern.compile("https://t.co/[a-zA-z0-9\\-]*");
 	/** to the existing events push is issues only if the event was inactive for this time period */
 	private static final long PUSH_TIMESTAMP_SECONDS = 1 * 24 * 60 * 60; // 1 day

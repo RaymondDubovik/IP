@@ -23,9 +23,9 @@ dependencies {
     // compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(path: ':backend', configuration: 'android-endpoints')
     // compile files('libs/Classifier4J-0.6.jar')
-    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:appcompat-v7:23.2.0'
     compile 'com.google.android.gms:play-services-gcm:8.4.0'
-    compile 'com.android.support:design:23.1.1'
+    compile 'com.android.support:design:23.2.0'
     compile 'com.sothree.slidinguppanel:library:3.2.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.code.gson:gson:2.4'
