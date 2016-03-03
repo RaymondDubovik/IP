@@ -41,10 +41,10 @@ Needs to be trained, so it can categorize the news articles.
 - To add the categorizer to the summarization server, it needs to be exported as .jar archive
 - .jar archive is generated as an Intellij artifact. Should be possible to add jar plugin to maven and export .jar archive or just do it from the terminal
 - Categorizer FAQ:
-	* Guess the category (best match only): 						-g "text" 
-	* Categorize text (return ordered list of all categories): 		-c "text" 
-	* Train categorizer with new data: 								-t [ngram size]
-	* Evaluate categorizer on test dataset: 						-e
+	* Guess the category (best match only): 													-g "text" 
+	* Categorize text (return ordered list of all categories with values of relevance): 		-c "text" 
+	* Train categorizer with new data:			 												-t [ngram size]
+	* Evaluate categorizer on test dataset: 													-e
 
 2) Server
 - .war archive generated as an artifact. Dependencies are managed with maven. So it should be possible to add war plugin to maven and export .war archive.

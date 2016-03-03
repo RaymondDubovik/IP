@@ -13,7 +13,6 @@ import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.adapters.TweetListAdapter;
 import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
 
-import java.util.Collections;
 import java.util.List;
 
 /*
@@ -30,10 +29,11 @@ public class TweetFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_tweet, container, false);
 
-		retrieveTweets();
+		EventActivity activity = ((EventActivity) getActivity());
+		tweets = activity.getTweets();
 
         ListView listView = (ListView) view.findViewById(R.id.tweetList);
-        adapter = new TweetListAdapter(getActivity(), tweets);
+        adapter = new TweetListAdapter(activity, tweets);
         listView.setAdapter(adapter);
         listView.setTextFilterEnabled(true);
 
@@ -48,21 +48,11 @@ public class TweetFragment extends Fragment {
 				return true;
 			}
 
-
+			
 			@Override
 			public boolean onQueryTextSubmit(String query) {return false;}
 		});
 
         return view;
-    }
-
-
-    public void retrieveTweets() {
-        EventActivity activity = ((EventActivity) getActivity());
-
-        tweets = activity.getTweets();
-        if (tweets != null) {
-            Collections.reverse(tweets);
-        }
     }
 }
