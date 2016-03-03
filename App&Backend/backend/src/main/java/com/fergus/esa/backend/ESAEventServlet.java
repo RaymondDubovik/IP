@@ -193,8 +193,8 @@ public class ESAEventServlet extends HttpServlet {
 				if (summaries != null) {
 					for (SummaryObject summary : summaries) {
 						summaryHelper.create(summary, eventId);
-						if (summary.getLength() == 75 && summary.getLength() != 0) { // T0D0 remove hardcode
-							int length = summary.getLength() < 140 ? summary.getLength() - 1 : 140; // T0D0 remove hardcode
+						if (summary.getLength() == 75 && summary.getText().length() > 10) { // T0D0 remove hardcode, > 10 means we filter out
+							int length = summary.getText().length() < 140 ? summary.getText().length() : 140; // T0D0 remove hardcode
 							pushNotificationSummary = summary.getText().substring(0, length - 1);
 						}
 					}
