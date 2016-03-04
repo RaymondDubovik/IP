@@ -11,9 +11,6 @@ import android.widget.ListView;
 import com.fergus.esa.R;
 import com.fergus.esa.activities.EventActivity;
 import com.fergus.esa.adapters.TweetListAdapter;
-import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
-
-import java.util.List;
 
 /*
     A fragment to display tweets
@@ -21,8 +18,7 @@ import java.util.List;
  */
 
 public class TweetFragment extends Fragment {
-	private List<TweetObject> tweets;
-    private TweetListAdapter adapter;
+	private TweetListAdapter adapter;
 
 
     @Override
@@ -30,10 +26,9 @@ public class TweetFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_tweet, container, false);
 
 		EventActivity activity = ((EventActivity) getActivity());
-		tweets = activity.getTweets();
 
         ListView listView = (ListView) view.findViewById(R.id.tweetList);
-        adapter = new TweetListAdapter(activity, tweets);
+        adapter = new TweetListAdapter(activity, activity.getTweets());
         listView.setAdapter(adapter);
         listView.setTextFilterEnabled(true);
 
@@ -48,7 +43,7 @@ public class TweetFragment extends Fragment {
 				return true;
 			}
 
-			
+
 			@Override
 			public boolean onQueryTextSubmit(String query) {return false;}
 		});
