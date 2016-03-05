@@ -59,11 +59,14 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 	private int type = TYPE_EVENTS_DEFAULT;
 
+	private ProgressDialog progressDialog;
+
 	private boolean loadRequired;
 
 	private SlidingUpPanelLayout slidingPanel;
 	private View viewListCover;
 	private CategoryStorer categoryStorer;
+
 
 	private ViewGroup categoryLayout;
 	private TextView textViewCategory;
@@ -194,9 +197,21 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 	}
 
 
+	private void hideUi() {
+		if (progressDialog != null) {
+			progressDialog.hide();
+		}
+
+		if (swipeContainer != null && swipeContainer.isRefreshing()) {
+			swipeContainer.setRefreshing(false);
+		}
+	}
+
+
 	@Override
 	public void onInternetConnected() {
 		if (loadRequired) {
+			hideUi();
 			if (connectionErrorView.isVisible()) {
 				connectionErrorView.hide();
 			}
@@ -219,7 +234,6 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 	private class EventAsyncTask extends ErrorAsyncTask<Void, Void, List<EventObject>> {
 		private static final int EVENT_COUNT_PER_PAGE = 10;
-		private ProgressDialog pd;
 		private boolean displayDialog;
 
 
@@ -231,10 +245,10 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 		@Override
 		protected void onPreExecute() {
 			if (displayDialog) {
-				pd = new ProgressDialog(activity);
-				pd.setTitle("Please Wait...");
-				pd.setMessage("Downloading Events...");
-				pd.show();
+				progressDialog = new ProgressDialog(activity);
+				progressDialog.setTitle("Please Wait...");
+				progressDialog.setMessage("Downloading Events...");
+				progressDialog.show();
 			}
 		}
 
@@ -320,17 +334,6 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 		}
 
 
-		private void hideUi() {
-			if (pd != null) {
-				pd.hide();
-			}
-
-			if (swipeContainer != null && swipeContainer.isRefreshing()) {
-				swipeContainer.setRefreshing(false);
-			}
-		}
-
-
 		private class GridViewScrollListener extends CompositeScrollListener {
 			public GridViewScrollListener() {
 				addOnScrollListener(new ScrollListener(activity));
@@ -381,6 +384,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 		@Override
 		protected void onPostExecute(List<CategoryObject> categories) {
 			if (hasError()) {
+				hideUi();
 				if (connectionErrorView.isVisible()) {
 					connectionErrorView.quickHide();
 				}

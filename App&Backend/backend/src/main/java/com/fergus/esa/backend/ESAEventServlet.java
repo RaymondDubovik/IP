@@ -69,7 +69,7 @@ import twitter4j.conf.ConfigurationBuilder;
 
 @SuppressWarnings("serial")
 public class ESAEventServlet extends HttpServlet {
-	private static final String SUMMARISATION_SERVER_URL = "http://127.0.0.1:10000/summarize";
+	private static final String SUMMARIZATION_SERVER_URL = "http://127.0.0.1:10000/summarize";
 	private static final Pattern TWEET_URL_PATTERN = Pattern.compile("https://t.co/[a-zA-z0-9\\-]*");
 	/** to the existing events push is issues only if the event was inactive for this time period */
 	private static final long PUSH_TIMESTAMP_SECONDS = 1 * 24 * 60 * 60; // 1 day
@@ -158,7 +158,7 @@ public class ESAEventServlet extends HttpServlet {
 				eventId = eventHelper.create(event.setImageUrl(""));
 				pushRequired = true;
 			} else {
-				categoryHelper.deleteCagetogies(eventId);
+				categoryHelper.deleteCategories(eventId);
 				event = eventHelper.get(eventId);
 				mainImageUrl = event.getImageUrl();
 
@@ -187,7 +187,7 @@ public class ESAEventServlet extends HttpServlet {
 			String pushNotificationSummary = null;
 			CategoryPicker categoryPicker = new ESACategoryPicker();
 			List<NewsObject> news = new NewsModel().addNews(heading, eventId);
-			List<ResponseJsonObject> responses = summarise(news);
+			List<ResponseJsonObject> responses = summarize(news);
 			for (ResponseJsonObject response: responses) {
 				List<SummaryObject> summaries = response.getSummaries();
 				if (summaries != null) {
@@ -205,7 +205,7 @@ public class ESAEventServlet extends HttpServlet {
 
 			List<String> relevantCategories = categoryPicker.getRelevantCategories();
 			for (String relevantCategory : relevantCategories) {
-				categoryHelper.addCategory(allCategories.get(relevantCategory), eventId);
+				categoryHelper.addEventCategory(allCategories.get(relevantCategory), eventId);
 			}
 
 			System.out.println();
@@ -292,7 +292,7 @@ public class ESAEventServlet extends HttpServlet {
 
 	// Method to produce a short summary of a group of news articles from a particular day,
 	// relating to a particular event.
-	public List<ResponseJsonObject> summarise(List<NewsObject> news) {
+	public List<ResponseJsonObject> summarize(List<NewsObject> news) {
 		List<ResponseJsonObject> summaries = new ArrayList<>();
 
 		for (NewsObject n : news) {
@@ -320,11 +320,11 @@ public class ESAEventServlet extends HttpServlet {
 			client.setConnectTimeout(8000);
 			client.setReadTimeout(8000);
 
-			url = SUMMARISATION_SERVER_URL + "?url=" + url + "&summarize=" + summarize;
+			url = SUMMARIZATION_SERVER_URL + "?url=" + url + "&summarize=" + summarize;
 
-            WebResource summariser = client.resource(url);
+            WebResource summarizer = client.resource(url);
 
-            ClientResponse response = summariser.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+            ClientResponse response = summarizer.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
             if (response.getStatus() != 200) {
                 throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
             }
@@ -341,6 +341,8 @@ public class ESAEventServlet extends HttpServlet {
 			if (categoriesJson == null || categoriesJson.trim().equals("")) {
 				return null;
 			}
+
+			System.out.println(categoriesJson);
 
 			List<ScoredCategory> scoredCategoryObjects = new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<ScoredCategory>>(){}.getType());
 			summaries.setCategories(scoredCategoryObjects);
@@ -372,8 +374,23 @@ public class ESAEventServlet extends HttpServlet {
 
 			List<SyndEntry> entryList = feed.getEntries();
 
+
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
+			// TODO:
 			if (entryList.size() > 0) {
-				for (int i = 0; i < entryList.size(); i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
+				for (int i = 0; i < 4; i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
 					SyndEntry entry = entryList.get(i);
 					String entryUrl = entry.getUri().substring(33); // TODO: where 33 comes from?
 					String title = entry.getTitle();
@@ -390,6 +407,10 @@ public class ESAEventServlet extends HttpServlet {
 						insertNews(newsObject);
 						news.add(newsObject);
 					} catch (ConflictException e) {
+						// TODO: refactor
+						NewsHelper newsHelper = new NewsHelper(connection);
+						// newsHelper.getCategories
+						
 						news.add(newsObject.setNew(false)); // adds article with indication, that it already exists in the database
 					}
 				}
@@ -400,14 +421,14 @@ public class ESAEventServlet extends HttpServlet {
 
 
 		public NewsObject insertNews(NewsObject news) throws ConflictException {
-			NewsHelper helper = new NewsHelper(connection);
+			NewsHelper newsHelper = new NewsHelper(connection);
 
 			// If if is not null, then check if it exists. If yes, throw an Exception, that it is already present
-			if (news.getUrl() != null && helper.exists(news.getUrl())) {
+			if (news.getUrl() != null && newsHelper.exists(news.getUrl())) {
 				throw new ConflictException("Object already exists");
 			}
 
-			helper.create(news);
+			newsHelper.create(news);
 			return news;
 		}
 	}

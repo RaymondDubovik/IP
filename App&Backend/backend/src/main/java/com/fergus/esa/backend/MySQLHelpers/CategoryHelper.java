@@ -71,7 +71,7 @@ public class CategoryHelper {
     }
 
 
-	public boolean deleteCagetogies(int eventId) {
+	public boolean deleteCategories(int eventId) {
 		PreparedStatement statement = null;
 
 		String query =
@@ -98,8 +98,47 @@ public class CategoryHelper {
 	}
 
 
-	// TODO: use
-	public int addCategory(int categoryId, int eventId) {
+	public int addEventCategory(int categoryId, int eventId) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query = query = "INSERT INTO `eventsCategories` (`categoryId`, `eventId`) VALUES (?, ?)";
+
+		try {
+			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+			statement.setInt(1, categoryId);
+			statement.setInt(2, eventId);
+
+			statement.executeUpdate();
+			results = statement.getGeneratedKeys();
+			if (results.next()) {
+				return results.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException ignore) {}
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+
+				statement = null;
+			}
+		}
+
+		return 0;
+	}
+
+
+	public int addNewsCategory(int categoryId, int eventId) {
 		PreparedStatement statement = null;
 		ResultSet results = null;
 

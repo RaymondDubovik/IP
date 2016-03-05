@@ -1,5 +1,6 @@
 package com.fergus.esa.backend.dataObjects;
 
+import com.google.gson.annotations.SerializedName;
 import com.googlecode.objectify.annotation.Entity;
 
 /**
@@ -9,6 +10,7 @@ import com.googlecode.objectify.annotation.Entity;
 @Entity
 public class CategoryObject {
     private int id = 0;
+	@SerializedName("category")
     private String name = "";
 
 

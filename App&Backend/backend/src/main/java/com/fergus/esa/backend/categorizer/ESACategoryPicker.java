@@ -29,7 +29,7 @@ public class ESACategoryPicker implements CategoryPicker {
 	public void addCategories(List<ScoredCategory> categories) {
 		int weight = TOP_CATEGORY_COUNT_TO_USE;
 		for (int i = 0; i < TOP_CATEGORY_COUNT_TO_USE; i++) {
-			String category = categories.get(i).getCategory();
+			String category = categories.get(i).getName();
 			Integer count = map.get(category);
 
 			if (count == null) { // if there is no value for given key, then this category is new (add it to the map)
