@@ -1,6 +1,7 @@
 package com.fergus.esa.activities;
 
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -10,7 +11,13 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import com.fergus.esa.ErrorAsyncTask;
 import com.fergus.esa.R;
@@ -26,8 +33,10 @@ import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObjectCollection;
 import com.fergus.esa.backend.esaEventEndpoint.model.TweetObject;
 import com.fergus.esa.backend.esaEventEndpoint.model.TweetObjectCollection;
 import com.fergus.esa.dataObjects.UserObjectWrapper;
+import com.fergus.esa.fragments.SearchableFragment;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -49,6 +58,9 @@ public class EventActivity extends AppCompatActivity {
     private List<NewsObject> news;
     private List<SummaryObject> summaries;
 
+	private String searchQuery;
+	private List<SearchableFragment> searchableFragments;
+
 	private double startTime;
 	private double milliSeconds = 0;
 
@@ -59,8 +71,8 @@ public class EventActivity extends AppCompatActivity {
         setContentView(R.layout.activity_event_tabs);
         setTitle("Loading...");
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+		// TODO: init toolbar here
+        initToolbar();
 
         Intent i = getIntent();
         Bundle extras = i.getExtras();
@@ -73,6 +85,78 @@ public class EventActivity extends AppCompatActivity {
 		new TweetAsyncTask().execute();
         new NewsAsyncTask().execute();
     }
+
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.toolbar, menu);
+
+		// http://stackoverflow.com/questions/27378981/how-to-use-searchview-in-toolbar-android
+		MenuItem searchItem = menu.findItem(R.id.action_search);
+		SearchView searchView = (searchItem != null) ? (SearchView) searchItem.getActionView() : null;
+		if (searchView != null) {
+			SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+			// searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+			searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+				@Override
+				public boolean onQueryTextSubmit(String query) {
+					// hiding keyboard
+					View view = EventActivity.this.getCurrentFocus();
+					if (view != null) {
+						InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+						imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+					}
+
+					callSearch(query);
+					return true;
+				}
+
+
+				@Override
+				public boolean onQueryTextChange(String newText) {
+					callSearch(newText);
+					return true;
+				}
+
+
+				public void callSearch(String query) {
+					searchQuery = query;
+					System.out.println(query);
+					// notify observers
+					if (searchableFragments != null) {
+						for (SearchableFragment fragment : searchableFragments) {
+							fragment.onSearch(query);
+						}
+					} else {
+						System.out.println("lol null here");
+					}
+				}
+			});
+		}
+
+		return super.onCreateOptionsMenu(menu);
+	}
+
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.action_settings:
+				Intent intent = new Intent(this, SettingActivity.class);
+				startActivity(intent);
+				return true;
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
+
+
+	private void initToolbar() {
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+		// getSupportActionBar().setTitle("Events"); // T0D0 remove hardcode
+		getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+	}
 
 
 	@Override
@@ -125,7 +209,26 @@ public class EventActivity extends AppCompatActivity {
     }
 
 
-    private class TweetAsyncTask extends CounterAsyncTask {
+	public void registerSearchFragment(SearchableFragment searchableFragment) {
+		System.out.println("I registered!");
+		if (searchableFragments == null) {
+			searchableFragments = new ArrayList<>();
+		}
+
+		for (SearchableFragment fragment : searchableFragments) {
+			if (fragment == searchableFragment) { // if is already registered, no need to register it once again
+				return;
+			}
+		}
+
+		searchableFragments.add(searchableFragment);
+		if (!TextUtils.isEmpty(searchQuery)) { // if search was already performed, but the fragment just registered
+			searchableFragment.onSearch(searchQuery); // tell him to search straight away
+		}
+	}
+
+
+	private class TweetAsyncTask extends CounterAsyncTask {
         @Override
         protected Void doInBackground(Void... params) {
             try {

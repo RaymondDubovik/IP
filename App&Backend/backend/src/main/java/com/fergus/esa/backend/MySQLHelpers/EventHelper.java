@@ -24,9 +24,15 @@ public class EventHelper {
     }
 
 
-    // TODO: use categories
-    public List<EventObject> getNewEvents(List<Integer> categories, int from, int count) {
-        PreparedStatement statement = null;
+	// TODO: make work
+	// TODO: make work
+	// TODO: make work:
+    public List<EventObject> getNewEvents(List<Integer> categories, long from, int count) {
+		String timestampFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(from);
+		System.out.println(from);
+		System.out.println(timestampFrom);
+
+		PreparedStatement statement = null;
         ResultSet results = null;
 
 		String categorySqlPart = "";
@@ -42,12 +48,13 @@ public class EventHelper {
 			categorySqlPart = builder.toString();
 		}
 
-		String query = "SELECT MIN(`mId`) AS `minId` FROM" +
-				" (SELECT `e`.`id` AS `mId`" +
+		// TODO: check if `e`.`timestamp` needs to be selected
+		String query = "SELECT MIN(`mTimestamp`) AS `minTimestamp` FROM" +
+				" (SELECT `e`.`timestamp` AS `mTimestamp`" +
 				" FROM `events` AS `e`" +
 				" JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
 				" JOIN `categories` AS `c` ON `c`.`id`=`ec`.`categoryId`" +
-				" WHERE `e`.`id` < ?" + categorySqlPart +
+				" WHERE `e`.`timestamp` < ?" + categorySqlPart +
 				" GROUP BY `e`.`id`" +
 				" ORDER BY `e`.`timestamp` DESC" +
 				" LIMIT ?) AS `eventAlias`";
@@ -55,7 +62,7 @@ public class EventHelper {
         try {
             statement = connection.prepareStatement(query);
             int param = 1;
-            statement.setInt(param++, from);
+			statement.setString(param++, timestampFrom);
             if (categories != null) {
 				for (int categoryId : categories) {
 					statement.setInt(param++, categoryId);
@@ -68,7 +75,7 @@ public class EventHelper {
                 return null;
             }
 
-            return getEventInterval(results.getInt("minId"), from, categories, categorySqlPart);
+            return getEventInterval(results.getString("minTimestamp"), timestampFrom, categories, categorySqlPart);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -93,8 +100,13 @@ public class EventHelper {
     }
 
 
-    private List<EventObject> getEventInterval(int minId, int maxId, List<Integer> categories, String categorySqlPart) {
-		if (minId == 0) {
+
+
+	// TODO: make work
+	// TODO: make work
+	// TODO: make work
+    private List<EventObject> getEventInterval(String minTimestamp, String timestampFrom, List<Integer> categories, String categorySqlPart) {
+		if (minTimestamp == null || minTimestamp.equals("")) { // TODO: check
 			return null;
 		}
 
@@ -106,14 +118,14 @@ public class EventHelper {
                         " FROM `events` AS `e`" +
 						" JOIN `eventsCategories` AS `ec` ON `ec`.`eventId` = `e`.`id`" +
 						" JOIN `categories` AS `c` ON `c`.`id`=`ec`.`categoryId`" +
-						" WHERE `e`.`id` >= ? AND `e`.`id` < ?" + categorySqlPart +
+						" WHERE `e`.`timestamp` >= ? AND `e`.`timestamp` < ?" + categorySqlPart +
                         " ORDER BY `e`.`timestamp` DESC";
 
         try {
             statement = connection.prepareStatement(query);
 			int param = 1;
-			statement.setInt(param++, minId);
-            statement.setInt(param++, maxId);
+			statement.setString(param++, minTimestamp);
+            statement.setString(param++, timestampFrom);
 			if (categories != null) {
 				for (int categoryId : categories) {
 					statement.setInt(param++, categoryId);

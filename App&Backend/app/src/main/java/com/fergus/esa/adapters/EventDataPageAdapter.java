@@ -5,7 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.fergus.esa.fragments.ImageFragment;
-import com.fergus.esa.fragments.LinksFragment;
+import com.fergus.esa.fragments.NewsFragment;
 import com.fergus.esa.fragments.SummaryFragment;
 import com.fergus.esa.fragments.TweetFragment;
 
@@ -32,7 +32,7 @@ public class EventDataPageAdapter extends FragmentStatePagerAdapter {
                 TweetFragment tab2 = new TweetFragment();
                 return tab2;
             case 3:
-                LinksFragment tab3 = new LinksFragment();
+                NewsFragment tab3 = new NewsFragment();
                 return tab3;
             default:
                 return null;

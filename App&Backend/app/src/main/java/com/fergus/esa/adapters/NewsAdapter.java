@@ -4,27 +4,54 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import com.fergus.esa.R;
 import com.fergus.esa.backend.esaEventEndpoint.model.NewsObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
-public class LinksListAdapter extends ArrayAdapter<NewsObject> {
-    private final Context context;
+public class NewsAdapter extends BaseAdapter implements Filterable {
+	private Context context;
+
+	private NewsFilter filter;
+
+	private List<NewsObject> originalItems;
+	private List<NewsObject> items;
 
 
-    public LinksListAdapter(Context context, List<NewsObject> items) {
-        super(context, R.layout.link_row, items);
-        this.context = context;
+    public NewsAdapter(Context context, List<NewsObject> news) {
+		this.context = context;
+		items = news;
     }
+
+
+	@Override
+	public int getCount() {
+		return items.size();
+	}
+
+
+	@Override
+	public Object getItem(int position) {
+		return items.get(position);
+	}
+
+
+	@Override
+	public long getItemId(int position) {
+		return items.get(position).getId();
+	}
 
 
     @Override
@@ -33,7 +60,7 @@ public class LinksListAdapter extends ArrayAdapter<NewsObject> {
 
         if (convertView == null) {
             // inflate the GridView item layout
-            LayoutInflater inflater = LayoutInflater.from(getContext());
+            LayoutInflater inflater = LayoutInflater.from(context);
             convertView = inflater.inflate(R.layout.link_row, parent, false);
 
             // initialize the view holder
@@ -49,7 +76,7 @@ public class LinksListAdapter extends ArrayAdapter<NewsObject> {
         }
 
         if (getItem(position) != null) {
-            final NewsObject item = getItem(position);
+            final NewsObject item = (NewsObject) getItem(position);
 
 			String date;
 			long timestamp = item.getTimestamp().getValue();
@@ -76,6 +103,55 @@ public class LinksListAdapter extends ArrayAdapter<NewsObject> {
 
         return convertView;
     }
+
+
+	@Override
+	public Filter getFilter() {
+		if (filter == null) {
+			filter = new NewsFilter();
+		}
+		return filter;
+	}
+
+
+	private class NewsFilter extends Filter {
+		@SuppressWarnings("unchecked")
+		@Override
+		protected void publishResults(CharSequence constraint, FilterResults results) {
+			items = (List<NewsObject>) results.values; // has the filtered values
+			notifyDataSetChanged();  // notifies the data with new filtered values
+		}
+
+
+		@Override
+		protected FilterResults performFiltering(CharSequence constraint) {
+			FilterResults results = new FilterResults();
+			List<NewsObject> filtered = new ArrayList<>();
+
+			if (originalItems == null) {
+				originalItems = new ArrayList<>(items); // make a copy of original values
+			}
+
+			if (TextUtils.isEmpty(constraint)) { // if no constraint, restore to original data
+				results.count = originalItems.size();
+				results.values = originalItems;
+			} else {
+				constraint = constraint.toString().toLowerCase();
+				for (int i = 0; i < originalItems.size(); i++) {
+					NewsObject news = originalItems.get(i);
+					String searchable = news.getTitle();
+					if (searchable.toLowerCase().contains(constraint)) {
+						filtered.add(news);
+					}
+				}
+				// set the Filtered result to return
+				results.count = filtered.size();
+				results.values = filtered;
+			}
+
+			return results;
+		}
+	}
 
 
     private static class ViewHolder {

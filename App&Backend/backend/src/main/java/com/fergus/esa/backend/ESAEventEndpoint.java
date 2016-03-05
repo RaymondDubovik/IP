@@ -54,7 +54,7 @@ public class ESAEventEndpoint {
 
 
 	@ApiMethod(name = "getNewEvents")
-    public List<EventObject> getNewEvents(@Named("from") int from, @Named("count") int count, @Named("categories") String categoriesJson) {
+    public List<EventObject> getNewEvents(@Named("from") long timestampFrom, @Named("count") int count, @Named("categories") String categoriesJson) {
         categoriesJson = categoriesJson.trim();
         List<Integer> categoryIds = categoriesJson.equals("") ? null : (List<Integer>) new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<Integer>>() {}.getType());
 
@@ -69,7 +69,7 @@ public class ESAEventEndpoint {
 
 		Connection connection = (new MySQLJDBC()).getConnection();
 
-		List<EventObject> newEvents = new EventHelper(connection).getNewEvents(categoryIds, from, count);
+		List<EventObject> newEvents = new EventHelper(connection).getNewEvents(categoryIds, timestampFrom, count);
 		closeConnection(connection);
 		return newEvents;
     }

@@ -44,6 +44,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import in.srain.cube.views.GridViewWithHeaderAndFooter;
@@ -78,7 +79,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 	private ProgressBar progressBarEvents;
 
-	private int currentEventId = Integer.MAX_VALUE;
+	private long currentTimestamp = new Date().getTime();
 
 	private SwipeRefreshLayout swipeContainer;
 	private GridViewWithHeaderAndFooter gridViewEvent;
@@ -135,6 +136,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 		swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 			@Override
 			public void onRefresh() {
+				currentTimestamp = new Date().getTime();
 				getData(false);
 			}
 		});
@@ -167,7 +169,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 		}
 
 		loadRequired = false;
-		new EventAsyncTask(displayDialog).execute();
+		new EventAsyncTask(displayDialog, true).execute();
 		new CategoryAsyncTask().execute();
 	}
 
@@ -251,10 +253,17 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 	private class EventAsyncTask extends ErrorAsyncTask<Void, Void, List<EventObject>> {
 		private static final int EVENT_COUNT_PER_PAGE = 10;
 		private boolean displayDialog;
+		private boolean replaceContent = false;
 
 
 		EventAsyncTask(boolean displayDialog) {
+			this(displayDialog, false);
+
+		}
+
+		EventAsyncTask(boolean displayDialog, boolean replaceContent) {
 			this.displayDialog = displayDialog;
+			this.replaceContent = replaceContent;
 		}
 
 
@@ -279,7 +288,8 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 				switch (type) {
 					case TYPE_EVENTS_NEW:
-						collection = ServerUrls.endpoint.getNewEvents(currentEventId, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute();
+						Log.d("current", "'" + currentTimestamp + "'");
+						collection = ServerUrls.endpoint.getNewEvents(currentTimestamp, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute();
 						break;
 					case TYPE_EVENTS_RECOMMENDED:
 						int userId = PreferenceManager.getDefaultSharedPreferences(activity).getInt(SharedPreferencesKeys.USER_ID, UserObjectWrapper.NO_USER_ID);
@@ -319,21 +329,22 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 				return;
 			}
 
-			if (eventAdapter == null || type == TYPE_EVENTS_RECOMMENDED) {
+			if (eventAdapter == null || type == TYPE_EVENTS_RECOMMENDED || replaceContent) {
 				eventAdapter = new GridViewAdapter(activity);
 				gridViewEvent.setAdapter(eventAdapter);
 			}
 
 			eventAdapter.addItems(events);
 
-			int minEventId = Integer.MAX_VALUE;
+			long minTimestamp = new Date().getTime();
 			for (EventObject event : events) {
-				int eventId = event.getId();
-				if (minEventId > eventId) {
-					minEventId = eventId;
+				long timestamp = event.getTimestamp().getValue();
+				if (minTimestamp > timestamp) {
+					minTimestamp = timestamp;
 				}
 			}
-			currentEventId = minEventId;
+
+			currentTimestamp = minTimestamp;
 
 			gridViewEvent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
@@ -347,6 +358,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 					startActivity(intent);
 				}
 			});
+
 			gridViewEvent.setOnScrollListener(new GridViewScrollListener());
 
 			if (type != TYPE_EVENTS_RECOMMENDED) {
@@ -442,7 +454,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 					changeActiveCategory();
 					eventAdapter = null;
-					currentEventId = Integer.MAX_VALUE;
+					currentTimestamp = new Date().getTime();
 					getData(false);
 				}
 			});
