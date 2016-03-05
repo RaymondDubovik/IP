@@ -152,4 +152,57 @@ public class NewsHelper {
 
 		return 0;
 	}
+
+
+	public NewsObject getByUrl(String url) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query =
+				"SELECT `id`, `eventId`, `title`, `logoUrl`, `timestamp`" +
+						" FROM `news`" +
+						" WHERE `url` = ?" +
+						" ORDER BY `timestamp` DESC";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setString(1, url);
+			results = statement.executeQuery();
+			NewsObject news = null;
+
+			if (results.next()) {
+				int id = results.getInt("id");
+				news = new NewsObject()
+								.setId(id)
+								.setEventId(results.getInt("eventId"))
+								.setTitle(results.getString("title"))
+								.setUrl(url)
+								.setLogoUrl(results.getString("logoUrl"))
+								.setTimestamp(results.getTimestamp("timestamp"))
+								.setCategories(new CategoryHelper(connection).getNewsCategories(id));
+			}
+
+			return news;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException ignore) {}
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+
+				statement = null;
+			}
+		}
+
+		return null;
+	}
 }

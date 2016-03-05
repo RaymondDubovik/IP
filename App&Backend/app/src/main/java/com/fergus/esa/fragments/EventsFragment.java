@@ -67,7 +67,6 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 	private View viewListCover;
 	private CategoryStorer categoryStorer;
 
-
 	private ViewGroup categoryLayout;
 	private TextView textViewCategory;
 	private int textViewCategoryHeight;

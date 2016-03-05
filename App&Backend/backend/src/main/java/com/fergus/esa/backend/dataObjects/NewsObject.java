@@ -1,8 +1,10 @@
 package com.fergus.esa.backend.dataObjects;
 
+import com.fergus.esa.backend.categorizer.ScoredCategoryObject;
 import com.googlecode.objectify.annotation.Entity;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
@@ -17,7 +19,7 @@ public class NewsObject {
     private Date timestamp;
     private int eventId;
 
-	private boolean isNew = true;
+	private List<ScoredCategoryObject> categories;
 
 
     public NewsObject() {}
@@ -89,13 +91,18 @@ public class NewsObject {
     }
 
 
-	public boolean isNew() {
-		return isNew;
+	public List<ScoredCategoryObject> getCategories() {
+		return categories;
 	}
 
 
-	public NewsObject setNew(boolean aNew) {
-		isNew = aNew;
+	public NewsObject setCategories(List<ScoredCategoryObject> categories) {
+		this.categories = categories;
 		return this;
+	}
+
+
+	public boolean isNew() {
+		return categories == null; // if we don't know the categories of the news article, then the news article was not yet processed and inserted in the database.
 	}
 }

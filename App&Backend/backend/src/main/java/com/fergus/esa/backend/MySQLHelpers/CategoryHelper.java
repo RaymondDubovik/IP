@@ -1,5 +1,6 @@
 package com.fergus.esa.backend.MySQLHelpers;
 
+import com.fergus.esa.backend.categorizer.ScoredCategoryObject;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -138,16 +139,18 @@ public class CategoryHelper {
 	}
 
 
-	public int addNewsCategory(int categoryId, int eventId) {
+	public int addNewsCategory(int newsId, ScoredCategoryObject scoredCategory) {
 		PreparedStatement statement = null;
 		ResultSet results = null;
 
-		String query = query = "INSERT INTO `eventsCategories` (`categoryId`, `eventId`) VALUES (?, ?)";
+		String query = "INSERT INTO `newsCategories` (`newsId`, `categoryId`, `score`) VALUES (?, (" +
+				"SELECT `id` FROM `categories` WHERE `name` = ?), ?)";
 
 		try {
 			statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-			statement.setInt(1, categoryId);
-			statement.setInt(2, eventId);
+			statement.setInt(1, newsId);
+			statement.setString(2, scoredCategory.getName());
+			statement.setDouble(3, scoredCategory.getScore());
 
 			statement.executeUpdate();
 			results = statement.getGeneratedKeys();
@@ -211,6 +214,57 @@ public class CategoryHelper {
 			}
 
 			return multimap;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (results != null) {
+				try {
+					results.close();
+				} catch (SQLException ignore) {}
+
+				results = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException ignore) {}
+
+				statement = null;
+			}
+		}
+
+		return null;
+	}
+
+
+	public List<ScoredCategoryObject> getNewsCategories(int newsId) {
+		PreparedStatement statement = null;
+		ResultSet results = null;
+
+		String query =
+				"SELECT `c`.`id`, `c`.`name`, `cn`.`score`" +
+						" FROM `categories` AS `c`" +
+						" JOIN `newsCategories` AS `cn` ON `cn`.`categoryId` = `c`.`id`" +
+						" WHERE `newsId` = ?" +
+						" ORDER BY `cn`.`score` ASC";
+
+		try {
+			statement = connection.prepareStatement(query);
+			statement.setInt(1, newsId);
+
+			List<ScoredCategoryObject> categories = new ArrayList<>();
+			results = statement.executeQuery();
+			while (results.next()) {
+				ScoredCategoryObject categoryObject = new ScoredCategoryObject();
+				categoryObject.setId(results.getInt("id"));
+				categoryObject.setName(results.getString("name"));
+				categoryObject.setScore(results.getDouble("score"));
+
+				categories.add(categoryObject);
+			}
+
+			return categories;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {

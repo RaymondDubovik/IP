@@ -7,7 +7,7 @@ import java.util.List;
  * Date: 23.02.2016
  */
 public interface CategoryPicker {
-	public void addCategories(List<ScoredCategory> categories);
+	public void addCategories(List<ScoredCategoryObject> categories);
 	public String getBestMatch();
 	public List<String> getRelevantCategories();
 }

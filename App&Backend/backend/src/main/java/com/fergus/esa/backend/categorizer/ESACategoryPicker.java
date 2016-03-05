@@ -26,7 +26,7 @@ public class ESACategoryPicker implements CategoryPicker {
 
 
 	@Override
-	public void addCategories(List<ScoredCategory> categories) {
+	public void addCategories(List<ScoredCategoryObject> categories) {
 		int weight = TOP_CATEGORY_COUNT_TO_USE;
 		for (int i = 0; i < TOP_CATEGORY_COUNT_TO_USE; i++) {
 			String category = categories.get(i).getName();

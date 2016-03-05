@@ -6,14 +6,14 @@ import com.fergus.esa.backend.dataObjects.CategoryObject;
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 24.02.2016
  */
-public class ScoredCategory extends CategoryObject {
+public class ScoredCategoryObject extends CategoryObject {
 	private double score;
 
 
-	public ScoredCategory() {}
+	public ScoredCategoryObject() {}
 
 
-	public ScoredCategory(String category, double score) {
+	public ScoredCategoryObject(String category, double score) {
 		this.score = score;
 		this.setName(category);
 	}
@@ -24,7 +24,7 @@ public class ScoredCategory extends CategoryObject {
 	}
 
 
-	public ScoredCategory setScore(double score) {
+	public ScoredCategoryObject setScore(double score) {
 		this.score = score;
 		return this;
 	}

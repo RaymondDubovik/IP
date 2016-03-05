@@ -9,7 +9,7 @@ import com.fergus.esa.backend.MySQLHelpers.SummaryHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.categorizer.CategoryPicker;
 import com.fergus.esa.backend.categorizer.ESACategoryPicker;
-import com.fergus.esa.backend.categorizer.ScoredCategory;
+import com.fergus.esa.backend.categorizer.ScoredCategoryObject;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
 import com.fergus.esa.backend.dataObjects.GcmObject;
@@ -75,6 +75,11 @@ public class ESAEventServlet extends HttpServlet {
 	private static final long PUSH_TIMESTAMP_SECONDS = 1 * 24 * 60 * 60; // 1 day
 
 	private Connection connection;
+	private EventHelper eventHelper;
+	private NewsHelper newsHelper;
+	private CategoryHelper categoryHelper;
+	private SummaryHelper summaryHelper;
+	private ImageHelper imageHelper;
 
 
 	private static Configuration getTwitterConfiguration() {
@@ -91,6 +96,11 @@ public class ESAEventServlet extends HttpServlet {
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		connection = (new MySQLJDBC()).getConnection();
+		eventHelper = new EventHelper(connection);
+		newsHelper = new NewsHelper(connection);
+		categoryHelper = new CategoryHelper(connection);
+		summaryHelper = new SummaryHelper(connection);
+		imageHelper = new ImageHelper(connection);
 
 		/*
 		try {
@@ -113,7 +123,6 @@ public class ESAEventServlet extends HttpServlet {
 				connection.close();
 			} catch (SQLException ignored) {}
 		}
-
 	}
 
 
@@ -133,10 +142,6 @@ public class ESAEventServlet extends HttpServlet {
 
 
 	public void storeData(HashSet<String> eventHeading) throws FeedException, IOException, TwitterException {
-		EventHelper eventHelper = new EventHelper(connection);
-		CategoryHelper categoryHelper = new CategoryHelper(connection);
-		SummaryHelper summaryHelper = new SummaryHelper(connection);
-		ImageHelper imageHelper = new ImageHelper(connection);
 		List<CategoryObject> allCategoriesList =  categoryHelper.getCategories();
 
 		Map<String, Integer> allCategories = new HashMap<>();
@@ -205,10 +210,8 @@ public class ESAEventServlet extends HttpServlet {
 
 			List<String> relevantCategories = categoryPicker.getRelevantCategories();
 			for (String relevantCategory : relevantCategories) {
-				categoryHelper.addEventCategory(allCategories.get(relevantCategory), eventId);
+				categoryHelper.addEventCategory(allCategories.get(relevantCategory.toLowerCase()), eventId);
 			}
-
-			System.out.println();
 
 			// finish populating the event object
 			event.setId(eventId)
@@ -295,11 +298,24 @@ public class ESAEventServlet extends HttpServlet {
 	public List<ResponseJsonObject> summarize(List<NewsObject> news) {
 		List<ResponseJsonObject> summaries = new ArrayList<>();
 
+		ResponseJsonObject retrievedSummaries;
 		for (NewsObject n : news) {
-			ResponseJsonObject retrievedSummaries = getSummaries(n.getUrl(), n.isNew());
-			if (retrievedSummaries != null) { // adding summary only if it is meaningful
-				retrievedSummaries.setDate(n.getTimestamp());
-				summaries.add(retrievedSummaries);
+			List<ScoredCategoryObject> categories = n.getCategories();
+			if (categories == null) { // if we don't know categories, then we have not retrieved this news article before
+				retrievedSummaries = getSummaries(n.getUrl(), n.isNew());
+				if (retrievedSummaries != null) { // adding summary only if it is meaningful
+					retrievedSummaries.setDate(n.getTimestamp());
+					summaries.add(retrievedSummaries);
+
+					for (ScoredCategoryObject scoredCategory : retrievedSummaries.getCategories()) {
+						categoryHelper.addNewsCategory(n.getId(), scoredCategory);
+					}
+				}
+			} else {
+				if (categories.size() > 0) { // if size == 0, then categories were not assigned to the news article, probably due to article retrieval problems
+					ResponseJsonObject e = new ResponseJsonObject().setCategories(categories);
+					summaries.add(e);
+				}
 			}
 		}
 
@@ -342,9 +358,7 @@ public class ESAEventServlet extends HttpServlet {
 				return null;
 			}
 
-			System.out.println(categoriesJson);
-
-			List<ScoredCategory> scoredCategoryObjects = new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<ScoredCategory>>(){}.getType());
+			List<ScoredCategoryObject> scoredCategoryObjects = new Gson().fromJson(categoriesJson, new TypeToken<ArrayList<ScoredCategoryObject>>(){}.getType());
 			summaries.setCategories(scoredCategoryObjects);
 
 			if (summarize) {
@@ -353,8 +367,6 @@ public class ESAEventServlet extends HttpServlet {
 			} else {
 				summaries.setSummaries(null);
 			}
-
-
         } catch (Exception e) {
             e.printStackTrace();
 			return null;
@@ -374,23 +386,8 @@ public class ESAEventServlet extends HttpServlet {
 
 			List<SyndEntry> entryList = feed.getEntries();
 
-
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
-			// TODO:
 			if (entryList.size() > 0) {
-				for (int i = 0; i < 4; i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
+				for (int i = 0; i < entryList.size(); i++) { // was: for (int i = 0; i < 2; i++) // TODO: what is 2 and why in this case?
 					SyndEntry entry = entryList.get(i);
 					String entryUrl = entry.getUri().substring(33); // TODO: where 33 comes from?
 					String title = entry.getTitle();
@@ -407,11 +404,8 @@ public class ESAEventServlet extends HttpServlet {
 						insertNews(newsObject);
 						news.add(newsObject);
 					} catch (ConflictException e) {
-						// TODO: refactor
-						NewsHelper newsHelper = new NewsHelper(connection);
-						// newsHelper.getCategories
-						
-						news.add(newsObject.setNew(false)); // adds article with indication, that it already exists in the database
+						newsObject = newsHelper.getByUrl(entryUrl);
+						news.add(newsObject); // adds article with already calculated categories
 					}
 				}
 			}
@@ -421,14 +415,12 @@ public class ESAEventServlet extends HttpServlet {
 
 
 		public NewsObject insertNews(NewsObject news) throws ConflictException {
-			NewsHelper newsHelper = new NewsHelper(connection);
-
 			// If if is not null, then check if it exists. If yes, throw an Exception, that it is already present
 			if (news.getUrl() != null && newsHelper.exists(news.getUrl())) {
 				throw new ConflictException("Object already exists");
 			}
 
-			newsHelper.create(news);
+			news.setId(newsHelper.create(news));
 			return news;
 		}
 	}
@@ -540,17 +532,17 @@ public class ESAEventServlet extends HttpServlet {
 
 
 	private class ResponseJsonObject {
-		private List<ScoredCategory> categories;
+		private List<ScoredCategoryObject> categories;
 		private List<SummaryObject> summaries;
 		private Date date;
 
 
-		public List<ScoredCategory> getCategories() {
+		public List<ScoredCategoryObject> getCategories() {
 			return categories;
 		}
 
 
-		public ResponseJsonObject setCategories(List<ScoredCategory> category) {
+		public ResponseJsonObject setCategories(List<ScoredCategoryObject> category) {
 			this.categories = category;
 			return this;
 		}
