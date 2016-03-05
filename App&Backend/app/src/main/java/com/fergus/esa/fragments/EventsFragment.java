@@ -404,7 +404,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 
 		@Override
-		protected void onPostExecute(List<CategoryObject> categories) {
+		protected void onPostExecute(final List<CategoryObject> categories) {
 			if (hasError()) {
 				loadRequired = true;
 				return;
@@ -415,11 +415,28 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 			listViewCategories.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+					CategoryObject category =  (CategoryObject) listViewCategories.getItemAtPosition(position);
+
 					if (listViewCategories.isItemChecked(position)) {
-						CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
 						categoryStorer.addCategory(category);
+
+						// TODO: check if it is all categories here
+						if (category.getId() == CategoryObjectWrapper.ALL_CATEGORIES_ID) {
+							for (int i = 0; i < categories.size(); i++) {
+								CategoryObject currentCategory = categories.get(i);
+								if (currentCategory.getId() != CategoryObjectWrapper.ALL_CATEGORIES_ID) {
+									categoryStorer.removeCategory(currentCategory);
+								}
+							}
+						} else if (categoryStorer.hasCategory(new CategoryObject().setId(CategoryObjectWrapper.ALL_CATEGORIES_ID))) {
+							for (int i = 0; i < categories.size(); i++) {
+								CategoryObject currentCategory = categories.get(i);
+								if (currentCategory.getId() == CategoryObjectWrapper.ALL_CATEGORIES_ID) {
+									categoryStorer.removeCategory(currentCategory);
+								}
+							}
+						}
 					} else {
-						CategoryObject category = (CategoryObject) listViewCategories.getItemAtPosition(position);
 						categoryStorer.removeCategory(category);
 					}
 
