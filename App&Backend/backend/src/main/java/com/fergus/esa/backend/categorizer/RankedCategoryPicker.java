@@ -10,8 +10,8 @@ import java.util.Random;
  * Author: Raymond Dubovik (https://github.com/RaymondDubovik)
  * Date: 23.02.2016
  */
-public class ESACategoryPicker implements CategoryPicker {
-	private static final double THRESHOLD = 0.2;
+public class RankedCategoryPicker implements CategoryPicker {
+	private static final double THRESHOLD = 0.25;
 	private static final int TOP_CATEGORY_COUNT_TO_USE = 3;
 
 	// key stores category, value stores how many sources reported that category
@@ -19,7 +19,7 @@ public class ESACategoryPicker implements CategoryPicker {
 	private int categoryCount;
 
 
-	public ESACategoryPicker() {
+	public RankedCategoryPicker() {
 		map = new HashMap<>();
 		categoryCount = 0;
 	}
@@ -60,7 +60,7 @@ public class ESACategoryPicker implements CategoryPicker {
 			}
 		}
 
-		// return random one from the list
+		// return random one from the list, if several categories received the same overall score
 		return maxCategories.get(new Random().nextInt(maxCategories.size()));
 	}
 

@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 01, 2016 at 01:20 PM
+-- Generation Time: Mar 06, 2016 at 12:46 AM
 -- Server version: 10.1.10-MariaDB
 -- PHP Version: 7.0.2
 
@@ -30,6 +30,19 @@ CREATE TABLE `categories` (
   `id` int(11) NOT NULL,
   `name` varchar(60) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `categories`
+--
+
+INSERT INTO `categories` (`id`, `name`) VALUES
+(1, 'Business'),
+(2, 'Culture'),
+(3, 'Education'),
+(4, 'Politics'),
+(5, 'Science'),
+(6, 'Sport'),
+(7, 'Technology');
 
 -- --------------------------------------------------------
 
@@ -76,8 +89,8 @@ CREATE TABLE `eventsusers` (
 --
 
 CREATE TABLE `images` (
-  `url` varchar(400) DEFAULT NULL,
-  `eventId` int(11) DEFAULT NULL
+  `eventId` int(11) DEFAULT NULL,
+  `url` varchar(400) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -88,11 +101,23 @@ CREATE TABLE `images` (
 
 CREATE TABLE `news` (
   `id` int(11) NOT NULL,
+  `eventId` int(11) DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
   `url` varchar(400) DEFAULT NULL,
   `logoUrl` varchar(400) DEFAULT NULL,
-  `timestamp` datetime DEFAULT NULL,
-  `eventId` int(11) DEFAULT NULL
+  `timestamp` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `newscategories`
+--
+
+CREATE TABLE `newscategories` (
+  `newsId` int(11) DEFAULT NULL,
+  `categoryId` int(11) DEFAULT NULL,
+  `score` double NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -102,10 +127,10 @@ CREATE TABLE `news` (
 --
 
 CREATE TABLE `summaries` (
+  `eventId` int(11) DEFAULT NULL,
   `length` int(11) DEFAULT NULL,
   `text` text,
-  `timestamp` datetime DEFAULT NULL,
-  `eventId` int(11) DEFAULT NULL
+  `timestamp` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -115,15 +140,15 @@ CREATE TABLE `summaries` (
 --
 
 CREATE TABLE `tweets` (
-  `id` bigint(20) NOT NULL,
+  `id` int(20) NOT NULL,
+  `eventId` int(11) DEFAULT NULL,
   `username` varchar(60) DEFAULT NULL,
   `screenName` varchar(60) DEFAULT NULL,
   `profileImgUrl` varchar(400) DEFAULT NULL,
   `imageUrl` varchar(255) DEFAULT NULL,
   `text` text,
   `timestamp` datetime DEFAULT NULL,
-  `url` varchar(30) DEFAULT NULL,
-  `eventId` int(11) DEFAULT NULL
+  `url` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -154,21 +179,52 @@ ALTER TABLE `events`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `eventscategories`
+--
+ALTER TABLE `eventscategories`
+  ADD KEY `fk_eventscategories_event_id` (`eventId`),
+  ADD KEY `fk_eventscategories_news_id` (`categoryId`);
+
+--
+-- Indexes for table `eventsusers`
+--
+ALTER TABLE `eventsusers`
+  ADD KEY `fk_event_id` (`eventId`),
+  ADD KEY `fk_user_id` (`userId`);
+
+--
+-- Indexes for table `images`
+--
+ALTER TABLE `images`
+  ADD KEY `fk_image_id` (`eventId`);
+
+--
 -- Indexes for table `news`
 --
 ALTER TABLE `news`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_news_id` (`eventId`);
+
+--
+-- Indexes for table `newscategories`
+--
+ALTER TABLE `newscategories`
+  ADD KEY `fk_newscategories_news_id` (`newsId`),
+  ADD KEY `fk_category_id` (`categoryId`);
 
 --
 -- Indexes for table `summaries`
 --
+ALTER TABLE `summaries`
+  ADD KEY `fk_summary_id` (`eventId`);
 ALTER TABLE `summaries` ADD FULLTEXT KEY `text` (`text`);
 
 --
 -- Indexes for table `tweets`
 --
 ALTER TABLE `tweets`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_tweet_id` (`eventId`);
 
 --
 -- Indexes for table `users`
@@ -189,22 +245,71 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT for table `events`
 --
 ALTER TABLE `events`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `news`
 --
 ALTER TABLE `news`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=890;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `tweets`
 --
 ALTER TABLE `tweets`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1511;
+  MODIFY `id` int(20) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `eventscategories`
+--
+ALTER TABLE `eventscategories`
+  ADD CONSTRAINT `fk_eventscategories_event_id` FOREIGN KEY (`eventId`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_eventscategories_news_id` FOREIGN KEY (`categoryId`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `eventsusers`
+--
+ALTER TABLE `eventsusers`
+  ADD CONSTRAINT `fk_event_id` FOREIGN KEY (`eventId`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_user_id` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `images`
+--
+ALTER TABLE `images`
+  ADD CONSTRAINT `fk_image_id` FOREIGN KEY (`eventId`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `news`
+--
+ALTER TABLE `news`
+  ADD CONSTRAINT `fk_news_id` FOREIGN KEY (`eventId`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `newscategories`
+--
+ALTER TABLE `newscategories`
+  ADD CONSTRAINT `fk_category_id` FOREIGN KEY (`categoryId`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_newscategories_news_id` FOREIGN KEY (`newsId`) REFERENCES `news` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `summaries`
+--
+ALTER TABLE `summaries`
+  ADD CONSTRAINT `fk_summary_id` FOREIGN KEY (`eventId`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `tweets`
+--
+ALTER TABLE `tweets`
+  ADD CONSTRAINT `fk_tweet_id` FOREIGN KEY (`eventId`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

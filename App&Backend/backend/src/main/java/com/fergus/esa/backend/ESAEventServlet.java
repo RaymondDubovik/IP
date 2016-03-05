@@ -8,7 +8,7 @@ import com.fergus.esa.backend.MySQLHelpers.NewsHelper;
 import com.fergus.esa.backend.MySQLHelpers.SummaryHelper;
 import com.fergus.esa.backend.MySQLHelpers.TweetHelper;
 import com.fergus.esa.backend.categorizer.CategoryPicker;
-import com.fergus.esa.backend.categorizer.ESACategoryPicker;
+import com.fergus.esa.backend.categorizer.RankedCategoryPicker;
 import com.fergus.esa.backend.categorizer.ScoredCategoryObject;
 import com.fergus.esa.backend.dataObjects.CategoryObject;
 import com.fergus.esa.backend.dataObjects.EventObject;
@@ -178,7 +178,7 @@ public class ESAEventServlet extends HttpServlet {
 			}
 
 			String pushNotificationSummary = null;
-			CategoryPicker categoryPicker = new ESACategoryPicker();
+			CategoryPicker categoryPicker = new RankedCategoryPicker();
 			List<NewsObject> news = new NewsModel().addNews(heading, eventId);
 			List<ResponseJsonObject> responses = summarize(news);
 			for (ResponseJsonObject response: responses) {
