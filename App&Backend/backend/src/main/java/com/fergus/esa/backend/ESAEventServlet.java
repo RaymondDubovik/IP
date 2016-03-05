@@ -102,18 +102,6 @@ public class ESAEventServlet extends HttpServlet {
 		summaryHelper = new SummaryHelper(connection);
 		imageHelper = new ImageHelper(connection);
 
-		/*
-		try {
-            SchemaCreator schemaCreator = new SchemaCreator();
-            schemaCreator.drop(connection);
-            schemaCreator.create(connection);
-            // schemaCreator.populateWithMockData(connection);
-            schemaCreator.populate(connection);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-		*/
-
 		try {
 			storeData(getEventHeadings());
 		} catch (IOException | FeedException | TwitterException e) {
