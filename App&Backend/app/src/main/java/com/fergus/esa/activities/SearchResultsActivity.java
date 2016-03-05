@@ -132,7 +132,7 @@ public class SearchResultsActivity extends ActionBarActivity {
             try {
 				int summaryLength = PreferenceManager.getDefaultSharedPreferences(context).getInt(SharedPreferencesKeys.SUMMARY_LENGTH, 75); // T0D0 remove hardcode
                 return ServerUrls.endpoint.listSearchedEvents(query, summaryLength).execute().getItems();
-            } catch (IOException e) {
+            } catch (IOException | IllegalArgumentException e) {
                 return Collections.EMPTY_LIST;
             }
         }
@@ -167,7 +167,7 @@ public class SearchResultsActivity extends ActionBarActivity {
 				});
             }
 
-            pd.hide();
+            pd.dismiss();
         }
     }
 }

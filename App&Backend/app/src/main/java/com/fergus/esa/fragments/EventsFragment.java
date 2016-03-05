@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,6 +60,8 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 	private int type = TYPE_EVENTS_DEFAULT;
 
+	private boolean wasLaunched = false;
+	// quick and dirty....
 	private ProgressDialog progressDialog;
 
 	private boolean loadRequired;
@@ -146,10 +149,19 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 	}
 
 
+	@Override
+	public void onPause() {
+		super.onPause();
+		hideUi();
+	}
+
+
 	private void getData(boolean displayDialog) {
 		if (!ConnectionChecker.hasInternetConnection(activity)) {
 			loadRequired = true;
-			connectionErrorView.show(R.string.no_internet);
+			if (wasLaunched || isFragmentVisible()) {
+				connectionErrorView.show(R.string.no_internet);
+			}
 
 			return;
 		}
@@ -157,6 +169,11 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 		loadRequired = false;
 		new EventAsyncTask(displayDialog).execute();
 		new CategoryAsyncTask().execute();
+	}
+
+
+	private boolean isFragmentVisible() {
+		return activity.getCurrentFragment() == this;
 	}
 
 
@@ -198,7 +215,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 	private void hideUi() {
 		if (progressDialog != null) {
-			progressDialog.hide();
+			progressDialog.dismiss();
 		}
 
 		if (swipeContainer != null && swipeContainer.isRefreshing()) {
@@ -243,7 +260,10 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 		@Override
 		protected void onPreExecute() {
-			if (displayDialog) {
+			if (displayDialog && (wasLaunched || isFragmentVisible())) {
+				if (progressDialog != null) {
+					progressDialog.dismiss();
+				}
 				progressDialog = new ProgressDialog(activity);
 				progressDialog.setTitle("Please Wait...");
 				progressDialog.setMessage("Downloading Events...");
@@ -268,9 +288,10 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 				}
 
 				return (collection == null) ? null : collection.getItems();
-			} catch (IOException e) {
+			} catch (IOException | IllegalArgumentException e) {
 				setError(true);
-				e.printStackTrace();
+				// e.printStackTrace();
+				Log.d("", "could not retrieve data");
 				return Collections.EMPTY_LIST;
 			}
 		}
@@ -278,13 +299,16 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 		@Override
 		protected void onPostExecute(List<EventObject> events) {
+			hideUi();
+			wasLaunched = true;
 			if (hasError()) {
-				hideUi();
-				if (connectionErrorView.isVisible()) {
-					connectionErrorView.quickHide();
-				}
+				if (isFragmentVisible()) {
+					if (connectionErrorView.isVisible()) {
+						connectionErrorView.quickHide();
+					}
 
-				connectionErrorView.show("Could not get data"); // T0D0 remove hardcode
+					connectionErrorView.show("Could not get data"); // T0D0 remove hardcode
+				}
 
 				loadRequired = true;
 				return;
@@ -292,7 +316,6 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 			if (events == null) {
 				progressBarEvents.setVisibility(View.GONE);
-				hideUi();
 				return;
 			}
 
@@ -326,7 +349,6 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 			});
 			gridViewEvent.setOnScrollListener(new GridViewScrollListener());
 
-			hideUi();
 			if (type != TYPE_EVENTS_RECOMMENDED) {
 				progressBarEvents.setVisibility(View.VISIBLE);
 			}
@@ -368,9 +390,10 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 			List<CategoryObject> categories;
 			try {
 				categories = ServerUrls.endpoint.getCategories().execute().getItems();
-			} catch (IOException e) {
+			} catch (IOException | IllegalArgumentException e) {
 				setError(true);
-				e.printStackTrace();
+				// e.printStackTrace();
+				Log.d("", "Could not retrieve data");
 				return Collections.emptyList();
 			}
 
@@ -383,13 +406,6 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 		@Override
 		protected void onPostExecute(List<CategoryObject> categories) {
 			if (hasError()) {
-				hideUi();
-				if (connectionErrorView.isVisible()) {
-					connectionErrorView.quickHide();
-				}
-
-				connectionErrorView.show("Could not get data"); // T0D0 remove hardcode
-
 				loadRequired = true;
 				return;
 			}

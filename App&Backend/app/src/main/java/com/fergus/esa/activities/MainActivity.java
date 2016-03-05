@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
@@ -37,9 +38,11 @@ public class MainActivity extends ActionBarActivity {
 	private BackButtonFragment backButtonFragment;
 
     private Merlin merlin;
+	private ViewPager viewPager;
+	private EventPageAdapter adapter;
 
 
-    @Override
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -61,8 +64,8 @@ public class MainActivity extends ActionBarActivity {
         tabLayout.addTab(tabLayout.newTab().setText("Recommended"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.eventViewPager);
-        final EventPageAdapter adapter = new EventPageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
+		viewPager = (ViewPager) findViewById(R.id.eventViewPager);
+		adapter = new EventPageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
 
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -199,6 +202,11 @@ public class MainActivity extends ActionBarActivity {
 
 	public void setBackButtonFragment(BackButtonFragment backButtonFragment) {
 		this.backButtonFragment = backButtonFragment;
+	}
+
+
+	public Fragment getCurrentFragment() {
+		return adapter.getRegisteredFragment(viewPager.getCurrentItem());
 	}
 }
 

@@ -131,7 +131,7 @@ public class EventActivity extends AppCompatActivity {
             try {
 				TweetObjectCollection collection = ServerUrls.endpoint.getTweets(eventId).execute();
 				tweets = (collection == null) ? Collections.<TweetObject>emptyList() : collection.getItems();
-            } catch (IOException ignored) {}
+            } catch (IOException | IllegalArgumentException ignored) {}
 
             return null;
         }
@@ -144,7 +144,7 @@ public class EventActivity extends AppCompatActivity {
             try {
 				NewsObjectCollection collection = ServerUrls.endpoint.getNews(eventId).execute();
 				news = (collection == null) ? Collections.<NewsObject>emptyList() : collection.getItems();
-            } catch (IOException ignored) {}
+            } catch (IOException | IllegalArgumentException ignored) {}
 
             return null;
         }
@@ -157,7 +157,7 @@ public class EventActivity extends AppCompatActivity {
             try {
 				ImageObjectCollection collection = ServerUrls.endpoint.getImages(eventId).execute();
 				images = (collection == null) ? Collections.<ImageObject>emptyList() : collection.getItems();
-            } catch (IOException ignored) {}
+            } catch (IOException | IllegalArgumentException ignored) {}
 
             return null;
         }
@@ -179,7 +179,7 @@ public class EventActivity extends AppCompatActivity {
 
 				SummaryObjectCollection collection = ServerUrls.endpoint.getSummaries(eventId, summaryLength).execute();
 				summaries = (collection == null) ? Collections.<SummaryObject>emptyList() : collection.getItems();
-            } catch (IOException ignored) {}
+            } catch (IOException | IllegalArgumentException ignored) {}
 
             return null;
         }
@@ -230,7 +230,7 @@ public class EventActivity extends AppCompatActivity {
 		protected Void doInBackground(Void... params) {
 			try {
 				ServerUrls.endpoint.registerHit(this.userId, this.eventId, this.milliseconds).execute();
-			} catch (IOException e) {
+			} catch (IOException | IllegalArgumentException e) {
 				e.printStackTrace();
 			}
 			return null;
