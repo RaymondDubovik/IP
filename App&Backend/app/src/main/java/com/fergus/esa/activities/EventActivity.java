@@ -121,14 +121,11 @@ public class EventActivity extends AppCompatActivity {
 
 				public void callSearch(String query) {
 					searchQuery = query;
-					System.out.println(query);
 					// notify observers
 					if (searchableFragments != null) {
 						for (SearchableFragment fragment : searchableFragments) {
 							fragment.onSearch(query);
 						}
-					} else {
-						System.out.println("lol null here");
 					}
 				}
 			});

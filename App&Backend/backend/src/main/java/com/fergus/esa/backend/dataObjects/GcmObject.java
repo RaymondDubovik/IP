@@ -98,7 +98,6 @@ public class GcmObject {
 
 			data.put("click_action", "OPEN_EVENT_ACTIVITY_FROM_PUSH");
             json.put(PARAM_NOTIFICATION, data);
-			System.out.println(json.toString());
             return json.toString();
         } catch (JSONException e) {
             e.printStackTrace();

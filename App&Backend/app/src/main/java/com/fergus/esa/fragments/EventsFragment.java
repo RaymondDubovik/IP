@@ -288,7 +288,6 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 				switch (type) {
 					case TYPE_EVENTS_NEW:
-						Log.d("current", "'" + currentTimestamp + "'");
 						collection = ServerUrls.endpoint.getNewEvents(currentTimestamp, EVENT_COUNT_PER_PAGE, categoryStorer.getSelectedCategoryIds()).execute();
 						break;
 					case TYPE_EVENTS_RECOMMENDED:

@@ -12,7 +12,7 @@ import java.util.Properties;
  */
 public class MySQLJDBC implements JDBC {
     private static final boolean PRODUCTION = false;
-	private static final String MYSQL_PROPERTYIES_PATH = "WEB-INF/mysql.config.properties";
+	private static final String MYSQL_PROPERTIES_PATH = "WEB-INF/mysql.config.properties";
 
 	private static String HOST;
     private static int PORT;
@@ -29,7 +29,7 @@ public class MySQLJDBC implements JDBC {
 
 		Properties properties = new Properties();
 		try {
-			properties.load(new FileInputStream(MYSQL_PROPERTYIES_PATH));
+			properties.load(new FileInputStream(MYSQL_PROPERTIES_PATH));
 			HOST = properties.getProperty("host");
 			PORT = Integer.parseInt(properties.getProperty("port"));
 			DATABASE_NAME = properties.getProperty("databaseName");
@@ -72,22 +72,5 @@ public class MySQLJDBC implements JDBC {
             e.printStackTrace();
             return null;
         }
-
-
-
-
-        /*
-        Connection connection = null;
-        try {
-            Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:test.db");
-        } catch ( Exception e ) {
-            System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-            System.exit(0);
-        }
-        System.out.println("Opened database successfully");
-
-        return connection;
-        */
     }
 }

@@ -29,8 +29,6 @@ public class EventHelper {
 	// TODO: make work:
     public List<EventObject> getNewEvents(List<Integer> categories, long from, int count) {
 		String timestampFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(from);
-		System.out.println(from);
-		System.out.println(timestampFrom);
 
 		PreparedStatement statement = null;
         ResultSet results = null;
@@ -71,7 +69,7 @@ public class EventHelper {
             statement.setInt(param++, count);
             results = statement.executeQuery();
             if (!results.next()) {
-                System.out.println("No minId");
+                System.out.println("No minTimestamp");
                 return null;
             }
 
