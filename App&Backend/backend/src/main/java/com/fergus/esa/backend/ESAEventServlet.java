@@ -80,6 +80,7 @@ public class ESAEventServlet extends HttpServlet {
 	private CategoryHelper categoryHelper;
 	private SummaryHelper summaryHelper;
 	private ImageHelper imageHelper;
+	TweetHelper tweetHelper;
 
 
 	private static Configuration getTwitterConfiguration() {
@@ -101,6 +102,7 @@ public class ESAEventServlet extends HttpServlet {
 		categoryHelper = new CategoryHelper(connection);
 		summaryHelper = new SummaryHelper(connection);
 		imageHelper = new ImageHelper(connection);
+		tweetHelper = new TweetHelper(connection);
 
 		try {
 			storeData(getEventHeadings());
@@ -145,8 +147,7 @@ public class ESAEventServlet extends HttpServlet {
 			heading = removeSuffix(removeAccents(heading));
 			System.out.println("----------" + heading + "----------");
 
-			EventObject event = new EventObject()
-					.setHeading(heading);
+			EventObject event = new EventObject().setHeading(heading);
 			int eventId = eventHelper.getIdByHeading(event.getHeading());
 
 			if (eventId == 0) {
@@ -434,22 +435,21 @@ public class ESAEventServlet extends HttpServlet {
 
 
 		private void insertTweets(List<TweetObject> tweets) {
-			TweetHelper helper = new TweetHelper(connection);
 			for (TweetObject tweet : tweets) {
 				try {
-					insertTweet(helper, tweet);
+					insertTweet(tweet);
 				} catch (ConflictException ignored) {}
-
-				helper.create(tweet);
 			}
 		}
 
 
-		private void insertTweet(TweetHelper helper, TweetObject tweet) throws ConflictException {
+		private void insertTweet(TweetObject tweet) throws ConflictException {
 			//If if is not null, then check if it exists. If yes, throw an Exception that it is already present
-			if (tweet.getId() != 0 && helper.exists(tweet.getUsername(), tweet.getText(), tweet.getEventId())) {
+			if (tweet.getId() != 0 && tweetHelper.exists(tweet.getUsername(), tweet.getText(), tweet.getEventId())) {
 				throw new ConflictException("Object already exists");
 			}
+
+			tweetHelper.create(tweet);
 		}
 
 
