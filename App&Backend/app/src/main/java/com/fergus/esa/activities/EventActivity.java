@@ -207,7 +207,6 @@ public class EventActivity extends AppCompatActivity {
 
 
 	public void registerSearchFragment(SearchableFragment searchableFragment) {
-		System.out.println("I registered!");
 		if (searchableFragments == null) {
 			searchableFragments = new ArrayList<>();
 		}

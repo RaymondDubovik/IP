@@ -212,7 +212,6 @@ public class ESAEventServlet extends HttpServlet {
 			}
 
 			eventHelper.update(event);
-
 			// if it is new event and there is summary that can be displayed in the push notification
 			if (pushRequired && pushNotificationSummary != null) {
 				String bestCategory = categoryPicker.getBestMatch();

@@ -1,30 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
-    <android.support.v7.widget.SearchView
-        android:id="@+id/searchText"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-		android:padding="0dp"
-        android:maxLines="1"
-        android:background="@drawable/card_view"/>
 
     <ListView
         android:id="@+id/tweetList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/searchText"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:divider="@android:color/transparent"
         android:dividerHeight="10.0sp"/>
 
-</RelativeLayout>
+</LinearLayout>
