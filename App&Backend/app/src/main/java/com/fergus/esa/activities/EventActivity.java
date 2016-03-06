@@ -79,6 +79,16 @@ public class EventActivity extends AppCompatActivity {
         eventId = extras.getInt(BUNDLE_PARAM_EVENT_ID);
         eventTitle = extras.getString(BUNDLE_PARAM_EVENT_HEADING);
 
+		if (eventId == 0) {
+			System.out.println("could not get event id from the push notification");
+
+			for (String key : extras.keySet()) {
+				System.out.println(key);
+			}
+
+			System.out.println(extras.getString("com.fergus.esa"));
+		}
+
 		// in separate async tasks, so that it is easier to implement infinite scrolling for each of the fragments in the future
 		new SummaryAsyncTask(this).execute();
 		new ImageAsyncTask().execute();

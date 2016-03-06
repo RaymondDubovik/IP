@@ -42,7 +42,7 @@ public class MyGcmListenerService extends GcmListenerService {
     public static final String BUNDLE_MESSAGE_KEY = "body";
     public static final String BUNDLE_SOUND_KEY = "sound";
     public static final String BUNDLE_DATA = "data";
-    public static final String JSON_ID = "id";
+    public static final String JSON_ID = "eventId";
     private static final String BUNDLE_NOTIFICATION = "notification";
 
 

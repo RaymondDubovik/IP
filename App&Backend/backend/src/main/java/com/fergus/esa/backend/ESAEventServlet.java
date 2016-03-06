@@ -72,7 +72,7 @@ public class ESAEventServlet extends HttpServlet {
 	private static final String SUMMARIZATION_SERVER_URL = "http://127.0.0.1:10000/summarize";
 	private static final Pattern TWEET_URL_PATTERN = Pattern.compile("https://t.co/[a-zA-z0-9\\-]*");
 	/** to the existing events push is issues only if the event was inactive for this time period */
-	private static final long PUSH_TIMESTAMP_SECONDS = 1 * 24 * 60 * 60; // 1 day
+	private static final long PUSH_TIMESTAMP_MILLISECONDS = 1 * 24 * 60 * 60 * 1000; // 1 day
 
 	private Connection connection;
 	private EventHelper eventHelper;
@@ -132,6 +132,8 @@ public class ESAEventServlet extends HttpServlet {
 	public void storeData(HashSet<String> eventHeading) throws FeedException, IOException, TwitterException {
 		List<CategoryObject> allCategoriesList =  categoryHelper.getCategories();
 
+		Multimap<CategoryObject, String> categoriesUsers = categoryHelper.getBestCategoriesForEachUser();
+
 		Map<String, Integer> allCategories = new HashMap<>();
 		for (CategoryObject category : allCategoriesList) {
 			allCategories.put(category.getName().toLowerCase(), category.getId());
@@ -155,7 +157,7 @@ public class ESAEventServlet extends HttpServlet {
 				event = eventHelper.get(eventId);
 				mainImageUrl = event.getImageUrl();
 
-				long ago = System.currentTimeMillis() - PUSH_TIMESTAMP_SECONDS;
+				long ago = System.currentTimeMillis() - PUSH_TIMESTAMP_MILLISECONDS;
 				if (event.getTimestamp().getTime() < ago) {
 					pushRequired = true;
 				}
@@ -212,18 +214,26 @@ public class ESAEventServlet extends HttpServlet {
 			}
 
 			eventHelper.update(event);
-			// if it is new event and there is summary that can be displayed in the push notification
+			// if the event requires push notification (was revived) and there is summary that can be displayed in the push notification
 			if (pushRequired && pushNotificationSummary != null) {
 				String bestCategory = categoryPicker.getBestMatch();
-				Multimap<CategoryObject, String> categoriesUsers = categoryHelper.getBestCategoriesForEachUser();
 				if (categoriesUsers != null) {
 					for (CategoryObject currentCategory : categoriesUsers.keySet()) {
 						if (bestCategory.equalsIgnoreCase(currentCategory.getName())) { // if current category is the best category
+							System.out.println(bestCategory + " - " + currentCategory.getName());
+
 							Collection<String> gcmTokens = categoriesUsers.get(currentCategory);
+
+							System.out.println(currentCategory);
+
 							for (String gcmToken : gcmTokens) {
-								GcmObject gcmObject = new GcmObject(gcmToken, event.getHeading(), pushNotificationSummary).setData("{\"id\":" + event.getId() + "}"); // TODO: do not hardcode json, encode it
+								String jsonData = "{\"eventId\":" + event.getId() + ", \"eventHeading\":\"" + event.getHeading() + "\"}"; // TOD0: do not hardcode json, encode it
+								GcmObject gcmObject = new GcmObject(gcmToken, event.getHeading(), pushNotificationSummary).setData(jsonData);
 								new GcmSender().sendNotification(gcmObject.toJson());
 							}
+
+							// those users already received push for 1 event, so we will not send them pushes again
+							categoriesUsers.removeAll(currentCategory);
 						}
 					}
 				}
