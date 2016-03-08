@@ -486,7 +486,7 @@ public class ESAEventServlet extends HttpServlet {
 
 			// For each trending event pull the top 15 most popular tweets
 			twitter4j.Query query = new twitter4j.Query(eventHeading);
-			query.count(15);
+			query.count(10);
 			query.lang("en");
 			query.resultType(Query.ResultType.mixed);
 

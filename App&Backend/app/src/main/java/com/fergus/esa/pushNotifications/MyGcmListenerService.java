@@ -25,6 +25,7 @@ import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.fergus.esa.R;
 import com.fergus.esa.SharedPreferencesKeys;
@@ -55,6 +56,7 @@ public class MyGcmListenerService extends GcmListenerService {
      */
     @Override
     public void onMessageReceived(String from, Bundle data) {
+		Log.d("GcmService", "push received");
 		// if push notifications are disabled, then don't show notification
 		if (!PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(SharedPreferencesKeys.NOTIFICATIONS_ALLOWED, true)) {
 			return;
@@ -65,7 +67,6 @@ public class MyGcmListenerService extends GcmListenerService {
 		if (data == null) {
             return;
         }
-
 
         String title = data.getString(BUNDLE_TITLE_KEY, DEFAULT_TITLE);
         String message = data.getString(BUNDLE_MESSAGE_KEY);
