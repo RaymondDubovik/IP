@@ -54,7 +54,7 @@
 		android:layout_marginLeft="10dp"
 		android:layout_marginRight="10dp"
 		rsv:barHeightPercent="0.1"
-		rsv:filledColor="@color/blue"
+		rsv:filledColor="@color/accent"
 		rsv:rangeCount="5" />
 
 </LinearLayout>

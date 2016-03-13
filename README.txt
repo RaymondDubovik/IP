@@ -6,7 +6,7 @@ Also, possibly build tools in build.gradle will need to be updated.
 
 Contains 2 modules:
 - android app
-- google app engine backend server
+- Google App Engine backend server
 
 1) Android app - easiest to launch from Android Studio.
 - Depends on the backend module

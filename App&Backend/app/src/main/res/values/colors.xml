@@ -5,4 +5,5 @@
     <color name="lightBackground">#EEEEEE</color>
     <color name="blue">#2196f3</color>
     <color name="blue_transparent">#AA2196f3</color>
+	<color name="accent">#6200EA</color>
 </resources>

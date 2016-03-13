@@ -142,7 +142,7 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 		});
 
 		TypedValue typedValue = new TypedValue();
-		activity.getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
+		activity.getTheme().resolveAttribute(R.attr.colorAccent, typedValue, true);
 		swipeContainer.setColorSchemeColors(typedValue.data);
 
 		getData();

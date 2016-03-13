@@ -22,7 +22,7 @@
 			android:id="@+id/tweetUser"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:textColorLink="@color/blue"
+			android:textColorLink="@color/accent"
 			android:gravity="center_vertical"
 			android:textStyle="bold"/>
 
@@ -33,7 +33,7 @@
 			android:layout_marginTop="2dp"
 			android:autoLink="web"
 			android:ellipsize="marquee"
-			android:textColorLink="@color/blue"
+			android:textColorLink="@color/accent"
 			android:scrollHorizontally="false"/>
 
 		<LinearLayout
@@ -48,7 +48,7 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:text="@string/open_link"
-				android:textColor="@color/blue"
+				android:textColor="@color/accent"
 				android:gravity="start"/>
 
 			<TextView
