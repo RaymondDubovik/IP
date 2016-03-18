@@ -484,9 +484,9 @@ public class ESAEventServlet extends HttpServlet {
 			TwitterFactory tf = new TwitterFactory(twitterConfiguration);
 			Twitter twitter = tf.getInstance();
 
-			// For each trending event pull the top 15 most popular tweets
+			// For each trending event pull the top 5 most popular tweets
 			twitter4j.Query query = new twitter4j.Query(eventHeading);
-			query.count(10);
+			query.count(5);
 			query.lang("en");
 			query.resultType(Query.ResultType.mixed);
 
