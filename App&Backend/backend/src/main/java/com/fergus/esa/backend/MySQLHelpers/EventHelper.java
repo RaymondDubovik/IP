@@ -24,9 +24,6 @@ public class EventHelper {
     }
 
 
-	// TODO: make work
-	// TODO: make work
-	// TODO: make work:
     public List<EventObject> getNewEvents(List<Integer> categories, long from, int count) {
 		String timestampFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(from);
 
@@ -98,11 +95,6 @@ public class EventHelper {
     }
 
 
-
-
-	// TODO: make work
-	// TODO: make work
-	// TODO: make work
     private List<EventObject> getEventInterval(String minTimestamp, String timestampFrom, List<Integer> categories, String categorySqlPart) {
 		if (minTimestamp == null || minTimestamp.equals("")) { // TODO: check
 			return null;
