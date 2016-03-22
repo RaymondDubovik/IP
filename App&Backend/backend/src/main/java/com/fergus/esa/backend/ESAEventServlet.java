@@ -387,7 +387,7 @@ public class ESAEventServlet extends HttpServlet {
 			if (entryList.size() > 0) {
 				for (int i = 0; i < entryList.size(); i++) { // was: for (int i = 0; i < 2; i++) // what was 2 and why in this case?
 					SyndEntry entry = entryList.get(i);
-					String entryUrl = entry.getUri().substring(33); // TODO: where does 33 comes from?
+					String entryUrl = entry.getUri().substring(33); // TODO: where does 33 come from?
 					String title = entry.getTitle();
 					Date date = entry.getPublishedDate();
 
