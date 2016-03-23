@@ -2,6 +2,7 @@ package com.fergus.esa.adapters;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +14,6 @@ import android.widget.TextView;
 import com.fergus.esa.R;
 import com.fergus.esa.backend.esaEventEndpoint.model.SummaryObject;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,9 +75,15 @@ public class SummaryAdapter extends BaseAdapter  implements Filterable {
 
             viewHolder.summaryText.setText(summary.getText());
 
-            DateFormat dateformat = new SimpleDateFormat("EEE, dd MMM yyyy");
-            String sumDate = dateformat.format(summary.getTimestamp().getValue());
-            viewHolder.summaryDate.setText(sumDate);
+			String date;
+			long timestamp = summary.getTimestamp().getValue();
+			if (DateUtils.isToday(timestamp)) {
+				date = "Today";
+			} else {
+				date = new SimpleDateFormat("dd/MM/yyyy").format(timestamp);
+			}
+
+            viewHolder.summaryDate.setText(date);
         }
 
         return convertView;
