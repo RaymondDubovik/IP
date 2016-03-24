@@ -258,8 +258,8 @@ public class EventsFragment extends Fragment implements NetworkFragment, BackBut
 
 		EventAsyncTask(boolean displayDialog) {
 			this(displayDialog, false);
-
 		}
+
 
 		EventAsyncTask(boolean displayDialog, boolean replaceContent) {
 			this.displayDialog = displayDialog;
