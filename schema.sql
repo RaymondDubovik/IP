@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 06, 2016 at 12:46 AM
+-- Generation Time: Mar 28, 2016 at 04:04 PM
 -- Server version: 10.1.10-MariaDB
 -- PHP Version: 7.0.2
 
@@ -30,6 +30,7 @@ CREATE TABLE `categories` (
   `id` int(11) NOT NULL,
   `name` varchar(60) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 --
 -- Dumping data for table `categories`
@@ -176,7 +177,9 @@ ALTER TABLE `categories`
 -- Indexes for table `events`
 --
 ALTER TABLE `events`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `heading` (`heading`),
+  ADD KEY `timestamp` (`timestamp`);
 
 --
 -- Indexes for table `eventscategories`
@@ -189,8 +192,11 @@ ALTER TABLE `eventscategories`
 -- Indexes for table `eventsusers`
 --
 ALTER TABLE `eventsusers`
+  ADD UNIQUE KEY `userId_2` (`userId`,`eventId`),
   ADD KEY `fk_event_id` (`eventId`),
-  ADD KEY `fk_user_id` (`userId`);
+  ADD KEY `fk_user_id` (`userId`),
+  ADD KEY `userId` (`userId`,`timestamp`),
+  ADD KEY `timestamp` (`timestamp`);
 
 --
 -- Indexes for table `images`
